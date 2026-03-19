@@ -29,7 +29,7 @@ configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'
 # ================== DATABASE LOGIC ==================
 
 def get_service_data(keyword):
-    """ค้นหาข้อมูลงานบริการ (กยศ, จ่ายค่าเทอม ฯลฯ)"""
+    """ค้นหาข้อมูลงานบริการ"""
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
@@ -37,7 +37,7 @@ def get_service_data(keyword):
             cursor.execute(sql, (f"%{keyword}%", f"%{keyword}%"))
             return cursor.fetchone()
     except Exception as e:
-        print(f"❌ Service DB Error: {e}")
+        print(f"Service DB Error: {e}")
         return None
     finally:
         if 'conn' in locals(): conn.close()
@@ -51,7 +51,21 @@ def get_building_data(keyword):
             cursor.execute(sql, (keyword, f"%{keyword}%", f"%{keyword}%"))
             return cursor.fetchone()
     except Exception as e:
-        print(f"❌ Building DB Error: {e}")
+        print(f"Building DB Error: {e}")
+        return None
+    finally:
+        if 'conn' in locals(): conn.close()
+
+def get_building_by_id(building_id):
+    """ค้นหาข้อมูลตึกโดยใช้ ID โดยตรง"""
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            sql = "SELECT * FROM locations WHERE location_id = %s LIMIT 1"
+            cursor.execute(sql, (building_id,))
+            return cursor.fetchone()
+    except Exception as e:
+        print(f"Building ID Query Error: {e}")
         return None
     finally:
         if 'conn' in locals(): conn.close()
@@ -95,6 +109,64 @@ def create_flex_message(data):
         }
     }
 
+def create_service_flex(service_data, building_data):
+    """สร้าง Flex Message สำหรับงานบริการ (ไม่มีไอคอน)"""
+    if building_data and building_data.get("image_url"):
+        img_url = f"{GITHUB_IMAGE_BASE}{building_data['image_url']}"
+    else:
+        img_url = "https://www.kpru.ac.th/th/images/logo-kpru.png"
+    
+    building_name = building_data['official_name'] if building_data else "ไม่ระบุอาคาร"
+    latitude = building_data['latitude'] if building_data else 16.4537572
+    longitude = building_data['longitude'] if building_data else 99.5158255
+
+    return {
+        "type": "bubble",
+        "hero": {
+            "type": "image", "url": img_url, "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"
+        },
+        "body": {
+            "type": "box", "layout": "vertical",
+            "contents": [
+                {
+                    "type": "text", 
+                    "text": building_name,
+                    "weight": "bold", "size": "md", "color": "#5482B4", "wrap": True
+                },
+                {
+                    "type": "text", 
+                    "text": service_data['service_name'], 
+                    "weight": "bold", "size": "xl", "margin": "md", "wrap": True
+                },
+                {"type": "separator", "margin": "md"},
+                {
+                    "type": "text", 
+                    "text": "รายละเอียดบริการ", 
+                    "size": "sm", "color": "#666666", "margin": "md", "weight": "bold"
+                },
+                {
+                    "type": "text", 
+                    "text": service_data['service_details'] or "ไม่มีรายละเอียดเพิ่มเติม", 
+                    "wrap": True, "size": "sm", "margin": "xs"
+                }
+            ]
+        },
+        "footer": {
+            "type": "box", "layout": "vertical",
+            "contents": [
+                {
+                    "type": "button",
+                    "action": {
+                        "type": "uri", 
+                        "label": "เปิดแผนที่ (Google Maps)",
+                        "uri": f"https://www.google.com/maps/search/?api=1&query={latitude},{longitude}"
+                    },
+                    "style": "primary", "color": "#5482B4"
+                }
+            ]
+        }
+    }
+
 # ================== FLASK ROUTES ==================
 
 @app.route("/callback", methods=['POST'])
@@ -111,17 +183,20 @@ def handle_message(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         
-        # 1. ลองหาในตารางงานบริการก่อน (กยศ, จ่ายค่าเทอม, ฯลฯ)
+        # 1. ลองหาในตารางงานบริการก่อน
         service = get_service_data(user_msg)
         if service:
-            res_text = f"🔍 ข้อมูลบริการ: {service['service_name']}\n"
-            res_text += f"📍 สถานที่: {service['location_id']}\n"
-            res_text += f"📝 รายละเอียด: {service['service_details']}"
-            line_bot_api.reply_message(ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=res_text)]
-            ))
-            return
+            building = get_building_by_id(service['location_id'])
+            if building:
+                flex_content = create_service_flex(service, building)
+                line_bot_api.reply_message(ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[FlexMessage(
+                        alt_text=f"ข้อมูลบริการ: {service['service_name']}", 
+                        contents=FlexContainer.from_dict(flex_content)
+                    )]
+                ))
+                return
 
         # 2. ถ้าไม่เจอค่อยหาข้อมูลตึก
         building = get_building_data(user_msg)
@@ -129,12 +204,15 @@ def handle_message(event):
             flex_msg = create_flex_message(building)
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[FlexMessage(alt_text=f"ข้อมูล {user_msg}", contents=FlexContainer.from_dict(flex_msg))]
+                messages=[FlexMessage(
+                    alt_text=f"ข้อมูลตึก: {user_msg}", 
+                    contents=FlexContainer.from_dict(flex_msg)
+                )]
             ))
         else:
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=f"ขอโทษครับเบิร์ด ไม่พบข้อมูล '{user_msg}' ลองพิมพ์ชื่อตึกหรือบริการดูนะ")]
+                messages=[TextMessage(text=f"ไม่พบข้อมูล {user_msg} กรุณาลองพิมพ์ชื่อตึกหรือบริการใหม่อีกครั้ง")]
             ))
 
 if __name__ == "__main__":
