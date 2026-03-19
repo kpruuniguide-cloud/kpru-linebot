@@ -29,7 +29,7 @@ configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'
 # ================== DATABASE LOGIC ==================
 
 def get_service_data(user_msg):
-    """ค้นหาข้อมูลงานบริการแบบฉลาด (จับคำคีย์เวิร์ดจากในประโยคได้)"""
+    """ค้นหาข้อมูลงานบริการแบบฉลาด"""
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
@@ -58,13 +58,30 @@ def get_service_data(user_msg):
         if 'conn' in locals(): conn.close()
 
 def get_building_data(keyword):
-    """ค้นหาข้อมูลพิกัดตึก"""
+    """ค้นหาข้อมูลตึกแบบครอบจักรวาล (คืนค่ากลับมาทั้งหมดที่หาเจอ)"""
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
-            sql = "SELECT * FROM locations WHERE building_no = %s OR common_name LIKE %s OR official_name LIKE %s LIMIT 1"
+            sql = "SELECT * FROM locations WHERE building_no = %s OR common_name LIKE %s OR official_name LIKE %s"
             cursor.execute(sql, (keyword, f"%{keyword}%", f"%{keyword}%"))
-            return cursor.fetchone()
+            buildings = cursor.fetchall()
+            
+            if not buildings:
+                return None
+                
+            # กรองตึกเก่าออก ถ้าผู้ใช้ไม่ได้พิมพ์คำว่า "เก่า" 
+            if len(buildings) > 1 and "เก่า" not in keyword:
+                filtered_buildings = []
+                for b in buildings:
+                    official = b['official_name'] or ""
+                    common = b['common_name'] or ""
+                    if "เก่า" not in official and "เก่า" not in common:
+                        filtered_buildings.append(b)
+                if filtered_buildings:
+                    return filtered_buildings
+            
+            return buildings
+            
     except Exception as e:
         print(f"Building DB Error: {e}")
         return None
@@ -88,7 +105,7 @@ def get_building_by_id(building_id):
 # ================== MESSAGE BUILDER ==================
 
 def create_building_flex(data):
-    """สร้าง Flex Message สำหรับตึก (การ์ดหลัก: โชว์รูป ชื่อตึก แผนที่)"""
+    """สร้าง Flex Message สำหรับตึก (การ์ดรูปภาพ)"""
     if data.get("image_url"):
         img_url = f"{GITHUB_IMAGE_BASE}{data['image_url']}"
     else:
@@ -126,7 +143,7 @@ def create_building_flex(data):
     }
 
 def create_service_flex(service_data, building_data):
-    """สร้าง Flex Message สำหรับงานบริการ (การ์ดหลัก: โชว์รูปและชื่อตึก)"""
+    """สร้าง Flex Message สำหรับงานบริการ"""
     if building_data and building_data.get("image_url"):
         img_url = f"{GITHUB_IMAGE_BASE}{building_data['image_url']}"
     else:
@@ -176,7 +193,7 @@ def create_service_flex(service_data, building_data):
     }
 
 def create_detail_flex(title, description):
-    """สร้าง Flex Message การ์ดแยกสำหรับแสดงรายละเอียด (Flash Card)"""
+    """สร้าง Flex Message การ์ดแยกสำหรับแสดงรายละเอียด"""
     raw_desc = description or ""
     formatted_desc = raw_desc.replace('\\n', '\n').strip()
     
@@ -236,16 +253,15 @@ def handle_message(event):
         is_building_only = False
         if clean_msg.isdigit():
             is_building_only = True
-        elif any(clean_msg.startswith(prefix) for prefix in ["ตึก", "อาคาร", "หอพัก", "ห้องสมุด", "โรงอาหาร"]):
+        elif any(clean_msg.startswith(prefix) for prefix in ["ตึก", "อาคาร", "หอ", "ศูนย์"]):
             is_building_only = True
 
-        # ฟังก์ชันช่วยส่งข้อมูลบริการ (ส่ง Flex 2 ใบ)
+        # ฟังก์ชันช่วยส่งข้อมูลบริการ
         def send_service_response(s_data):
             b_data = get_building_by_id(s_data['location_id'])
             if b_data:
                 flex_content = create_service_flex(s_data, b_data)
                 
-                # ตรวจสอบว่ามีรายละเอียดไหม ถ้ามีให้ส่งการ์ดรายละเอียดด้วย
                 raw_details = s_data['service_details'] or ""
                 if raw_details.strip() not in ["", "-"]:
                     detail_flex = create_detail_flex(s_data['service_name'], raw_details)
@@ -264,34 +280,51 @@ def handle_message(event):
                 return True
             return False
 
-        # ฟังก์ชันช่วยส่งข้อมูลตึก (ส่ง Flex 2 ใบ)
-        def send_building_response(b_data):
-            flex_msg = create_building_flex(b_data)
+        # ฟังก์ชันช่วยส่งข้อมูลตึก (ระบบสไลด์ครอบจักรวาล)
+        def send_building_response(buildings_list):
+            bubbles = []
             
-            raw_desc = b_data['description'] or ""
-            formatted_desc = raw_desc.replace('\\n', '\n').strip()
+            # บังคับดึงมาสูงสุด 5 ตึก เพื่อไม่ให้จำนวนบับเบิ้ลรวมกันเกินโควต้า 10 ใบของ LINE
+            for b_data in buildings_list[:5]:
+                flex_msg = create_building_flex(b_data)
+                bubbles.append(flex_msg)
+                
+                raw_desc = b_data['description'] or ""
+                formatted_desc = raw_desc.replace('\\n', '\n').strip()
+                
+                # ถ้าตึกนั้นมีรายละเอียด ก็สร้างการ์ดรายละเอียดต่อท้ายเข้าไปเลย
+                if formatted_desc not in ["", "-", "ไม่มีรายละเอียดเพิ่มเติม"]:
+                    b_title = f"อาคาร {b_data['building_no'] or ''} {b_data['official_name']}".strip()
+                    detail_flex = create_detail_flex(b_title, formatted_desc)
+                    bubbles.append(detail_flex)
             
-            if formatted_desc in ["", "-", "ไม่มีรายละเอียดเพิ่มเติม"]:
+            bubbles = bubbles[:10]
+            
+            # ถ้ามีแค่ 1 ตึก ส่งเป็นข้อความธรรมดาแนวตั้ง
+            if len(buildings_list) == 1:
+                messages = []
+                for b in bubbles:
+                    messages.append(FlexMessage(alt_text="ข้อมูลตึก", contents=FlexContainer.from_dict(b)))
                 line_bot_api.reply_message(ReplyMessageRequest(
                     reply_token=event.reply_token,
-                    messages=[FlexMessage(alt_text=f"ข้อมูลตึก: {b_data['official_name']}", contents=FlexContainer.from_dict(flex_msg))]
+                    messages=messages
                 ))
             else:
-                b_title = f"อาคาร {b_data['building_no'] or ''} {b_data['official_name']}".strip()
-                detail_flex = create_detail_flex(b_title, formatted_desc)
+                # ถ้ามีหลายตึก (เช่น พิมพ์หอหญิง หรือ ศูนย์) จับใส่ Carousel สไลด์ให้ทันที
+                carousel_flex = {
+                    "type": "carousel",
+                    "contents": bubbles
+                }
                 line_bot_api.reply_message(ReplyMessageRequest(
                     reply_token=event.reply_token,
-                    messages=[
-                        FlexMessage(alt_text=f"รูปตึก: {b_data['official_name']}", contents=FlexContainer.from_dict(flex_msg)),
-                        FlexMessage(alt_text=f"รายละเอียด: {b_data['official_name']}", contents=FlexContainer.from_dict(detail_flex))
-                    ]
+                    messages=[FlexMessage(alt_text="ผลการค้นหา (ปัดเพื่อดูเพิ่มเติม)", contents=FlexContainer.from_dict(carousel_flex))]
                 ))
 
         # --- ลำดับการทำงาน (Logic) ---
         if is_building_only:
-            building = get_building_data(user_msg)
-            if building:
-                send_building_response(building)
+            buildings = get_building_data(user_msg)
+            if buildings:
+                send_building_response(buildings)
                 return
             
             service = get_service_data(user_msg)
@@ -302,9 +335,9 @@ def handle_message(event):
             if service and send_service_response(service):
                 return
             
-            building = get_building_data(user_msg)
-            if building:
-                send_building_response(building)
+            buildings = get_building_data(user_msg)
+            if buildings:
+                send_building_response(buildings)
                 return
 
         line_bot_api.reply_message(ReplyMessageRequest(
