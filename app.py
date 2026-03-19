@@ -233,7 +233,9 @@ def create_detail_flex(title, description):
     }
 
 # ================== FLASK ROUTES ==================
-
+@app.route("/")
+def home():
+    return "KPRU UniGuide Bot is running successfully!", 200
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers.get('X-Line-Signature', '')
