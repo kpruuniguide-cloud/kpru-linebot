@@ -28,14 +28,29 @@ configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'
 
 # ================== DATABASE LOGIC ==================
 
-def get_service_data(keyword):
-    """ค้นหาข้อมูลงานบริการ"""
+def get_service_data(user_msg):
+    """ค้นหาข้อมูลงานบริการแบบฉลาด (จับคำคีย์เวิร์ดจากในประโยคได้)"""
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
-            sql = "SELECT * FROM services WHERE keywords LIKE %s OR service_name LIKE %s LIMIT 1"
-            cursor.execute(sql, (f"%{keyword}%", f"%{keyword}%"))
-            return cursor.fetchone()
+            sql = "SELECT * FROM services"
+            cursor.execute(sql)
+            all_services = cursor.fetchall()
+            
+            clean_msg = user_msg.replace(' ', '').replace('.', '').lower()
+            
+            for service in all_services:
+                if service['keywords']:
+                    keywords_list = service['keywords'].split(',')
+                    for kw in keywords_list:
+                        clean_kw = kw.strip().replace(' ', '').replace('.', '').lower()
+                        if clean_kw and (clean_kw in clean_msg):
+                            return service
+                            
+                clean_sname = service['service_name'].replace(' ', '').replace('.', '').lower()
+                if clean_sname in clean_msg:
+                    return service
+            return None
     except Exception as e:
         print(f"Service DB Error: {e}")
         return None
@@ -72,12 +87,15 @@ def get_building_by_id(building_id):
 
 # ================== MESSAGE BUILDER ==================
 
-def create_flex_message(data):
-    """สร้าง Flex Message สำหรับข้อมูลตึก"""
+def create_building_flex(data):
+    """สร้าง Flex Message สำหรับตึก (การ์ดหลัก: โชว์รูป ชื่อตึก แผนที่)"""
     if data.get("image_url"):
         img_url = f"{GITHUB_IMAGE_BASE}{data['image_url']}"
     else:
         img_url = "https://www.kpru.ac.th/th/images/logo-kpru.png"
+        
+    building_no = data['building_no'] if data.get('building_no') else ""
+    b_text = f"อาคาร {building_no}".strip() if building_no else data['official_name']
     
     return {
         "type": "bubble",
@@ -87,10 +105,8 @@ def create_flex_message(data):
         "body": {
             "type": "box", "layout": "vertical",
             "contents": [
-                {"type": "text", "text": f"อาคาร {data['building_no'] or ''}", "weight": "bold", "size": "xl"},
-                {"type": "text", "text": data['official_name'], "size": "sm", "color": "#666666", "wrap": True},
-                {"type": "separator", "margin": "md"},
-                {"type": "text", "text": data['description'] or "ไม่มีรายละเอียดเพิ่มเติม", "wrap": True, "size": "sm", "margin": "md"}
+                {"type": "text", "text": b_text, "weight": "bold", "size": "xl", "wrap": True},
+                {"type": "text", "text": data['official_name'], "size": "sm", "color": "#666666", "wrap": True, "margin": "md"}
             ]
         },
         "footer": {
@@ -110,13 +126,16 @@ def create_flex_message(data):
     }
 
 def create_service_flex(service_data, building_data):
-    """สร้าง Flex Message สำหรับงานบริการ (ไม่มีไอคอน)"""
+    """สร้าง Flex Message สำหรับงานบริการ (การ์ดหลัก: โชว์รูปและชื่อตึก)"""
     if building_data and building_data.get("image_url"):
         img_url = f"{GITHUB_IMAGE_BASE}{building_data['image_url']}"
     else:
         img_url = "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
     building_name = building_data['official_name'] if building_data else "ไม่ระบุอาคาร"
+    building_no = building_data['building_no'] if building_data and building_data.get('building_no') else ""
+    b_text = f"อาคาร {building_no} {building_name}".strip() if building_no else building_name
+    
     latitude = building_data['latitude'] if building_data else 16.4537572
     longitude = building_data['longitude'] if building_data else 99.5158255
 
@@ -130,24 +149,13 @@ def create_service_flex(service_data, building_data):
             "contents": [
                 {
                     "type": "text", 
-                    "text": building_name,
-                    "weight": "bold", "size": "md", "color": "#5482B4", "wrap": True
-                },
-                {
-                    "type": "text", 
                     "text": service_data['service_name'], 
-                    "weight": "bold", "size": "xl", "margin": "md", "wrap": True
-                },
-                {"type": "separator", "margin": "md"},
-                {
-                    "type": "text", 
-                    "text": "รายละเอียดบริการ", 
-                    "size": "sm", "color": "#666666", "margin": "md", "weight": "bold"
+                    "weight": "bold", "size": "xl", "wrap": True
                 },
                 {
                     "type": "text", 
-                    "text": service_data['service_details'] or "ไม่มีรายละเอียดเพิ่มเติม", 
-                    "wrap": True, "size": "sm", "margin": "xs"
+                    "text": f"สถานที่: {b_text}",
+                    "weight": "bold", "size": "md", "color": "#5482B4", "wrap": True, "margin": "md"
                 }
             ]
         },
@@ -167,6 +175,46 @@ def create_service_flex(service_data, building_data):
         }
     }
 
+def create_detail_flex(title, description):
+    """สร้าง Flex Message การ์ดแยกสำหรับแสดงรายละเอียด (Flash Card)"""
+    raw_desc = description or ""
+    formatted_desc = raw_desc.replace('\\n', '\n').strip()
+    
+    return {
+        "type": "bubble",
+        "body": {
+            "type": "box", "layout": "vertical",
+            "contents": [
+                {
+                    "type": "text", 
+                    "text": "รายละเอียด", 
+                    "weight": "bold", 
+                    "size": "lg", 
+                    "color": "#5482B4"
+                },
+                {
+                    "type": "text", 
+                    "text": title, 
+                    "size": "xs", 
+                    "color": "#999999", 
+                    "wrap": True,
+                    "margin": "sm"
+                },
+                {
+                    "type": "separator", 
+                    "margin": "md"
+                },
+                {
+                    "type": "text", 
+                    "text": formatted_desc, 
+                    "wrap": True, 
+                    "size": "sm", 
+                    "margin": "md"
+                }
+            ]
+        }
+    }
+
 # ================== FLASK ROUTES ==================
 
 @app.route("/callback", methods=['POST'])
@@ -179,41 +227,90 @@ def callback():
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
     user_msg = event.message.text.strip()
+    clean_msg = user_msg.replace(" ", "")
     
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         
-        # 1. ลองหาในตารางงานบริการก่อน
-        service = get_service_data(user_msg)
-        if service:
-            building = get_building_by_id(service['location_id'])
-            if building:
-                flex_content = create_service_flex(service, building)
+        # --- ตัวแยกแยะเจตนา (Intent Checker) ---
+        is_building_only = False
+        if clean_msg.isdigit():
+            is_building_only = True
+        elif any(clean_msg.startswith(prefix) for prefix in ["ตึก", "อาคาร", "หอพัก", "ห้องสมุด", "โรงอาหาร"]):
+            is_building_only = True
+
+        # ฟังก์ชันช่วยส่งข้อมูลบริการ (ส่ง Flex 2 ใบ)
+        def send_service_response(s_data):
+            b_data = get_building_by_id(s_data['location_id'])
+            if b_data:
+                flex_content = create_service_flex(s_data, b_data)
+                
+                # ตรวจสอบว่ามีรายละเอียดไหม ถ้ามีให้ส่งการ์ดรายละเอียดด้วย
+                raw_details = s_data['service_details'] or ""
+                if raw_details.strip() not in ["", "-"]:
+                    detail_flex = create_detail_flex(s_data['service_name'], raw_details)
+                    line_bot_api.reply_message(ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[
+                            FlexMessage(alt_text=f"บริการ: {s_data['service_name']}", contents=FlexContainer.from_dict(flex_content)),
+                            FlexMessage(alt_text=f"รายละเอียด: {s_data['service_name']}", contents=FlexContainer.from_dict(detail_flex))
+                        ]
+                    ))
+                else:
+                    line_bot_api.reply_message(ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[FlexMessage(alt_text=f"บริการ: {s_data['service_name']}", contents=FlexContainer.from_dict(flex_content))]
+                    ))
+                return True
+            return False
+
+        # ฟังก์ชันช่วยส่งข้อมูลตึก (ส่ง Flex 2 ใบ)
+        def send_building_response(b_data):
+            flex_msg = create_building_flex(b_data)
+            
+            raw_desc = b_data['description'] or ""
+            formatted_desc = raw_desc.replace('\\n', '\n').strip()
+            
+            if formatted_desc in ["", "-", "ไม่มีรายละเอียดเพิ่มเติม"]:
                 line_bot_api.reply_message(ReplyMessageRequest(
                     reply_token=event.reply_token,
-                    messages=[FlexMessage(
-                        alt_text=f"ข้อมูลบริการ: {service['service_name']}", 
-                        contents=FlexContainer.from_dict(flex_content)
-                    )]
+                    messages=[FlexMessage(alt_text=f"ข้อมูลตึก: {b_data['official_name']}", contents=FlexContainer.from_dict(flex_msg))]
                 ))
+            else:
+                b_title = f"อาคาร {b_data['building_no'] or ''} {b_data['official_name']}".strip()
+                detail_flex = create_detail_flex(b_title, formatted_desc)
+                line_bot_api.reply_message(ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[
+                        FlexMessage(alt_text=f"รูปตึก: {b_data['official_name']}", contents=FlexContainer.from_dict(flex_msg)),
+                        FlexMessage(alt_text=f"รายละเอียด: {b_data['official_name']}", contents=FlexContainer.from_dict(detail_flex))
+                    ]
+                ))
+
+        # --- ลำดับการทำงาน (Logic) ---
+        if is_building_only:
+            building = get_building_data(user_msg)
+            if building:
+                send_building_response(building)
+                return
+            
+            service = get_service_data(user_msg)
+            if service and send_service_response(service):
+                return
+        else:
+            service = get_service_data(user_msg)
+            if service and send_service_response(service):
+                return
+            
+            building = get_building_data(user_msg)
+            if building:
+                send_building_response(building)
                 return
 
-        # 2. ถ้าไม่เจอค่อยหาข้อมูลตึก
-        building = get_building_data(user_msg)
-        if building:
-            flex_msg = create_flex_message(building)
-            line_bot_api.reply_message(ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[FlexMessage(
-                    alt_text=f"ข้อมูลตึก: {user_msg}", 
-                    contents=FlexContainer.from_dict(flex_msg)
-                )]
-            ))
-        else:
-            line_bot_api.reply_message(ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=f"ไม่พบข้อมูล {user_msg} กรุณาลองพิมพ์ชื่อตึกหรือบริการใหม่อีกครั้ง")]
-            ))
+        line_bot_api.reply_message(ReplyMessageRequest(
+            reply_token=event.reply_token,
+            messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' กรุณาลองพิมพ์ชื่อตึกหรือบริการใหม่อีกครั้ง")]
+        ))
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
