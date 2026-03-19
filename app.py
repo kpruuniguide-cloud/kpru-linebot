@@ -10,7 +10,7 @@ from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
 app = Flask(__name__)
 
-# ================== CONFIGURATION (ดึงค่าจาก Environment Variables) ==================
+# ================== CONFIGURATION ==================
 DB_CONFIG = {
     "host": os.environ.get('DB_HOST'),
     "port": int(os.environ.get('DB_PORT', 18524)),
@@ -18,57 +18,32 @@ DB_CONFIG = {
     "password": os.environ.get('DB_PASS'),
     "database": os.environ.get('DB_NAME'),
     "cursorclass": pymysql.cursors.DictCursor,
-    "ssl": {
-    "ca": os.environ.get("DB_SSL_CA") or "/opt/render/project/src/ca.pem"
-}
+    "ssl": {"ca": os.environ.get("DB_SSL_CA") or "/opt/render/project/src/ca.pem"}
 }
 
-# ใส่ค่า Access Token และ Secret ของเบิร์ด (หรือตั้งใน Render Environment ก็ได้)
+GITHUB_IMAGE_BASE = "https://raw.githubusercontent.com/kpruuniguide-cloud/kpru-linebot/main/static/images/"
+
 handler = WebhookHandler(os.environ.get('CHANNEL_SECRET', '33602e4eb27429c3b1571b6912cd1cf7'))
 configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN', 'ytBS3PNYaD0Tm9Q8YjwSltuf4Y4T+nWEJxh9f6CGSf2A6g7XJx0MdH9NsL88JbluYfKocFKKqpzlVN8TYENDLdgcjrwnGTP4aUVI0Tb+XEq+f4cbvnPNc7CC9m3N5OK5HiGyf2BACcddBWkkFwRAfwdB04t89/1O/w1cDnyilFU='))
 
-# ================== AUTO-SETUP DATABASE (ด่านตรวจฐานข้อมูล) ==================
-def init_db():
-    """ฟังก์ชันสร้างตาราง 'locations' ให้อัตโนมัติถ้ายังไม่มีใน Aiven Cloud"""
+# ================== DATABASE LOGIC ==================
+
+def get_service_data(keyword):
+    """ค้นหาข้อมูลงานบริการ (กยศ, จ่ายค่าเทอม ฯลฯ)"""
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
-            # ตรวจสอบว่ามีตารางชื่อ locations หรือยัง
-            cursor.execute("SHOW TABLES LIKE 'locations'")
-            if not cursor.fetchone():
-                print("⚠️ ฐานข้อมูลว่างเปล่า! กำลังสร้างตารางและลงข้อมูลทดสอบ...")
-                # สร้างตาราง locations ตามโครงสร้างในไฟล์ SQL ของเบิร์ด
-                cursor.execute("""
-                    CREATE TABLE `locations` (
-                      `location_id` int(11) NOT NULL AUTO_INCREMENT,
-                      `building_no` varchar(10) DEFAULT NULL,
-                      `official_name` varchar(255) NOT NULL,
-                      `common_name` text DEFAULT NULL,
-                      `location_type` varchar(50) NOT NULL,
-                      `latitude` decimal(10,7) NOT NULL,
-                      `longitude` decimal(10,7) NOT NULL,
-                      `description` text DEFAULT NULL,
-                      `image_url` varchar(255) DEFAULT NULL,
-                      PRIMARY KEY (`location_id`)
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-                """)
-                # ใส่ข้อมูลตึก 14 (ตึกอธิการ) เป็นข้อมูลเริ่มต้นเพื่อทดสอบการเชื่อมต่อ
-                cursor.execute("""
-                    INSERT INTO `locations` (building_no, official_name, common_name, location_type, latitude, longitude, description)
-                    VALUES ('14', 'อาคารเรียนรวม และอำนวยการ', 'ตึกอธิการบดี, ตึก 14, ตึกอธิการ', 'Building', 16.4537572, 99.5158255, 'สำนักงานอธิการบดีและศูนย์กลางบริหารงาน มรภ.กำแพงเพชร')
-                """)
-                conn.commit()
-                print("✅ สร้างฐานข้อมูลบน Cloud สำเร็จแล้ว!")
-        conn.close()
+            sql = "SELECT * FROM services WHERE keywords LIKE %s OR service_name LIKE %s LIMIT 1"
+            cursor.execute(sql, (f"%{keyword}%", f"%{keyword}%"))
+            return cursor.fetchone()
     except Exception as e:
-        print(f"❌ เกิดข้อผิดพลาดตอนตั้งค่า DB: {e}")
+        print(f"❌ Service DB Error: {e}")
+        return None
+    finally:
+        if 'conn' in locals(): conn.close()
 
-# รันฟังก์ชันสร้างตารางทันทีที่เริ่มแอป
-init_db()
-
-# ================== LINE BOT LOGIC ==================
 def get_building_data(keyword):
-    """ฟังก์ชันค้นหาข้อมูลตึกจาก Aiven Cloud"""
+    """ค้นหาข้อมูลพิกัดตึก"""
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
@@ -76,15 +51,19 @@ def get_building_data(keyword):
             cursor.execute(sql, (keyword, f"%{keyword}%", f"%{keyword}%"))
             return cursor.fetchone()
     except Exception as e:
-        print(f"❌ DB Query Error: {e}")
+        print(f"❌ Building DB Error: {e}")
         return None
     finally:
         if 'conn' in locals(): conn.close()
 
+# ================== MESSAGE BUILDER ==================
+
 def create_flex_message(data):
-    """ฟังก์ชันสร้างหน้าตา Flex Message สวยๆ"""
-    # กำหนดรูปภาพเริ่มต้นถ้าไม่มีในฐานข้อมูล
-    img_url = data.get("image_url") or "https://www.kpru.ac.th/th/images/logo-kpru.png"
+    """สร้าง Flex Message สำหรับข้อมูลตึก"""
+    if data.get("image_url"):
+        img_url = f"{GITHUB_IMAGE_BASE}{data['image_url']}"
+    else:
+        img_url = "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
     return {
         "type": "bubble",
@@ -94,13 +73,13 @@ def create_flex_message(data):
         "body": {
             "type": "box", "layout": "vertical",
             "contents": [
-                {"type": "text", "text": f"อาคาร {data['building_no']}", "weight": "bold", "size": "xl"},
+                {"type": "text", "text": f"อาคาร {data['building_no'] or ''}", "weight": "bold", "size": "xl"},
                 {"type": "text", "text": data['official_name'], "size": "sm", "color": "#666666", "wrap": True},
                 {"type": "separator", "margin": "md"},
                 {"type": "text", "text": data['description'] or "ไม่มีรายละเอียดเพิ่มเติม", "wrap": True, "size": "sm", "margin": "md"}
             ]
         },
-       "footer": {
+        "footer": {
             "type": "box", "layout": "vertical",
             "contents": [
                 {
@@ -116,6 +95,8 @@ def create_flex_message(data):
         }
     }
 
+# ================== FLASK ROUTES ==================
+
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers.get('X-Line-Signature', '')
@@ -125,13 +106,25 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
-    user_msg = event.message.text
-    
-    # ค้นหาข้อมูลจาก Cloud
-    building = get_building_data(user_msg)
+    user_msg = event.message.text.strip()
     
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
+        
+        # 1. ลองหาในตารางงานบริการก่อน (กยศ, จ่ายค่าเทอม, ฯลฯ)
+        service = get_service_data(user_msg)
+        if service:
+            res_text = f"🔍 ข้อมูลบริการ: {service['service_name']}\n"
+            res_text += f"📍 สถานที่: {service['location_id']}\n"
+            res_text += f"📝 รายละเอียด: {service['service_details']}"
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=res_text)]
+            ))
+            return
+
+        # 2. ถ้าไม่เจอค่อยหาข้อมูลตึก
+        building = get_building_data(user_msg)
         if building:
             flex_msg = create_flex_message(building)
             line_bot_api.reply_message(ReplyMessageRequest(
@@ -141,7 +134,7 @@ def handle_message(event):
         else:
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[TextMessage(text=f"ขอโทษครับเบิร์ด ไม่พบข้อมูล '{user_msg}' ลองพิมพ์เลขตึกดูนะครับ เช่น 14")]
+                messages=[TextMessage(text=f"ขอโทษครับเบิร์ด ไม่พบข้อมูล '{user_msg}' ลองพิมพ์ชื่อตึกหรือบริการดูนะ")]
             ))
 
 if __name__ == "__main__":
