@@ -69,7 +69,6 @@ def get_building_data(keyword):
             if not buildings:
                 return None
                 
-            # กรองตึกเก่าออก ถ้าผู้ใช้ไม่ได้พิมพ์คำว่า "เก่า" 
             if len(buildings) > 1 and "เก่า" not in keyword:
                 filtered_buildings = []
                 for b in buildings:
@@ -233,9 +232,12 @@ def create_detail_flex(title, description):
     }
 
 # ================== FLASK ROUTES ==================
+
+# 🟢 เพิ่มหน้า Home เพื่อให้ Render ตรวจสอบว่าบอททำงานปกติ (แก้ 404 Error)
 @app.route("/")
 def home():
     return "KPRU UniGuide Bot is running successfully!", 200
+
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers.get('X-Line-Signature', '')
@@ -258,7 +260,6 @@ def handle_message(event):
         elif any(clean_msg.startswith(prefix) for prefix in ["ตึก", "อาคาร", "หอ", "ศูนย์"]):
             is_building_only = True
 
-        # ฟังก์ชันช่วยส่งข้อมูลบริการ
         def send_service_response(s_data):
             b_data = get_building_by_id(s_data['location_id'])
             if b_data:
@@ -282,11 +283,9 @@ def handle_message(event):
                 return True
             return False
 
-        # ฟังก์ชันช่วยส่งข้อมูลตึก (ระบบสไลด์ครอบจักรวาล)
         def send_building_response(buildings_list):
             bubbles = []
             
-            # บังคับดึงมาสูงสุด 5 ตึก เพื่อไม่ให้จำนวนบับเบิ้ลรวมกันเกินโควต้า 10 ใบของ LINE
             for b_data in buildings_list[:5]:
                 flex_msg = create_building_flex(b_data)
                 bubbles.append(flex_msg)
@@ -294,7 +293,6 @@ def handle_message(event):
                 raw_desc = b_data['description'] or ""
                 formatted_desc = raw_desc.replace('\\n', '\n').strip()
                 
-                # ถ้าตึกนั้นมีรายละเอียด ก็สร้างการ์ดรายละเอียดต่อท้ายเข้าไปเลย
                 if formatted_desc not in ["", "-", "ไม่มีรายละเอียดเพิ่มเติม"]:
                     b_title = f"อาคาร {b_data['building_no'] or ''} {b_data['official_name']}".strip()
                     detail_flex = create_detail_flex(b_title, formatted_desc)
@@ -302,7 +300,6 @@ def handle_message(event):
             
             bubbles = bubbles[:10]
             
-            # ถ้ามีแค่ 1 ตึก ส่งเป็นข้อความธรรมดาแนวตั้ง
             if len(buildings_list) == 1:
                 messages = []
                 for b in bubbles:
@@ -312,7 +309,6 @@ def handle_message(event):
                     messages=messages
                 ))
             else:
-                # ถ้ามีหลายตึก (เช่น พิมพ์หอหญิง หรือ ศูนย์) จับใส่ Carousel สไลด์ให้ทันที
                 carousel_flex = {
                     "type": "carousel",
                     "contents": bubbles
@@ -342,11 +338,4 @@ def handle_message(event):
                 send_building_response(buildings)
                 return
 
-        line_bot_api.reply_message(ReplyMessageRequest(
-            reply_token=event.reply_token,
-            messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' กรุณาลองพิมพ์ชื่อตึกหรือบริการใหม่อีกครั้ง")]
-        ))
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+        line_bot_api.reply_message(ReplyMessageRequest
