@@ -18,7 +18,9 @@ DB_CONFIG = {
     "password": os.environ.get('DB_PASS'),
     "database": os.environ.get('DB_NAME'),
     "cursorclass": pymysql.cursors.DictCursor,
-    "ssl": {"ssl_ca": None}  # จำเป็นสำหรับ Aiven MySQL
+    "ssl": {
+    "ca": os.environ.get("DB_SSL_CA") or "/opt/render/project/src/ca.pem"
+}
 }
 
 # ใส่ค่า Access Token และ Secret ของเบิร์ด (หรือตั้งใน Render Environment ก็ได้)
@@ -92,22 +94,23 @@ def create_flex_message(data):
         "body": {
             "type": "box", "layout": "vertical",
             "contents": [
-                {"type": "text", "text": f"📍 อาคาร {data['building_no']}", "weight": "bold", "size": "xl"},
+                {"type": "text", "text": f"อาคาร {data['building_no']}", "weight": "bold", "size": "xl"},
                 {"type": "text", "text": data['official_name'], "size": "sm", "color": "#666666", "wrap": True},
                 {"type": "separator", "margin": "md"},
                 {"type": "text", "text": data['description'] or "ไม่มีรายละเอียดเพิ่มเติม", "wrap": True, "size": "sm", "margin": "md"}
             ]
         },
-        "footer": {
+       "footer": {
             "type": "box", "layout": "vertical",
             "contents": [
                 {
                     "type": "button",
                     "action": {
-                        "type": "uri", "label": "เปิดแผนที่ (Google Maps)",
-                        "uri": f"https://www.google.com/maps?q={data['latitude']},{data['longitude']}"
+                        "type": "uri", 
+                        "label": "เปิดแผนที่ (Google Maps)",
+                        "uri": f"https://www.google.com/maps/search/?api=1&query={data['latitude']},{data['longitude']}"
                     },
-                    "style": "primary", "color": "#0056b3"
+                    "style": "primary", "color": "#5482B4"
                 }
             ]
         }
