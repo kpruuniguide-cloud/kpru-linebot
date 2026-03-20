@@ -255,4 +255,6 @@ def handle_message(event):
         line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' ลองตรวจสอบชื่อเรียกอีกครั้งนะคะ 🙏")]))
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    # แก้เพื่อให้ Render ตรวจเจอ Port และทำงานได้จริง
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
