@@ -112,7 +112,10 @@ def create_service_flex(service, building):
         }
     }
 
-# ================== MAIN HANDLER ==================
+# ================== HEALTH CHECK ==================
+@app.route("/")
+def home():
+    return "KPRU Line Bot is running!", 200
 
 @app.route("/callback", methods=['POST'])
 def callback():
