@@ -6,7 +6,6 @@ from linebot.v3.messaging import (
     Configuration, ApiClient, MessagingApi, ReplyMessageRequest,
     TextMessage, FlexMessage, FlexContainer
 )
-
 from linebot.v3.webhooks import (
     MessageEvent, 
     TextMessageContent,
@@ -28,8 +27,8 @@ DB_CONFIG = {
 
 GITHUB_IMAGE_BASE = "https://raw.githubusercontent.com/kpruuniguide-cloud/kpru-linebot/main/static/images/"
 
-handler = WebhookHandler(os.environ.get('CHANNEL_SECRET', '33602e4eb27429c3b1571b6912cd1cf7'))
-configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN', 'ytBS3PNYaD0Tm9Q8YjwSltuf4Y4T+nWEJxh9f6CGSf2A6g7XJx0MdH9NsL88JbluYfKocFKKqpzlVN8TYENDLdgcjrwnGTP4aUVI0Tb+XEq+f4cbvnPNc7CC9m3N5OK5HiGyf2BACcddBWkkFwRAfwdB04t89/1O/w1cDnyilFU='))
+handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
+configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'))
 
 # ================== DATABASE LOGIC ==================
 
@@ -69,7 +68,7 @@ def get_building_by_id(building_id):
     finally:
         if 'conn' in locals(): conn.close()
 
-# ================== FLEX MESSAGE BUILDERS (MASTER TEMPLATE) ==================
+# ================== FLEX MESSAGE BUILDERS ==================
 
 def create_building_flex(data):
     img_url = f"{GITHUB_IMAGE_BASE}{data['image_url']}" if data.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
@@ -112,12 +111,10 @@ def create_service_flex(service, building):
         }
     }
 
-# ================== HEALTH CHECK (ป้องกัน Render Error) ==================
 @app.route("/")
 def home():
     return "KPRU Line Bot is running!", 200
 
-# ================== CALLBACK HANDLER ==================
 @app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers.get('X-Line-Signature', '')
@@ -125,11 +122,10 @@ def callback():
     handler.handle(body, signature)
     return 'OK', 200
 
-
 # ==========================================
-# 🟢 ระบบตอบกลับข้อความแชทหลัก (เมนูต่างๆ)
+# 🟢 ระบบตอบกลับข้อความ (Message Handler)
 # ==========================================
-@handler.add(MessageEvent, message=TextMessageContent),y
+@handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
     user_msg = event.message.text.strip()
     
@@ -158,50 +154,21 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="แผนที่", contents=FlexContainer.from_dict(flex_map))]))
             return
 
-       # 2: สถานที่สำคัญ/จุดพักผ่อน
+        # 2: สถานที่สำคัญ/จุดพักผ่อน (Glassmorphism Design)
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             flex_menu = {
                 "type": "bubble",
-                # 📌 1. ถมภาพเต็มจอ 100% (ลบขอบขาวรอบตัวการ์ด)
-                "styles": {
-                    "body": {
-                        "paddingAll": "0px" # คาถาถมเต็มจอ!
-                    }
-                },
+                "styles": {"body": {"paddingAll": "0px"}},
                 "body": {
-                    "type": "box",
-                    "layout": "vertical",
+                    "type": "box", "layout": "vertical",
                     "contents": [
-                        # --- ส่วนภาพพื้นหลัง (เต็มจอ) ---
+                        {"type": "image", "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.jpg", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover", "gravity": "center"},
                         {
-                            "type": "image",
-                            # 📌 เช็กชื่อไฟล์รูปบน GitHub ของเบิร์ดให้ตรงนะครับ!
-                            "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.jpg", 
-                            "size": "full",
-                            "aspectRatio": "20:13", # สัดส่วนภาพ (ปรับตามรูปจริงได้)
-                            "aspectMode": "cover", # ถมให้เต็มพื้นที่
-                            "gravity": "center" # กึ่งกลางภาพ
-                        },
-                        
-                        # --- ส่วนเนื้อหาแบบ "กระจกฝ้า" (Glassmorphism) ---
-                        {
-                            "type": "box",
-                            "layout": "vertical",
-                            # 📌 2. คาถากระจกฝ้า! (สีขาวโปร่งแสง 20% + ขอบขาวอ่อนๆ)
-                            "backgroundColor": "#ffffff33", 
-                            "borderColor": "#ffffff1a", # ขอบขาวโปร่งแสง 10%
-                            "borderWidth": "1px", # ความหนาขอบ
-                            "cornerRadius": "xl", # ความโค้งมนของกระจก
-                            "paddingAll": "xl", # ระยะห่างข้างในกระจก
-                            "margin": "xl", # ระยะห่างจากขอบภาพ
-                            "spacing": "sm",
+                            "type": "box", "layout": "vertical", "backgroundColor": "#ffffff33", "borderColor": "#ffffff1a", "borderWidth": "1px", "cornerRadius": "xl", "paddingAll": "xl", "margin": "xl", "spacing": "sm",
                             "contents": [
-                                # หัวข้อ
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#20364F", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "สถานที่สำคัญและจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "margin": "xs"},
-                                {"type": "separator", "margin": "lg", "color": "#20364F1a"}, # ตัวคั่นแบบโปร่งแสง
-
-                                # ปุ่มกดแบบพรีเมียม (โค้ดสีน้ำเงินเข้ม KPRU)
+                                {"type": "separator", "margin": "lg", "color": "#20364F1a"},
                                 {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
                                 {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
                                 {"type": "button", "style": "primary", "height": "md", "color": "#6084AB", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
@@ -210,9 +177,9 @@ def handle_message(event):
                     ]
                 }
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญแบบ Glassmorphism", contents=FlexContainer.from_dict(flex_menu))]))
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญ", contents=FlexContainer.from_dict(flex_menu))]))
             return
-            
+
         elif user_msg in ["ดูสถานที่สำคัญ", "ดูจุดพักผ่อน", "ดูที่ออกกำลังกาย"]:
             try:
                 conn = pymysql.connect(**DB_CONFIG)
@@ -225,12 +192,8 @@ def handle_message(event):
                         sql = "SELECT * FROM locations WHERE location_type = 'Exercise' "
                     cursor.execute(sql)
                     results = cursor.fetchall()
-                    if results:
-                        send_building_response(results)
-                    else:
-                        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ขออภัยค่ะ ยังไม่มีข้อมูลในหมวดนี้ในระบบ")]))
-            except Exception as e:
-                print(f"Error executing query: {e}")
+                    if results: send_building_response(results)
+                    else: line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ยังไม่มีข้อมูลในระบบ")]))
             finally:
                 if 'conn' in locals(): conn.close()
             return
@@ -249,16 +212,13 @@ def handle_message(event):
                     "contents": [
                         {"type": "text", "text": "บริการนักศึกษา KPRU", "weight": "bold", "size": "xl", "align": "center", "color": "#20364F"},
                         {"type": "separator", "margin": "md", "color": "#E5E7EB"},
-                        
                         {"type": "button", "style": "primary", "height": "sm", "color": "#20364F", "margin": "md", "action": {"type": "message", "label": "สมัครเรียน", "text": "ดูสมัครเรียน"}},
                         {"type": "button", "style": "primary", "height": "sm", "color": "#20364F", "action": {"type": "message", "label": "ทุนการศึกษา / กยศ.", "text": "ดูทุนการศึกษา"}},
                         {"type": "button", "style": "primary", "height": "sm", "color": "#20364F", "action": {"type": "message", "label": "ทำบัตรนักศึกษาใหม่", "text": "ดูทำบัตรใหม่"}},
-                        
                         {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "margin": "md", "action": {"type": "message", "label": "ชำระค่าเทอม", "text": "ดูชำระค่าเทอม"}},
                         {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "message", "label": "เทียบโอนผลการเรียน", "text": "ดูเทียบโอน"}}, 
                         {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "message", "label": "สอบซ้อน", "text": "ดูสอบซ้อน"}},
                         {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "message", "label": "รักษาสภาพนักศึกษา", "text": "ดูรักษาสภาพ"}},
-                        
                         {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "margin": "md", "action": {"type": "message", "label": "ห้องพยาบาล", "text": "ดูห้องพยาบาล"}},
                         {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "action": {"type": "message", "label": "ประกันอุบัติเหตุ", "text": "ดูเบิกประกัน"}},
                         {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "action": {"type": "message", "label": "แจ้งของหาย", "text": "ดูแจ้งของหาย"}} 
@@ -275,50 +235,17 @@ def handle_message(event):
                 "ดูห้องพยาบาล": "พยาบาล", "ดูเบิกประกัน": "ประกัน", "ดูแจ้งของหาย": "ของหาย"
             }
             search_keyword = keyword_map[user_msg]
-
             try:
                 conn = pymysql.connect(**DB_CONFIG)
                 with conn.cursor() as cursor:
-                    sql = """
-                        SELECT s.service_name, s.service_details, l.official_name, l.latitude, l.longitude, l.image_url 
-                        FROM services s LEFT JOIN locations l ON s.location_id = l.location_id
-                        WHERE s.service_name LIKE %s OR s.keywords LIKE %s
-                    """
-                    cursor.execute(sql, (f"%{search_keyword}%", f"%{search_keyword}%"))
+                    sql = "SELECT s.*, l.official_name, l.latitude, l.longitude, l.image_url FROM services s LEFT JOIN locations l ON s.location_id = l.location_id WHERE s.service_name LIKE %s"
+                    cursor.execute(sql, (f"%{search_keyword}%",))
                     results = cursor.fetchall()
-
                     if results:
-                        carousel_contents = []
+                        bubbles = []
                         for row in results:
-                            map_url = f"https://www.google.com/maps/search/?api=1&query={row['latitude']},{row['longitude']}" if row['latitude'] else "https://www.kpru.ac.th"
-                            img = f"{GITHUB_IMAGE_BASE}{row['image_url']}" if row.get('image_url') else "https://www.kpru.ac.th/th/images/logo-kpru.png"
-                            
-                            bubble = {
-                                "type": "bubble",
-                                "styles": {"body": {"backgroundColor": "#FFFFFF"}},
-                                "hero": {"type": "image", "url": img, "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
-                                "body": {
-                                    "type": "box", "layout": "vertical", 
-                                    "contents": [
-                                        {"type": "text", "text": row['service_name'], "weight": "bold", "size": "lg", "color": "#20364F", "wrap": True},
-                                        {"type": "text", "text": f"สถานที่: {row['official_name'] or 'ไม่ระบุ'}", "size": "sm", "color": "#20364F", "margin": "md", "wrap": True},
-                                        {"type": "text", "text": f"ติดต่อ: {row['service_details'] or 'ไม่ระบุ'}", "size": "sm", "color": "#708090", "wrap": True},
-                                        {"type": "separator", "margin": "lg", "color": "#E5E7EB"}
-                                    ]
-                                },
-                                "footer": {
-                                    "type": "box", "layout": "vertical", 
-                                    "contents": [
-                                        {"type": "button", "style": "primary", "color": "#162660", "action": {"type": "uri", "label": "นำทางไปอาคารนี้", "uri": map_url}}
-                                    ]
-                                }
-                            }
-                            carousel_contents.append(bubble)
-                        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict({"type": "carousel", "contents": carousel_contents}))]))
-                    else:
-                        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text=f"ขออภัยครับ ยังไม่มีข้อมูล '{search_keyword}' ในระบบตอนนี้ 🥺")]))
-            except Exception as e:
-                print(f"Service Query Error: {e}")
+                            bubbles.append(create_service_flex(row, row))
+                        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict({"type": "carousel", "contents": bubbles}))]))
             finally:
                 if 'conn' in locals(): conn.close()
             return
@@ -342,20 +269,12 @@ def handle_message(event):
              try:
                 conn = pymysql.connect(**DB_CONFIG)
                 with conn.cursor() as cursor:
-                    if "ร้านกาแฟ" in user_msg:
-                        sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
-                    elif "ดูร้านบริการ" in user_msg:
-                        sql = "SELECT * FROM locations WHERE location_type = 'services'"
-                    elif "ดูร้านทั้งหมด" in user_msg:
-                        sql = "SELECT * FROM locations WHERE location_type IN ('Cafe', 'services')"
+                    if "ร้านกาแฟ" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
+                    elif "ดูร้านบริการ" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'services'"
+                    else: sql = "SELECT * FROM locations WHERE location_type IN ('Cafe', 'services')"
                     cursor.execute(sql)
                     results = cursor.fetchall()
-                    if results:
-                        send_building_response(results)
-                    else:
-                        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ขออภัยค่ะ ยังไม่มีข้อมูลในหมวดนี้ในระบบ")]))
-             except Exception as e:
-                print(f"Error executing query: {e}")
+                    if results: send_building_response(results)
              finally:
                 if 'conn' in locals(): conn.close()
              return
@@ -379,20 +298,12 @@ def handle_message(event):
             try:
                 conn = pymysql.connect(**DB_CONFIG)
                 with conn.cursor() as cursor:
-                    if "หอพักหญิง" in user_msg:
-                        sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%หญิง%'"
-                    elif "หอพักชาย" in user_msg:
-                        sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%ชาย%'"
-                    elif "หอพักบุคลากร" in user_msg:
-                        sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND (common_name LIKE '%บุคลากร%' OR common_name LIKE '%อาจารย์%')"
+                    if "หอพักหญิง" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%หญิง%'"
+                    elif "หอพักชาย" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%ชาย%'"
+                    else: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND (common_name LIKE '%บุคลากร%' OR common_name LIKE '%อาจารย์%')"
                     cursor.execute(sql)
                     results = cursor.fetchall()
-                    if results:
-                        send_building_response(results)
-                    else:
-                        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ขออภัยค่ะ ยังไม่มีข้อมูลในหมวดนี้ในระบบ")] ))
-            except Exception as e:
-                print(f"Error executing query: {e}")
+                    if results: send_building_response(results)
             finally:
                 if 'conn' in locals(): conn.close()
             return
@@ -403,22 +314,15 @@ def handle_message(event):
                 "type": "bubble",
                 "body": {"type": "box", "layout": "vertical", "spacing": "md", "contents": [
                     {"type": "text", "text": "ติดต่อสอบถาม / ฉุกเฉิน", "weight": "bold", "size": "xl", "align": "center", "color": "#20364F"},
-                    {"type": "text", "text": "เหตุด่วน / เจ็บป่วย", "weight": "bold", "size": "sm", "color": "#20364F"},
-                    
                     {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "uri", "label": "หัวหน้า รปภ.", "uri": "tel:0939238526"}},
-                    {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "uri", "label": "ป้อมยาม", "uri": "tel:055706555,,7909"}},
-                    {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "uri", "label": "ห้องพยาบาล", "uri": "tel:055706555,,1360"}},
-                    
-                    {"type": "separator", "margin": "lg"},
-                    
                     {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "action": {"type": "uri", "label": "เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"}},
-                    {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "action": {"type": "uri", "label": "ประเมินความพึงพอใจ", "uri": "https://forms.gle/your_link"}},
+                    {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "action": {"type": "uri", "label": "ประเมินความพึงพอใจ", "uri": "https://forms.gle/your_link"}}
                 ]}
             }
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ติดต่อ", contents=FlexContainer.from_dict(contact_flex))]))
             return
-        
-        # กรณีพิมพ์ค้นหาทั่วไป (General Search)
+
+        # ค้นหาทั่วไป
         service = get_service_data(user_msg)
         if service:
             b = get_building_by_id(service['location_id'])
@@ -430,8 +334,7 @@ def handle_message(event):
             send_building_response(buildings)
             return
 
-        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' ลองตรวจสอบชื่อเรียกอีกครั้งนะคะ 🙏")]))
+        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' ค่ะ 🙏")]))
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
