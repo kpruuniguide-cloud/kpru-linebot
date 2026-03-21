@@ -70,7 +70,7 @@ def create_building_flex(data):
     img_url = f"{GITHUB_IMAGE_BASE}{data['image_url']}" if data.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
     return {
         "type": "bubble",
-        "styles": {"body": {"backgroundColor": "#F1E4D1"}, "footer": {"backgroundColor": "#F1E4D1"}},
+        # ✅ ลบ Background สีเบจออกแล้ว (กลายเป็นสีขาวคลีน)
         "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
         "body": {
             "type": "box", "layout": "vertical",
@@ -91,7 +91,7 @@ def create_building_flex(data):
 def create_service_flex(service, building):
     return {
         "type": "bubble",
-        "styles": {"body": {"backgroundColor": "#F1E4D1"}, "footer": {"backgroundColor": "#F1E4D1"}},
+        # ✅ ลบ Background สีเบจออกแล้ว (กลายเป็นสีขาวคลีน)
         "body": {
             "type": "box", "layout": "vertical",
             "contents": [
@@ -150,19 +150,43 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="แผนที่", contents=FlexContainer.from_dict(flex_map))]))
             return
 
-        # 2. สถานที่สำคัญ/จุดพักผ่อน
+        # 2. สถานที่สำคัญ/จุดพักผ่อน (ใช้ภาพ Hero: hero_Landmark.png)
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             flex_menu = {
                 "type": "bubble",
-                "body": {"type": "box", "layout": "vertical", "contents": [
-                    {"type": "text", "text": "เลือกหมวดหมู่ที่ต้องการ", "weight": "bold", "size": "xl", "align": "center", "color": "#162660"},
-                    {"type": "separator", "margin": "md", "color": "#162660"},
-                    {"type": "button", "style": "primary", "margin": "md", "color": "#D0E6FD", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
-                    {"type": "button", "style": "primary", "margin": "md", "color": "#708090", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
-                    {"type": "button", "style": "primary", "margin": "md", "color": "#F1E4D1", "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
-                ]}
+                "styles": {
+                    "hero": {"backgroundColor": "#FFFFFF"},
+                    "body": {"backgroundColor": "#FFFFFF"},
+                    "footer": {"backgroundColor": "#FFFFFF"}
+                },
+                "hero": {
+                    "type": "image",
+                    "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.png", # ✅ ใช้ชื่อไฟล์ที่เบิร์ดตั้ง
+                    "size": "full",
+                    "aspectRatio": "20:13",
+                    "aspectMode": "fit"
+                },
+                "body": {
+                    "type": "box", "layout": "vertical", "spacing": "sm",
+                    "contents": [
+                        {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                        {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "margin": "xs"},
+                        
+                        {"type": "separator", "margin": "lg", "color": "#E5E7EB"},
+                        
+                        # ปุ่มกลุ่ม Blue Spectrum ตัวหนังสือขาว (ไม่ซีด)
+                        {"type": "button", "style": "primary", "height": "md", "color": "#162660", "margin": "lg",
+                         "action": {"type": "message", "label": " สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
+                        
+                        {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md",
+                         "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
+                        
+                        {"type": "button", "style": "primary", "height": "md", "color": "#6084AB", "margin": "md",
+                         "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                    ]
+                }
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="หมวดหมู่สถานที่", contents=FlexContainer.from_dict(flex_menu))]))
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญ", contents=FlexContainer.from_dict(flex_menu))]))
             return
 
        # 3. ค่าเทอม/สอบ/ทุน (ฉบับการ์ดเดียว 9 ปุ่ม - ตัดของหายออก)
@@ -236,55 +260,87 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ติดต่อ", contents=FlexContainer.from_dict(contact_flex))]))
             return
         
-        # --- Logic ดึงข้อมูลปุ่มย่อย (แก้ไขเพื่อความแม่นยำของข้อมูล) ---
+        # --- Logic ดึงข้อมูลปุ่มย่อย (แก้ไขเพื่อความแม่นยำของข้อมูล + *ตัดชื่อเรียกทั่วไป* / *ใช้ปุ่มนำทาง Royal Blue*) ---
         if user_msg in ["ดูสถานที่สำคัญ", "ดูจุดพักผ่อน", "ดูที่ออกกำลังกาย", "ดูหอพักหญิง", "ดูหอพักชาย", "ดูหอพักบุคลากร", "ดูร้านกาแฟ", "ดูร้านบริการ", "ดูร้านทั้งหมด"]:
             
-            if "หอพักหญิง" in user_msg:
-                sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%หญิง%'"
-            
-            elif "หอพักชาย" in user_msg:
-                sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%ชาย%'"
-            
-            elif "หอพักบุคลากร" in user_msg:
-                # แก้ไข: ระบุประเภทหอพัก และกรองเฉพาะบุคลากร/อาจารย์
-                sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND (common_name LIKE '%บุคลากร%' OR common_name LIKE '%อาจารย์%')"
-            
-            elif "จุดพักผ่อน" in user_msg:
-                sql = "SELECT * FROM locations WHERE location_id IN (56, 60, 50)"
-            
-            elif "สถานที่สำคัญ" in user_msg:
-                sql = "SELECT * FROM locations WHERE location_id IN (13, 14, 26, 28, 5)"
-            
-            elif "ร้านกาแฟ" in user_msg:
-                sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
-            
-            elif "ดูร้านบริการ" in user_msg:
-                # แก้ไข: แยกออกมาเพื่อดึงเฉพาะร้านถ่ายเอกสาร/หอสมุด
-                sql = "SELECT * FROM locations WHERE location_type = 'services'"
-            
-            elif "ดูร้านทั้งหมด" in user_msg:
-                # ดึงทั้งร้านกาแฟและร้านบริการรวมกัน
-                sql = "SELECT * FROM locations WHERE location_type IN ('Cafe', 'services')"
-            
-            else:
-                # กรณี "ดูที่ออกกำลังกาย"
-                sql = "SELECT * FROM locations WHERE location_type = 'Exercise'"
-            
-            # --- ส่วนการเชื่อมต่อฐานข้อมูล ---
             try:
                 conn = pymysql.connect(**DB_CONFIG)
                 with conn.cursor() as cursor:
-                    cursor.execute(sql)
-                    results = cursor.fetchall()
-                    if results:
-                        # ส่งผลลัพธ์ไปยังฟังก์ชันแสดงผล (Carousel)
-                        send_building_response(results)
+                    
+                    if "สถานที่สำคัญ" in user_msg or "จุดพักผ่อน" in user_msg or "ที่ออกกำลังกาย" in user_msg:
+                        # ✅ แก้ไข: สำหรับหมวดสถานที่ ให้ดึงเฉพาะข้อมูลที่จำเป็น และ *ตัด Common Name* ออก
+                        if "สถานที่สำคัญ" in user_msg:
+                            sql = "SELECT official_name, description, latitude, longitude, image_url FROM locations WHERE location_id IN (13, 14, 26, 28, 5) AND status = 'active'"
+                        elif "จุดพักผ่อน" in user_msg:
+                            sql = "SELECT official_name, description, latitude, longitude, image_url FROM locations WHERE location_id IN (56, 60, 50) AND status = 'active'"
+                        else: # ดูที่ออกกำลังกาย
+                            sql = "SELECT official_name, description, latitude, longitude, image_url FROM locations WHERE location_type = 'Exercise' AND status = 'active'"
+                        
+                        cursor.execute(sql)
+                        results = cursor.fetchall()
+                        
+                        if results:
+                            carousel_contents = []
+                            for loc in results:
+                                map_url = f"https://www.google.com/maps/search/?api=1&query={loc['latitude']},{loc['longitude']}"
+                                img = f"{GITHUB_IMAGE_BASE}{loc['image_url']}" if loc['image_url'] else "https://www.kpru.ac.th/th/images/logo-kpru.png"
+                                
+                                bubble = {
+                                    "type": "bubble",
+                                    "styles": {"body": {"backgroundColor": "#FFFFFF"}}, # พื้นหลังขาวคลีน
+                                    "hero": {"type": "image", "url": img, "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
+                                    "body": {
+                                        "type": "box", "layout": "vertical", 
+                                        "contents": [
+                                            # ✅ A. แสดงเฉพาะชื่อทางการ (ใช้สีน้ำเงินเข้ม Atlantic)
+                                            {"type": "text", "text": loc['official_name'], "weight": "bold", "size": "lg", "color": "#20364F", "wrap": True},
+                                            
+                                            # ✅ B. แสดงรายละเอียดเต็มๆ (ที่คุณแก้ SQL หอสมุดไป 4-5 บรรทัด)
+                                            {"type": "text", "text": loc.get('description', 'ไม่มีข้อมูลรายละเอียด'), "size": "sm", "color": "#708090", "margin": "md", "wrap": True},
+                                            
+                                            {"type": "separator", "margin": "lg", "color": "#20364F"}
+                                        ]
+                                    },
+                                    "footer": {
+                                        "type": "box", "layout": "vertical", 
+                                        "contents": [
+                                            # ✅ C. ปุ่มนำทาง: ล็อคสี ROYAL BLUE (#162660) เด่นที่สุด และตัวหนังสือขาวอัตโนมัติ
+                                            {"type": "button", "style": "primary", "color": "#162660", 
+                                             "action": {"type": "uri", "label": "🚗 นำทางไปที่นี่", "uri": map_url}}
+                                        ]
+                                    }
+                                }
+                                carousel_contents.append(bubble)
+                            
+                            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ข้อมูลสถานที่", contents=FlexContainer.from_dict({"type": "carousel", "contents": carousel_contents}))]))
+                            return
+
                     else:
-                        # ถ้า SQL ถูกแต่ใน DB ไม่มีข้อมูลจดทะเบียนไว้
-                        line_bot_api.reply_message(ReplyMessageRequest(
-                            reply_token=event.reply_token,
-                            messages=[TextMessage(text="ขออภัยค่ะ ยังไม่มีข้อมูลในหมวดนี้ในระบบ")]
-                        ))
+                        # --- กรณีหอพักและร้านค้า (ใช้ Logic เดิม แต่ปรับสีปุ่มนำทางเป็น Royal Blue) ---
+                        if "หอพักหญิง" in user_msg:
+                            sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%หญิง%'"
+                        elif "หอพักชาย" in user_msg:
+                            sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%ชาย%'"
+                        elif "หอพักบุคลากร" in user_msg:
+                            sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND (common_name LIKE '%บุคลากร%' OR common_name LIKE '%อาจารย์%')"
+                        elif "ร้านกาแฟ" in user_msg:
+                            sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
+                        elif "ดูร้านบริการ" in user_msg:
+                            sql = "SELECT * FROM locations WHERE location_type = 'services'"
+                        elif "ดูร้านทั้งหมด" in user_msg:
+                            sql = "SELECT * FROM locations WHERE location_type IN ('Cafe', 'services')"
+                        else:
+                            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ขออภัยค่ะ ระบบเกิดข้อผิดพลาดในการดึงข้อมูล")] ))
+                            return
+
+                        cursor.execute(sql)
+                        results = cursor.fetchall()
+                        if results:
+                            # ปรับสีปุ่มนำทางเป็น Royal Blue ใน create_building_flex ก่อนส่ง
+                            send_building_response(results)
+                        else:
+                            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ขออภัยค่ะ ยังไม่มีข้อมูลในหมวดนี้ในระบบ")] ))
+
             except Exception as e:
                 print(f"Error executing query: {e}")
             finally:
@@ -295,6 +351,7 @@ def handle_message(event):
         service = get_service_data(user_msg)
         if service:
             b = get_building_by_id(service['location_id'])
+            # ปรับสีปุ่มนำทางเป็น Royal Blue ใน create_service_flex ก่อนส่ง
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict(create_service_flex(service, b)))]))
             return
             
