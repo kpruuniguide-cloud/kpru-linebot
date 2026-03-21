@@ -154,30 +154,64 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="แผนที่", contents=FlexContainer.from_dict(flex_map))]))
             return
 
-        # 2: สถานที่สำคัญ/จุดพักผ่อน (Glassmorphism Design)
+# 2: สถานที่สำคัญ/จุดพักผ่อน (New Design Inspired by image_11.png)
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             flex_menu = {
                 "type": "bubble",
-                "styles": {"body": {"paddingAll": "0px"}},
+                "styles": {
+                    "body": {
+                        "paddingAll": "0px" # ถมเต็มเพื่อเอาขอบขาวออก!
+                    }
+                },
                 "body": {
-                    "type": "box", "layout": "vertical",
+                    "type": "box",
+                    "layout": "vertical",
                     "contents": [
-                        {"type": "image", "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.jpg", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover", "gravity": "center"},
+                        # --- ส่วนภาพพื้นหลัง (ถมเต็มด้านบน) ---
                         {
-                            "type": "box", "layout": "vertical", "backgroundColor": "#ffffff33", "borderColor": "#ffffff1a", "borderWidth": "1px", "cornerRadius": "xl", "paddingAll": "xl", "margin": "xl", "spacing": "sm",
+                            "type": "image",
+                            # 📌 เช็กชื่อไฟล์รูปบน GitHub ของเบิร์ดให้ตรงนะครับ!
+                            "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.jpg", 
+                            "size": "full",
+                            "aspectRatio": "20:13", 
+                            "aspectMode": "cover",
+                            "gravity": "center"
+                        },
+                        
+                        # --- ส่วนเนื้อหา (The Content Box ลอยขึ้นมาทับด้านล่างของภาพ) ---
+                        {
+                            "type": "box",
+                            "layout": "vertical",
+                            "position": "absolute", # วางแบบ Absolute เพื่อให้ลอยขึ้นไปทับ
+                            "offsetTop": "25%", # ระยะที่ส่วนเนื้อหาจะลอยขึ้นไปทับภาพ (ปรับเปอร์เซ็นต์ได้ตามความชอบ)
+                            "offsetBottom": "0px",
+                            "offsetStart": "0px",
+                            "offsetEnd": "0px",
+                            
+                            # 📌 แก้โจทย์ 1: เปลี่ยนเงาดำเป็นสีขาวโปร่งแสง (เพื่อให้ดูคล้ายกระจก)
+                            "backgroundColor": "#ffffffcc", # สีขาว (White) โปร่งแสง 80% (Hex Alpha cc)
+                            "cornerRadius": "xl", # ความโค้งมนระดับพรีเมียม
+                            "paddingAll": "xl", # ระยะห่างข้างใน ดูโปร่งตา
+                            "spacing": "md", # ระยะห่างระหว่างปุ่ม
+                            
                             "contents": [
+                                # หัวข้อ
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#20364F", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                                {"type": "text", "text": "สถานที่สำคัญและจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "margin": "xs"},
-                                {"type": "separator", "margin": "lg", "color": "#20364F1a"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#6084AB", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
+                                
+                                # เส้นคั่นแบบโปร่งแสง
+                                {"type": "separator", "margin": "xl", "color": "#20364F1a"}, 
+
+                                # 📌 แก้โจทย์ 2: เปลี่ยนปุ่มเป็นสีเข้ม (ใช้สีน้ำเงินเข้ม KPRU) และตัวหนังสือสีขาว
+                                {"type": "button", "style": "primary", "height": "md", "color": "#162660", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
                             ]
                         }
                     ]
                 }
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญ", contents=FlexContainer.from_dict(flex_menu))]))
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญแบบพรีเมียม", contents=FlexContainer.from_dict(flex_menu))]))
             return
 
         elif user_msg in ["ดูสถานที่สำคัญ", "ดูจุดพักผ่อน", "ดูที่ออกกำลังกาย"]:
