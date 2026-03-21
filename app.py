@@ -6,8 +6,7 @@ from linebot.v3.messaging import (
     Configuration, ApiClient, MessagingApi, ReplyMessageRequest,
     TextMessage, FlexMessage, FlexContainer
 )
-# ✅ เพิ่ม FollowEvent เข้ามาในบรรทัดนี้แล้ว
-from linebot.v3.webhooks import MessageEvent, TextMessageContent, FollowEvent 
+
 
 app = Flask(__name__)
 
@@ -121,52 +120,6 @@ def callback():
     handler.handle(body, signature)
     return 'OK', 200
 
-# ==========================================
-# 🟢 ระบบต้อนรับเมื่อมีคนเพิ่มเพื่อนใหม่ (PNG แบบโปร่งใสสมบูรณ์ - Preservation Mode)
-# ==========================================
-@handler.add(FollowEvent)
-def handle_follow(event):
-    with ApiClient(configuration) as api_client:
-        line_bot_api = MessagingApi(api_client)
-        
-        # Flex Message การ์ดต้อนรับ - ปรับแก้เพื่อลบขอบขาวและทำให้ดูเต็มใบที่สุด
-        welcome_flex = {
-            "type": "bubble",
-            "styles": {
-                # 📌 แก้ไข: ตั้งค่าพื้นหลังกล่องการ์ด Bubble เป็นโปร่งใส (#00000000)
-                # เพื่อให้เห็นพื้นหลังหน้าแชทของ LINE ทะลุเข้ามาได้
-                "body": {
-                    "backgroundColor": "#00000000" 
-                }
-            },
-            "body": {
-                "type": "box",
-                "layout": "vertical",
-                "paddingAll": "0px", # เอาขอบขาวออกเพื่อให้รูปชิดขอบ
-                "contents": [
-                    {
-                        "type": "image",
-                        "url": f"{GITHUB_IMAGE_BASE}welcome_test.png", 
-                        "size": "full",
-                        "aspectRatio": "4:5",
-                        "aspectMode": "cover",
-                        "action": {
-                            "type": "message",
-                            "label": "เปิดแผนที่",
-                            "text": "Menu > แผนที่มหาวิทยาลัย"
-                        }
-                    }
-                ]
-            }
-        }
-        
-        # ส่งการ์ดต้อนรับกลับไป
-        line_bot_api.reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[FlexMessage(alt_text="ยินดีต้อนรับสู่ KPRU Navigator!", contents=FlexContainer.from_dict(welcome_flex))]
-            )
-        )
 
 # ==========================================
 # 🟢 ระบบตอบกลับข้อความแชทหลัก (เมนูต่างๆ)
@@ -200,28 +153,59 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="แผนที่", contents=FlexContainer.from_dict(flex_map))]))
             return
 
-        # 2: สถานที่สำคัญ/จุดพักผ่อน
+       # 2: สถานที่สำคัญ/จุดพักผ่อน
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             flex_menu = {
                 "type": "bubble",
-                "hero": {
-                    "type": "image",
-                    "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.jpg", 
-                    "size": "full", "aspectRatio": "20:13", "aspectMode": "fit"
+                # 📌 1. ถมภาพเต็มจอ 100% (ลบขอบขาวรอบตัวการ์ด)
+                "styles": {
+                    "body": {
+                        "paddingAll": "0px" # คาถาถมเต็มจอ!
+                    }
                 },
                 "body": {
-                    "type": "box", "layout": "vertical", "spacing": "sm",
+                    "type": "box",
+                    "layout": "vertical",
                     "contents": [
-                        {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#20364F", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                        {"type": "text", "text": "สถานที่สำคัญและจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "margin": "xs"},
-                        {"type": "separator", "margin": "lg", "color": "#E5E7EB"},
-                        {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
-                        {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
-                        {"type": "button", "style": "primary", "height": "md", "color": "#6084AB", "margin": "md", "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                        # --- ส่วนภาพพื้นหลัง (เต็มจอ) ---
+                        {
+                            "type": "image",
+                            # 📌 เช็กชื่อไฟล์รูปบน GitHub ของเบิร์ดให้ตรงนะครับ!
+                            "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.jpg", 
+                            "size": "full",
+                            "aspectRatio": "20:13", # สัดส่วนภาพ (ปรับตามรูปจริงได้)
+                            "aspectMode": "cover", # ถมให้เต็มพื้นที่
+                            "gravity": "center" # กึ่งกลางภาพ
+                        },
+                        
+                        # --- ส่วนเนื้อหาแบบ "กระจกฝ้า" (Glassmorphism) ---
+                        {
+                            "type": "box",
+                            "layout": "vertical",
+                            # 📌 2. คาถากระจกฝ้า! (สีขาวโปร่งแสง 20% + ขอบขาวอ่อนๆ)
+                            "backgroundColor": "#ffffff33", 
+                            "borderColor": "#ffffff1a", # ขอบขาวโปร่งแสง 10%
+                            "borderWidth": "1px", # ความหนาขอบ
+                            "cornerRadius": "xl", # ความโค้งมนของกระจก
+                            "paddingAll": "xl", # ระยะห่างข้างในกระจก
+                            "margin": "xl", # ระยะห่างจากขอบภาพ
+                            "spacing": "sm",
+                            "contents": [
+                                # หัวข้อ
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#20364F", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "สถานที่สำคัญและจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "margin": "xs"},
+                                {"type": "separator", "margin": "lg", "color": "#20364F1a"}, # ตัวคั่นแบบโปร่งแสง
+
+                                # ปุ่มกดแบบพรีเมียม (โค้ดสีน้ำเงินเข้ม KPRU)
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#6084AB", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                            ]
+                        }
                     ]
                 }
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญ", contents=FlexContainer.from_dict(flex_menu))]))
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญแบบ Glassmorphism", contents=FlexContainer.from_dict(flex_menu))]))
             return
             
         elif user_msg in ["ดูสถานที่สำคัญ", "ดูจุดพักผ่อน", "ดูที่ออกกำลังกาย"]:
