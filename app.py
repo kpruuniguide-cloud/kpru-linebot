@@ -146,8 +146,7 @@ def handle_follow(event):
                 "contents": [
                     {
                         "type": "image",
-                        # 📌 ตรวจสอบชื่อไฟล์ .png ใหม่ที่โปร่งใสสมบูรณ์บน GitHub ของเบิร์ด
-                        "url": f"{GITHUB_IMAGE_BASE}welcome.png", 
+                        "url": f"{GITHUB_IMAGE_BASE}welcome_test.png", 
                         "size": "full",
                         "aspectRatio": "4:5",
                         "aspectMode": "cover",
@@ -214,7 +213,7 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "sm",
                     "contents": [
                         {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#20364F", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                        {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "margin": "xs"},
+                        {"type": "text", "text": "สถานที่สำคัญและจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "margin": "xs"},
                         {"type": "separator", "margin": "lg", "color": "#E5E7EB"},
                         {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
                         {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
