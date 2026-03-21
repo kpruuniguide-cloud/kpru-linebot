@@ -122,43 +122,50 @@ def callback():
     return 'OK', 200
 
 # ==========================================
-# 🟢 ระบบต้อนรับเมื่อมีคนเพิ่มเพื่อนใหม่ (รูปภาพเต็มใบ + คลิกเปิดแผนที่ได้)
+# 🟢 ระบบต้อนรับเมื่อมีคนเพิ่มเพื่อนใหม่ (PNG แบบโปร่งใสสมบูรณ์ - Preservation Mode)
 # ==========================================
 @handler.add(FollowEvent)
 def handle_follow(event):
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         
+        # Flex Message การ์ดต้อนรับ - ปรับแก้เพื่อลบขอบขาวและทำให้ดูเต็มใบที่สุด
         welcome_flex = {
             "type": "bubble",
+            "styles": {
+                # 📌 แก้ไข: ตั้งค่าพื้นหลังกล่องการ์ด Bubble เป็นโปร่งใส (#00000000)
+                # เพื่อให้เห็นพื้นหลังหน้าแชทของ LINE ทะลุเข้ามาได้
+                "body": {
+                    "backgroundColor": "#00000000" 
+                }
+            },
             "body": {
                 "type": "box",
                 "layout": "vertical",
-                "paddingAll": "0px", # เอาขอบขาวออกเพื่อให้รูปชิดขอบการ์ด
+                "paddingAll": "0px", # เอาขอบขาวออกเพื่อให้รูปชิดขอบ
                 "contents": [
                     {
                         "type": "image",
-                        "url": f"{GITHUB_IMAGE_BASE}welcome.png", # 📌 ชื่อไฟล์รูปของเบิร์ด
+                        # 📌 ตรวจสอบชื่อไฟล์ .png ใหม่ที่โปร่งใสสมบูรณ์บน GitHub ของเบิร์ด
+                        "url": f"{GITHUB_IMAGE_BASE}welcome.png", 
                         "size": "full",
-                        "aspectRatio": "4:5", # 📌 สัดส่วนรูปแนวตั้ง
+                        "aspectRatio": "4:5",
                         "aspectMode": "cover",
-                        
-                        # 👇 โค้ดส่วนนี้คือ "ปุ่มล่องหน" ที่คลุมรูปภาพไว้ทั้งหมด 👇
                         "action": {
                             "type": "message",
                             "label": "เปิดแผนที่",
                             "text": "Menu > แผนที่มหาวิทยาลัย"
                         }
-                        # 👆 พอมีคนจิ้มรูป บอทจะได้รับข้อความ "Menu > แผนที่มหาวิทยาลัย" แล้วส่งแผนที่กลับไปทันที 👆
                     }
                 ]
             }
         }
         
+        # ส่งการ์ดต้อนรับกลับไป
         line_bot_api.reply_message(
             ReplyMessageRequest(
                 reply_token=event.reply_token,
-                messages=[FlexMessage(alt_text="ยินดีต้อนรับสู่ KPRU NAVIGATOR!", contents=FlexContainer.from_dict(welcome_flex))]
+                messages=[FlexMessage(alt_text="ยินดีต้อนรับสู่ KPRU Navigator!", contents=FlexContainer.from_dict(welcome_flex))]
             )
         )
 
