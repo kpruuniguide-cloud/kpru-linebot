@@ -7,6 +7,11 @@ from linebot.v3.messaging import (
     TextMessage, FlexMessage, FlexContainer
 )
 
+from linebot.v3.webhooks import (
+    MessageEvent, 
+    TextMessageContent,
+    FollowEvent
+)
 
 app = Flask(__name__)
 
@@ -124,7 +129,7 @@ def callback():
 # ==========================================
 # 🟢 ระบบตอบกลับข้อความแชทหลัก (เมนูต่างๆ)
 # ==========================================
-@handler.add(MessageEvent, message=TextMessageContent)
+@handler.add(MessageEvent, message=TextMessageContent),y
 def handle_message(event):
     user_msg = event.message.text.strip()
     
