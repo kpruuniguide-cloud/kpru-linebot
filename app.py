@@ -142,7 +142,7 @@ def handle_message(event):
 
         # 1: แผนที่มหาวิทยาลัย
         if user_msg == "Menu > แผนที่มหาวิทยาลัย":
-            img_url = "https://raw.githubusercontent.com/kpruuniguide-cloud/kpru-linebot/main/static/images/kpru_map.jpg"
+            img_url = "https://raw.githubusercontent.com/kpruuniguide-cloud/kpru-linebot/main/static/images/kpru_map.JPG"
             flex_map = {
                 "type": "bubble",
                 "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "1:1", "aspectMode": "cover"},
@@ -171,7 +171,7 @@ def handle_message(event):
                         {
                             "type": "image",
                             # 📌 เช็กชื่อไฟล์รูปบน GitHub ของเบิร์ดให้ตรงนะครับ!
-                            "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.jpg", 
+                            "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.JPG", 
                             "size": "full",
                             "aspectRatio": "20:13", 
                             "aspectMode": "cover",
@@ -238,7 +238,7 @@ def handle_message(event):
                 "type": "bubble",
                 "hero": {
                     "type": "image",
-                    "url": f"{GITHUB_IMAGE_BASE}hero_academic_service.png", 
+                    "url": f"{GITHUB_IMAGE_BASE}hero_academic_service.JPG", 
                     "size": "full", "aspectRatio": "20:13", "aspectMode": "fit"
                 },
                 "body": {
