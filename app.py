@@ -37,7 +37,7 @@ def get_building_data(keyword):
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
-            # 1. ค้นหาแบบกว้างๆ ออกมาก่อน
+            # 1. ค้นหาแบบกว้างๆ เหมือนเดิม
             sql = "SELECT * FROM locations WHERE building_no = %s OR common_name LIKE %s OR official_name LIKE %s"
             cursor.execute(sql, (keyword, f"%{keyword}%", f"%{keyword}%"))
             results = cursor.fetchall()
@@ -45,21 +45,23 @@ def get_building_data(keyword):
             if not results:
                 return None
                 
-            # 📌 2. ตัวกรองความแม่นยำ (ป้องกันตึก 14, 11, 12 มาแย่งซีน ตึก 1)
+            # 📌 2. ตัวกรองใหม่: ถ้าพิมพ์เลขตัวเดียว (เช่น "1") ต้องหาอันที่ตรงเป๊ะเท่านั้น
             exact_matches = []
             for row in results:
-                # กันเหนียวเผื่อ common_name เป็นค่าว่าง
+                b_no = str(row.get('building_no', '')).strip()
                 common_names_str = str(row.get('common_name') or '')
                 aliases = [x.strip() for x in common_names_str.split(',')]
                 
-                # เช็กว่าคำที่พิมพ์มา ตรงกับเลขตึก หรือชื่อทางการ หรือชื่อเรียกทั่วไปแบบเป๊ะๆ ไหม
-                if (keyword == str(row.get('building_no', ''))) or \
-                   (keyword == str(row.get('official_name', ''))) or \
-                   (keyword in aliases):
+                # เช็กว่าคำค้นหาตรงกับเลขตึกแบบเป๊ะๆ หรืออยู่ในชื่อเรียกทั่วไปแบบเป๊ะๆ
+                if keyword == b_no or keyword in aliases or keyword == str(row.get('official_name')):
                     exact_matches.append(row)
             
-            # 3. ตัดสินใจ: ถ้าเจอตรงเป๊ะ ส่งอันที่เป๊ะไป / ถ้าไม่เจอเป๊ะ ก็ส่งอันที่ค้นหาเจอทั้งหมดไป
-            return exact_matches if exact_matches else results
+            # 3. ถ้าเจออันที่ "ตรงเป๊ะ" (เช่น ตึก 1) ให้ส่งแค่อันนั้นอันเดียวไปเลย
+            # ไม่ต้องส่งตึก 11, 12, 14 ที่แค่มีเลข 1 ติดมาด้วย
+            if exact_matches:
+                return exact_matches
+            
+            return results
 
     except Exception as e:
         print(f"DB Error: {e}")
@@ -168,7 +170,7 @@ def create_service_flex(service, building):
             "contents": [
                 {"type": "text", "text": service.get('service_name', 'ไม่ทราบชื่อบริการ'), "weight": "bold", "size": "xl", "color": "#20364F", "wrap": True},
                 {"type": "text", "text": f"ตั้งอยู่ที่: {building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ'}", "size": "md", "margin": "md", "wrap": True, "color": "#20364F"},
-                {"type": "text", "text": f"ติดต่อ: {service.get('service_details', 'ไม่ระบุ')}", "size": "sm", "color": "#708090", "wrap": True}
+                {"type": "text", "text": f"{service.get('service_details', 'ไม่ระบุ')}", "size": "sm", "color": "#708090", "wrap": True}
             ]
         },
         "footer": {
@@ -486,7 +488,8 @@ def handle_message(event):
                             "type": "button", "style": "secondary", "color": "#20364F", "height": "sm",
                             "action": {
                                 "type": "uri", "label": "📝 ทำแบบประเมินบอท", 
-                                "uri": "https://forms.gle/GV6yWpDRYPu5Zino7" 
+                                "uri": "https://forms.gle/GV6yWpDRYPu5Zino7",
+                                "color": "#FFFFFF"
                             }
                         }
                     ]
