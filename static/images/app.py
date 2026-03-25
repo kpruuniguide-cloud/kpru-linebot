@@ -1,0 +1,502 @@
+import os
+import pymysql
+from flask import Flask, request, abort
+from linebot.v3.webhook import WebhookHandler
+from linebot.v3.exceptions import InvalidSignatureError
+from linebot.v3.messaging import (
+    Configuration, ApiClient, MessagingApi, ReplyMessageRequest,
+    TextMessage, FlexMessage, FlexContainer
+)
+from linebot.v3.webhooks import (
+    MessageEvent, 
+    TextMessageContent,
+    FollowEvent
+)
+
+app = Flask(__name__)
+
+# ================== CONFIGURATION ==================
+DB_CONFIG = {
+    "host": os.environ.get('DB_HOST'),
+    "port": int(os.environ.get('DB_PORT', 18524)),
+    "user": os.environ.get('DB_USER'),
+    "password": os.environ.get('DB_PASS'),
+    "database": os.environ.get('DB_NAME'),
+    "cursorclass": pymysql.cursors.DictCursor,
+    "ssl": {"ca": os.environ.get("DB_SSL_CA") or "/opt/render/project/src/ca.pem"}
+}
+
+GITHUB_IMAGE_BASE = "https://raw.githubusercontent.com/kpruuniguide-cloud/kpru-linebot/main/static/images/"
+
+handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
+configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'))
+
+# ================== DATABASE LOGIC ==================
+
+def get_building_data(keyword):
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            # 1. ค้นหาแบบกว้างๆ ออกมาก่อน
+            sql = "SELECT * FROM locations WHERE building_no = %s OR common_name LIKE %s OR official_name LIKE %s"
+            cursor.execute(sql, (keyword, f"%{keyword}%", f"%{keyword}%"))
+            results = cursor.fetchall()
+            
+            if not results:
+                return None
+                
+            # 📌 2. ตัวกรองความแม่นยำ (ป้องกันตึก 14, 11, 12 มาแย่งซีน ตึก 1)
+            exact_matches = []
+            for row in results:
+                # กันเหนียวเผื่อ common_name เป็นค่าว่าง
+                common_names_str = str(row.get('common_name') or '')
+                aliases = [x.strip() for x in common_names_str.split(',')]
+                
+                # เช็กว่าคำที่พิมพ์มา ตรงกับเลขตึก หรือชื่อทางการ หรือชื่อเรียกทั่วไปแบบเป๊ะๆ ไหม
+                if (keyword == str(row.get('building_no', ''))) or \
+                   (keyword == str(row.get('official_name', ''))) or \
+                   (keyword in aliases):
+                    exact_matches.append(row)
+            
+            # 3. ตัดสินใจ: ถ้าเจอตรงเป๊ะ ส่งอันที่เป๊ะไป / ถ้าไม่เจอเป๊ะ ก็ส่งอันที่ค้นหาเจอทั้งหมดไป
+            return exact_matches if exact_matches else results
+
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return None
+    finally:
+        if 'conn' in locals(): conn.close()
+
+def get_service_data(keyword):
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            sql = "SELECT * FROM services WHERE keywords LIKE %s OR service_name LIKE %s"
+            cursor.execute(sql, (f"%{keyword}%", f"%{keyword}%"))
+            return cursor.fetchone()
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return None
+    finally:
+        if 'conn' in locals(): conn.close()
+
+def get_building_by_id(building_id):
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM locations WHERE location_id = %s", (building_id,))
+            return cursor.fetchone()
+    except Exception as e:
+        print(f"DB Error: {e}")
+        return None
+    finally:
+        if 'conn' in locals(): conn.close()
+
+# ================== FLEX MESSAGE BUILDERS ==================
+
+def create_building_flex(data):
+    img_url = f"{GITHUB_IMAGE_BASE}{data['image_url']}" if data and data.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
+    
+    # 1. สร้างกล่องข้อความเตรียมไว้ก่อน
+    body_contents = []
+    
+    # 2. 📌 เช็กว่ามี "หมายเลขอาคาร" ไหม? (และต้องไม่ใช่เครื่องหมาย - หรือค่าว่าง)
+    building_no = data.get('building_no')
+    if building_no and str(building_no).strip() not in ["", "-", "None"]:
+        # ถ้ามีเลขอาคาร ให้เอาคำว่า "หมายเลขอาคาร X" ใส่เป็นบรรทัดแรก
+        body_contents.append({
+            "type": "text", 
+            "text": f"หมายเลขอาคาร {building_no}", 
+            "size": "sm", 
+            "color": "#162660", 
+            "weight": "bold"
+        })
+        
+    # 3. ใส่ "ชื่อทางการ" ต่อท้ายลงไป
+    body_contents.append({
+        "type": "text", 
+        "text": data.get('official_name', 'ไม่ทราบชื่ออาคาร'), 
+        "weight": "bold", 
+        "size": "xl", 
+        "wrap": True, 
+        "color": "#20364F"
+    })
+    
+    # 4. ใส่ "รายละเอียด" เป็นบรรทัดสุดท้าย
+    body_contents.append({
+        "type": "text", 
+        "text": data.get('description', 'ไม่มีข้อมูลรายละเอียด'), 
+        "size": "sm", 
+        "color": "#708090", 
+        "wrap": True, 
+        "margin": "md"
+    })
+
+    return {
+        "type": "bubble",
+        "styles": {"body": {"backgroundColor": "#FFFFFF"}},
+        "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
+        "body": {
+            "type": "box", 
+            "layout": "vertical",
+            "contents": body_contents # 📌 เอาข้อมูลที่เราจัดเรียง 3 สเตปข้างบนมาใส่ตรงนี้
+        },
+        "footer": {
+            "type": "box", "layout": "vertical",
+            "contents": [
+                {"type": "button", "style": "primary", "color": "#162660", "action": {"type": "uri", "label": " 🗺️ นำทางไปที่นี่", "uri": f"https://www.google.com/maps/search/?api=1&query={data.get('latitude', '')},{data.get('longitude', '')}"}}
+            ]
+        }
+    }
+
+def create_service_flex(service, building):
+    # 📌 ดึงลิงก์รูปภาพจากตาราง locations มาโชว์ในส่วนบริการ
+    img_url = f"{GITHUB_IMAGE_BASE}{building['image_url']}" if building and building.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
+    
+    return {
+        "type": "bubble",
+        "styles": {"body": {"backgroundColor": "#FFFFFF"}},
+        "hero": {
+            "type": "image", 
+            "url": img_url, 
+            "size": "full", 
+            "aspectRatio": "20:13", 
+            "aspectMode": "cover"
+        },
+        "body": {
+            "type": "box", "layout": "vertical",
+            "contents": [
+                {"type": "text", "text": service.get('service_name', 'ไม่ทราบชื่อบริการ'), "weight": "bold", "size": "xl", "color": "#20364F", "wrap": True},
+                {"type": "text", "text": f"ตั้งอยู่ที่: {building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ'}", "size": "md", "margin": "md", "wrap": True, "color": "#20364F"},
+                {"type": "text", "text": f"ติดต่อ: {service.get('service_details', 'ไม่ระบุ')}", "size": "sm", "color": "#708090", "wrap": True}
+            ]
+        },
+        "footer": {
+            "type": "box", "layout": "vertical",
+            "contents": [
+                {"type": "button", "style": "primary", "color": "#162660", "action": {"type": "uri", "label": "🗺️ นำทางไปอาคารนี้", "uri": f"https://www.google.com/maps/search/?api=1&query={building.get('latitude', '')},{building.get('longitude', '')}" if building else "#"}}
+            ]
+        }
+    }
+
+# ================== FLASK ROUTES ==================
+
+@app.route("/")
+def home():
+    return "KPRU Line Bot is running!", 200
+
+@app.route("/callback", methods=['POST'])
+def callback():
+    signature = request.headers.get('X-Line-Signature', '')
+    body = request.get_data(as_text=True)
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        abort(400)
+    return 'OK', 200
+
+# ==========================================
+# 🟢 ระบบตอบกลับข้อความ (Message Handler)
+# ==========================================
+@handler.add(MessageEvent, message=TextMessageContent)
+def handle_message(event):
+    user_msg = event.message.text.strip()
+    
+    with ApiClient(configuration) as api_client:
+        line_bot_api = MessagingApi(api_client)
+
+        def send_building_response(buildings_list):
+            # ดึงมาแค่ 10 รายการเพื่อไม่ให้เกินลิมิตของ Carousel LINE
+            bubbles = [create_building_flex(b) for b in buildings_list[:10]]
+            carousel = {"type": "carousel", "contents": bubbles}
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[FlexMessage(alt_text="ผลการค้นหาสถานที่", contents=FlexContainer.from_dict(carousel))]
+            ))
+
+        # 1: แผนที่มหาวิทยาลัย
+        if user_msg == "Menu > แผนที่มหาวิทยาลัย":
+            img_url = f"{GITHUB_IMAGE_BASE}kpru_map.JPG"
+            flex_map = {
+                "type": "bubble",
+                "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "1:1", "aspectMode": "cover"},
+                "body": {"type": "box", "layout": "vertical", "contents": [{"type": "text", "text": "แผนที่มหาวิทยาลัย KPRU", "weight": "bold", "size": "lg", "align": "center", "color": "#20364F"}]},
+                "footer": {"type": "box", "layout": "vertical", "contents": [
+                    {"type": "button", "style": "primary", "color": "#3D597B", "action": {"type": "uri", "label": "ดูแผนที่ความละเอียดสูง", "uri": img_url}}
+                ]}
+            }
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="แผนที่", contents=FlexContainer.from_dict(flex_map))]))
+            return
+# ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
+        elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
+            flex_menu = {
+                "type": "bubble",
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "paddingAll": "0px", # ✅ แก้ไข: ย้ายมาตรงนี้ ขอบขาวหาย 100%
+                    "contents": [
+                        {
+                            "type": "image", "url": f"{GITHUB_IMAGE_BASE}Landmark.JPG",
+                            "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"
+                        },
+                        {
+                            "type": "box", "layout": "vertical", "position": "absolute",
+                            "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
+                            "backgroundColor": "#ffffff80", "cornerRadius": "xl", "paddingAll": "xl",
+                            "contents": [
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "🏛️ สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "⛲ จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏸 ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                            ]
+                        }
+                    ]
+                }
+            }
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญ", contents=FlexContainer.from_dict(flex_menu))]))
+            return
+
+        # ... (ส่วน else if ดึงฐานข้อมูลของเมนู 2 คงเดิมไว้ได้เลยครับ) ...
+        elif user_msg in ["ดูสถานที่สำคัญ", "ดูจุดพักผ่อน", "ดูที่ออกกำลังกาย"]:
+            try:
+                conn = pymysql.connect(**DB_CONFIG)
+                with conn.cursor() as cursor:
+                    if "สถานที่สำคัญ" in user_msg: sql = "SELECT * FROM locations WHERE location_id IN (13, 14, 26, 28, 5)"
+                    elif "จุดพักผ่อน" in user_msg: sql = "SELECT * FROM locations WHERE location_id IN (56, 60, 50)"
+                    else: sql = "SELECT * FROM locations WHERE location_type = 'Exercise'"
+                    cursor.execute(sql)
+                    results = cursor.fetchall()
+                    if results: send_building_response(results) 
+                    else: line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ยังไม่มีข้อมูลในระบบ")]))
+            finally:
+                if 'conn' in locals(): conn.close()
+            return
+        
+       # ================= 3 SERVICES (ค่าเทอม/สอบ/ทุน) =================
+        elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
+            flex_menu = {
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        # ✅ แก้ไข: ย้ายรูปมาไว้ใน Hero รูปขึ้นแน่นอน (เช็คชื่อ service1.JPG ใน Github ด้วยนะครับ)
+                        "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}service1.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
+                        "body": {
+                            "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
+                            "contents": [
+                                {"type": "text", "text": "บริการนักศึกษา KPRU", "weight": "bold", "size": "lg", "color": "#111827", "align": "center"},
+                                {"type": "separator", "margin": "md", "color": "#e0e0e0"},
+                                {
+                                    "type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
+                                    "contents": [
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "สมัครเรียน", "text": "ดูสมัครเรียน"}, "contents": [{"type": "text", "text": "🎓 สมัครเรียน", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "ทุนการศึกษา", "text": "ดูทุนการศึกษา"}, "contents": [{"type": "text", "text": "🏦 ทุนการศึกษา / กยศ.", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "ทำบัตรนักศึกษา", "text": "ดูทำบัตรใหม่"}, "contents": [{"type": "text", "text": "🪪 ทำบัตรนักศึกษาใหม่", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "ชำระค่าเทอม", "text": "ดูชำระค่าเทอม"}, "contents": [{"type": "text", "text": "💸 ชำระค่าเทอม", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "เทียบโอน", "text": "ดูเทียบโอน"}, "contents": [{"type": "text", "text": "📑 เทียบโอนผลการเรียน", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]}
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "bubble",
+                        "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}service3.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
+                        "body": {
+                            "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
+                            "contents": [
+                                {"type": "text", "text": "บริการนักศึกษา KPRU", "weight": "bold", "size": "lg", "color": "#111827", "align": "center"},
+                                {"type": "separator", "margin": "md", "color": "#e0e0e0"},
+                                {
+                                    "type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
+                                    "contents": [
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "สอบซ้อน", "text": "ดูสอบซ้อน"}, "contents": [{"type": "text", "text": "📝 สอบซ้อน", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "รักษาสภาพ", "text": "ดูรักษาสภาพ"}, "contents": [{"type": "text", "text": "📈 รักษาสภาพนักศึกษา", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "ห้องพยาบาล", "text": "ดูห้องพยาบาล"}, "contents": [{"type": "text", "text": "🏥 ห้องพยาบาล", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "เบิกประกัน", "text": "ดูเบิกประกัน"}, "contents": [{"type": "text", "text": "🛡️ ประกันอุบัติเหตุ", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
+                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "แจ้งของหาย", "text": "ดูแจ้งของหาย"}, "contents": [{"type": "text", "text": "📦 แจ้งของหาย", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]}
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูบริการนักศึกษา", contents=FlexContainer.from_dict(flex_menu))]))
+            return
+
+        # ... (ส่วนค้นหาบริการของเมนู 3 คงเดิม) ...
+        elif user_msg in ["ดูสมัครเรียน", "ดูทุนการศึกษา", "ดูทำบัตรใหม่", "ดูชำระค่าเทอม", "ดูเทียบโอน", "ดูสอบซ้อน", "ดูรักษาสภาพ", "ดูห้องพยาบาล", "ดูเบิกประกัน", "ดูแจ้งของหาย"]:
+            keyword_map = {"ดูสมัครเรียน": "สมัครเรียน", "ดูทุนการศึกษา": "กยศ", "ดูทำบัตรใหม่": "บัตรนักศึกษา", "ดูชำระค่าเทอม": "ค่าเทอม", "ดูเทียบโอน": "เทียบโอน", "ดูสอบซ้อน": "สอบซ้อน", "ดูรักษาสภาพ": "รักษาสภาพ", "ดูห้องพยาบาล": "พยาบาล", "ดูเบิกประกัน": "ประกัน", "ดูแจ้งของหาย": "ของหาย"}
+            search_keyword = keyword_map.get(user_msg)
+            if search_keyword:
+                try:
+                    conn = pymysql.connect(**DB_CONFIG)
+                    with conn.cursor() as cursor:
+                        sql = "SELECT s.service_name, s.service_details, l.official_name, l.latitude, l.longitude, l.image_url FROM services s LEFT JOIN locations l ON s.location_id = l.location_id WHERE s.keywords LIKE %s OR s.service_name LIKE %s"
+                        cursor.execute(sql, (f"%{search_keyword}%", f"%{search_keyword}%"))
+                        results = cursor.fetchall()
+                        if results:
+                            bubbles = [create_service_flex(row, row) for row in results[:10]]
+                            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict({"type": "carousel", "contents": bubbles}))]))
+                        else:
+                            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ยังไม่มีข้อมูลบริการนี้ในระบบค่ะ")]))
+                finally:
+                    if 'conn' in locals(): conn.close()
+            return
+
+        # ================= 4 SHOPS (ร้านค้าและจุดบริการ) =================
+        elif user_msg == "Menu > ร้านค้า/จุดบริการ":
+            flex_menu = {
+                "type": "bubble",
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "paddingAll": "0px", # ✅ แก้ไข: ขอบขาวหาย 100%
+                    "contents": [
+                        {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Shop1.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover"},
+                        {
+                            "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
+                            "backgroundColor": "#ffffff80", "cornerRadius": "xl", "paddingAll": "xl",
+                            "contents": [
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "☕ ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🖨️ ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏪 ร้านทั้งหมด", "text": "ดูร้านทั้งหมด"}}
+                            ]
+                        }
+                    ]
+                }
+            }
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูร้านค้าและบริการ", contents=FlexContainer.from_dict(flex_menu))]))
+            return
+
+        # ... (ส่วนดึงข้อมูล Database คงเดิม) ...
+        elif user_msg in ["ดูร้านกาแฟ", "ดูร้านบริการ", "ดูร้านทั้งหมด"]:
+             try:
+                conn = pymysql.connect(**DB_CONFIG)
+                with conn.cursor() as cursor:
+                    if "ร้านกาแฟ" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
+                    elif "ดูร้านบริการ" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'services'"
+                    else: sql = "SELECT * FROM locations WHERE location_type IN ('Cafe', 'services')"
+                    cursor.execute(sql)
+                    results = cursor.fetchall()
+                    if results: send_building_response(results)
+             finally:
+                if 'conn' in locals(): conn.close()
+             return
+
+       # ================= 5 DORMITORY (หอพัก) =================
+        elif user_msg == "Menu > หอพัก":
+            flex_menu = {
+                "type": "bubble",
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "paddingAll": "0px", # ✅ แก้ไข: ขอบขาวหาย 100%
+                    "contents": [
+                        {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Dorm2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
+                        {
+                            "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
+                            "backgroundColor": "#ffffff80", "cornerRadius": "xl", "paddingAll": "xl",
+                            "contents": [
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "👩‍🎓 หอพักหญิง", "text": "ดูหอพักหญิง"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "👨‍🎓 หอพักชาย", "text": "ดูหอพักชาย"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏢 หอพักบุคลากร/อาจารย์", "text": "ดูหอพักบุคลากร"}}
+                            ]
+                        }
+                    ]
+                }
+            }
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูหอพัก", contents=FlexContainer.from_dict(flex_menu))]))
+            return
+
+        # ... (ส่วนดึงข้อมูล Database คงเดิม) ...
+        elif user_msg in ["ดูหอพักหญิง", "ดูหอพักชาย", "ดูหอพักบุคลากร"]:
+            try:
+                conn = pymysql.connect(**DB_CONFIG)
+                with conn.cursor() as cursor:
+                    if "หอพักหญิง" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%หญิง%'"
+                    elif "หอพักชาย" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%ชาย%'"
+                    else: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND (common_name LIKE '%บุคลากร%' OR common_name LIKE '%อาจารย์%')"
+                    cursor.execute(sql)
+                    results = cursor.fetchall()
+                    if results: send_building_response(results)
+            finally:
+                if 'conn' in locals(): conn.close()
+            return
+        
+        # ================= 6 CONTACT & EMERGENCY (ติดต่อ/ประเมิน) =================
+        elif user_msg == "Menu > ติดต่อ/ประเมิน":
+            flex_menu = {
+                "type": "carousel",
+                "contents": [
+                    {
+                        "type": "bubble",
+                        "size": "medium",
+                        "styles": {"header": {"backgroundColor": "#f44336"}},
+                        "header": {
+                            "type": "box", "layout": "vertical", "paddingAll": "lg",
+                            "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": "#ffffff", "weight": "bold", "size": "md", "align": "center"}]
+                        },
+                        "body": {
+                            "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
+                            "contents": [
+                                {"type": "button", "style": "primary", "color": "#20364F", "height": "sm", "action": {"type": "uri", "label": "🚨 หัวหน้ารปภ.", "uri": "tel:0939238526"}},
+                                {"type": "button", "style": "primary", "color": "#20364F", "height": "sm", "action": {"type": "uri", "label": "🏥 ห้องพยาบาล (กพ.)", "uri": "tel:055706555,1360"}},
+                                {"type": "separator", "margin": "md"},
+                                {"type": "button", "style": "secondary", "height": "sm", "action": {"type": "uri", "label": "👮 ป้อมยาม (หลังสถาบัน)", "uri": "tel:055706555,7909"}},
+                                {"type": "button", "style": "secondary", "height": "sm", "action": {"type": "uri", "label": "👮 ป้อมยาม (น้ำเพชร)", "uri": "tel:055706555,7910"}}
+                            ]
+                        }
+                    },
+                    {
+                        "type": "bubble",
+                        "size": "medium",
+                        "body": {
+                            "type": "box", "layout": "vertical",
+                            "paddingAll": "0px", # ✅ แก้ไข: ขอบขาวหาย 100% และถูกกฎ LINE API เมนูจะกลับมาโชว์แล้วครับ!
+                            "contents": [
+                                {"type": "image", "url": f"{GITHUB_IMAGE_BASE}phone.JPG", "size": "full", "aspectRatio": "1:1", "aspectMode": "cover"},
+                                {
+                                    "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "0px", "offsetBottom": "0px", "offsetStart": "0px", "offsetEnd": "0px",
+                                    "backgroundColor": "#ffffff80", "paddingAll": "lg", "justifyContent": "center",
+                                    "contents": [
+                                        {"type": "text", "text": "ข้อมูล & ข้อเสนอแนะ", "weight": "bold", "color": "#20364F", "align": "center", "margin": "sm"},
+                                        {"type": "button", "style": "primary", "color": "#3D597B", "height": "sm", "margin": "md", "action": {"type": "uri", "label": "🌐 เว็บไซต์มหาลัย", "uri": "https://www.kpru.ac.th"}},
+                                        {"type": "button", "style": "primary", "color": "#162660", "height": "sm", "margin": "sm", "action": {"type": "message", "label": "📝 แบบประเมินบอท", "text": "ทำแบบประเมิน"}}
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูติดต่อ/ฉุกเฉิน", contents=FlexContainer.from_dict(flex_menu))]))
+            return
+
+        # 📌 ค้นหาทั่วไป (พิมพ์ข้อความเข้ามาเอง)
+        service = get_service_data(user_msg)
+        if service:
+            b = get_building_by_id(service.get('location_id'))
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict(create_service_flex(service, b)))]))
+            return
+            
+        buildings = get_building_data(user_msg)
+        if buildings:
+            send_building_response(buildings)
+            return
+
+        # กรณีหาอะไรไม่เจอเลย
+        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' ค่ะ 🙏 ลองพิมพ์ชื่อสถานที่ หรือบริการที่ต้องการอีกครั้งนะคะ")]))
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
