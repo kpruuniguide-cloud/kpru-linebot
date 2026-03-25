@@ -232,12 +232,11 @@ def handle_message(event):
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             flex_menu = {
                 "type": "bubble",
+                "styles": {"body": {"paddingAll": "0px"}}, 
                 "body": {
                     "type": "box",
                     "layout": "vertical",
-                    "paddingAll": "0px",
                     "contents": [
-                        # 1. ภาพพื้นหลัง (ยังใช้รูปเดิม แต่จะโชว์ส่วนบนชัดขึ้น)
                         {
                             "type": "image",
                             "url": f"{GITHUB_IMAGE_BASE}Landmark.JPG",
@@ -245,37 +244,27 @@ def handle_message(event):
                             "aspectRatio": "3:4", 
                             "aspectMode": "cover"
                         },
-                        # 2. กล่องเนื้อหา (ออกแบบสไตล์ Bottom Sheet ตามภาพอ้างอิง)
                         {
                             "type": "box",
                             "layout": "vertical",
                             "position": "absolute",
-                            # 📌 ลบ offsetTop ออก และใช้ offsetBottom เพื่อกดกล่องลงไปติดขอบล่าง
-                            "offsetBottom": "4%",
-                            "offsetStart": "5%",
-                            "offsetEnd": "5%",
-                            "backgroundColor": "#ffffffE6", # 📌 สีขาวโปร่งแสง 90% ดูคล้ายกระจก
+                            "offsetTop": "10%",
+                            "offsetBottom": "10%",
+                            "offsetStart": "8%",
+                            "offsetEnd": "8%",
+                            # 📌 ปรับความโปร่งใสเป็น 70% ตามรีเควสครับ (#ffffffB3)
+                            "backgroundColor": "#ffffffB3", 
                             "cornerRadius": "xl",
                             "paddingAll": "xl",
                             "contents": [
-                                # Header Text
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xs", "color": "#162660", "weight": "bold"},
-                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#111827", "wrap": True, "margin": "sm"},
-                                # 📌 เพิ่มข้อความรายละเอียดให้ดูเหมือนแอปจริงๆ
-                                {"type": "text", "text": "เลือกหมวดหมู่สถานที่ที่คุณต้องการค้นหา หรือนำทางภายในมหาวิทยาลัยราชภัฏกำแพงเพชร", "size": "sm", "color": "#6B7280", "wrap": True, "margin": "md"},
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
                                 
-                                # กล่องรวมปุ่มกด (จัดระยะให้ชิดกันสวยงามขึ้น)
-                                {
-                                    "type": "box",
-                                    "layout": "vertical",
-                                    "margin": "lg",
-                                    "spacing": "sm",
-                                    "contents": [
-                                        {"type": "button", "style": "primary", "color": "#162660", "action": {"type": "message", "label": "🏛️ สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "action": {"type": "message", "label": "🌳 จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
-                                        {"type": "button", "style": "primary", "color": "#3D597B", "action": {"type": "message", "label": "🏃 ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
-                                    ]
-                                }
+                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
+                                
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "🏛️ สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "⛲ จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏸 ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
                             ]
                         }
                     ]
@@ -302,7 +291,7 @@ def handle_message(event):
                     results = cursor.fetchall()
                     
                     if results: 
-                        send_building_response(results) # ใช้ฟังก์ชันเดิมของเบิร์ด
+                        send_building_response(results) 
                     else: 
                         line_bot_api.reply_message(ReplyMessageRequest(
                             reply_token=event.reply_token, 
@@ -313,34 +302,117 @@ def handle_message(event):
             finally:
                 if 'conn' in locals(): conn.close()
             return
-        # 3: ค่าเทอม/สอบ/ทุน
+        
+       # 3: ค่าเทอม/สอบ/ทุน
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
-            flex_single = {
-                "type": "bubble",
-                "hero": {
-                    "type": "image",
-                    "url": f"{GITHUB_IMAGE_BASE}hero_academic_service.JPG", 
-                    "size": "full", "aspectRatio": "20:13", "aspectMode": "fit"
-                },
-                "body": {
-                    "type": "box", "layout": "vertical", "spacing": "sm",
-                    "contents": [
-                        {"type": "text", "text": "บริการนักศึกษา KPRU", "weight": "bold", "size": "xl", "align": "center", "color": "#20364F"},
-                        {"type": "separator", "margin": "md", "color": "#E5E7EB"},
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#20364F", "margin": "md", "action": {"type": "message", "label": "สมัครเรียน", "text": "ดูสมัครเรียน"}},
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#20364F", "action": {"type": "message", "label": "ทุนการศึกษา / กยศ.", "text": "ดูทุนการศึกษา"}},
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#20364F", "action": {"type": "message", "label": "ทำบัตรนักศึกษาใหม่", "text": "ดูทำบัตรใหม่"}},
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "margin": "md", "action": {"type": "message", "label": "ชำระค่าเทอม", "text": "ดูชำระค่าเทอม"}},
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "message", "label": "เทียบโอนผลการเรียน", "text": "ดูเทียบโอน"}}, 
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "message", "label": "สอบซ้อน", "text": "ดูสอบซ้อน"}},
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "message", "label": "รักษาสภาพนักศึกษา", "text": "ดูรักษาสภาพ"}},
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "margin": "md", "action": {"type": "message", "label": "ห้องพยาบาล", "text": "ดูห้องพยาบาล"}},
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "action": {"type": "message", "label": "ประกันอุบัติเหตุ", "text": "ดูเบิกประกัน"}},
-                        {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "action": {"type": "message", "label": "แจ้งของหาย", "text": "ดูแจ้งของหาย"}} 
-                    ]
-                }
+            flex_menu = {
+                "type": "carousel",
+                "contents": [
+                    # ---------------- การ์ดใบที่ 1 (หัวข้อ 1-5) ----------------
+                    {
+                        "type": "bubble",
+                        "body": {
+                            "type": "box", "layout": "vertical", "paddingAll": "0px",
+                            "contents": [
+                                {
+                                    "type": "image",
+                                    "url": f"{GITHUB_IMAGE_BASE}hero_academic_service.JPG",
+                                    "size": "full", "aspectRatio": "20:13", "aspectMode": "cover", "gravity": "center"
+                                },
+                                {
+                                    "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
+                                    "contents": [
+                                        {"type": "text", "text": "บริการนักศึกษา KPRU", "weight": "bold", "size": "lg", "color": "#111827", "align": "center"},
+                                        {"type": "separator", "margin": "md", "color": "#e0e0e0"},
+                                        {
+                                            "type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
+                                            "contents": [
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "สมัครเรียน", "text": "ดูสมัครเรียน"},
+                                                    "contents": [{"type": "text", "text": "🎓 สมัครเรียน", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                },
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "ทุนการศึกษา", "text": "ดูทุนการศึกษา"},
+                                                    "contents": [{"type": "text", "text": "🏦 ทุนการศึกษา / กยศ.", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                },
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "ทำบัตรนักศึกษา", "text": "ดูทำบัตรใหม่"},
+                                                    "contents": [{"type": "text", "text": "🪪 ทำบัตรนักศึกษาใหม่", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                },
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "ชำระค่าเทอม", "text": "ดูชำระค่าเทอม"},
+                                                    "contents": [{"type": "text", "text": "💸 ชำระค่าเทอม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                },
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "เทียบโอน", "text": "ดูเทียบโอน"},
+                                                    "contents": [{"type": "text", "text": "📑 เทียบโอนผลการเรียน", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    # ---------------- การ์ดใบที่ 2 (หัวข้อ 6-10) ----------------
+                    {
+                        "type": "bubble",
+                        "body": {
+                            "type": "box", "layout": "vertical", "paddingAll": "0px",
+                            "contents": [
+                                {
+                                    "type": "image",
+                                    "url": f"{GITHUB_IMAGE_BASE}hero_academic_service.JPG",
+                                    "size": "full", "aspectRatio": "20:13", "aspectMode": "cover", "gravity": "center"
+                                },
+                                {
+                                    "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
+                                    "contents": [
+                                        {"type": "text", "text": "บริการนักศึกษา KPRU", "weight": "bold", "size": "lg", "color": "#111827", "align": "center"},
+                                        {"type": "separator", "margin": "md", "color": "#e0e0e0"},
+                                        {
+                                            "type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
+                                            "contents": [
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "สอบซ้อน", "text": "ดูสอบซ้อน"},
+                                                    "contents": [{"type": "text", "text": "📝 สอบซ้อน", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                },
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "รักษาสภาพ", "text": "ดูรักษาสภาพ"},
+                                                    "contents": [{"type": "text", "text": "📈 รักษาสภาพนักศึกษา", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                },
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "ห้องพยาบาล", "text": "ดูห้องพยาบาล"},
+                                                    "contents": [{"type": "text", "text": "🏥 ห้องพยาบาล", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                },
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "เบิกประกัน", "text": "ดูเบิกประกัน"},
+                                                    "contents": [{"type": "text", "text": "🛡️ ประกันอุบัติเหตุ", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                },
+                                                {
+                                                    "type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px",
+                                                    "action": {"type": "message", "label": "แจ้งของหาย", "text": "ดูแจ้งของหาย"},
+                                                    "contents": [{"type": "text", "text": "📦 แจ้งของหาย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูบริการนักศึกษา", contents=FlexContainer.from_dict(flex_single))]))
+            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูบริการนักศึกษา", contents=FlexContainer.from_dict(flex_menu))]))
             return
 
         # 📌 แก้ไขส่วนแสดงผลของ "บริการนักศึกษา"
@@ -379,7 +451,7 @@ def handle_message(event):
                 finally:
                     if 'conn' in locals(): conn.close()
             return
-
+        
         # 4: ร้านค้า/จุดบริการ
         elif user_msg == "Menu > ร้านค้า/จุดบริการ":
             flex_shop = {
