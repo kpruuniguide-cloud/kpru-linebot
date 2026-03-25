@@ -1,6 +1,5 @@
 import os
 import pymysql
-import requests
 from flask import Flask, request, abort
 from linebot.v3.webhook import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
@@ -195,21 +194,6 @@ def callback():
     except InvalidSignatureError:
         abort(400)
     return 'OK', 200
-
-def send_to_google_sheet(user_id, topic, value):
-    # URL Web App ของเบิร์ด
-    SHEET_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyJwV_wS_4Irdq7QHCRXEsUjONmFl1aUQ14e7Qm2-tfUfvGKtVPGsja2UclfGxheakT/exec"
-    
-    payload = {
-        "userId": user_id,
-        "topic": topic,
-        "value": value
-    }
-    try:
-        # ส่งข้อมูลรูปแบบ JSON ไปที่ Web App
-        requests.post(SHEET_WEBHOOK_URL, json=payload)
-    except Exception as e:
-        print(f"Sheet Error: {e}")
 
 # ==========================================
 # 🟢 ระบบตอบกลับข้อความ (Message Handler)
@@ -443,214 +427,76 @@ def handle_message(event):
 # ================= 6 CONTACT & EMERGENCY (ติดต่อ/ประเมิน) =================
         elif user_msg == "Menu > ติดต่อ/ประเมิน":
             flex_menu = {
-                "type": "carousel",
-                "contents": [
-                    # การ์ดใบที่ 1: เบอร์โทรฉุกเฉิน
-                    {
-                        "type": "bubble", 
-                        "styles": {"header": {"backgroundColor": "#f44336"}},
-                        "header": {
-                            "type": "box", "layout": "vertical", "paddingAll": "lg",
-                            "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": "#ffffff", "weight": "bold", "size": "md", "align": "center"}]
-                        },
-                        "body": {
-                            "type": "box", "layout": "vertical", "spacing": "md", "paddingAll": "lg",
-                            "contents": [
-                                {
-                                    "type": "box", "layout": "horizontal",
-                                    "contents": [
-                                        {"type": "text", "text": "🚨 หัวหน้ารปภ.", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
-                                        {"type": "text", "text": "093-923-8526", "color": "#e30000", "size": "sm", "weight": "bold", "align": "end", "flex": 6}
-                                    ]
-                                },
-                                {"type": "separator"},
-                                {
-                                    "type": "box", "layout": "horizontal",
-                                    "contents": [
-                                        {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 4},
-                                        {"type": "text", "text": "055-706555 ต่อ 1360", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
-                                    ]
-                                },
-                                {"type": "separator"},
-                                {
-                                    "type": "box", "layout": "horizontal",
-                                    "contents": [
-                                        {"type": "text", "text": " ป้อมยาม(หลัง)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
-                                        {"type": "text", "text": "055-706555 ต่อ 7909", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
-                                    ]
-                                },
-                                {"type": "separator"},
-                                {
-                                    "type": "box", "layout": "horizontal",
-                                    "contents": [
-                                        {"type": "text", "text": " ป้อมยาม(หน้า)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
-                                        {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    # การ์ดใบที่ 2: ลิงก์และประเมิน
-                    {
-                        "type": "bubble", 
-                        "body": {
-                            "type": "box", "layout": "vertical", "paddingAll": "0px",
-                            "contents": [
-                                {"type": "image", "url": f"{GITHUB_IMAGE_BASE}phone.JPG", "size": "full", "aspectRatio": "1:1", "aspectMode": "cover"},
-                                {
-                                    "type": "box", "layout": "vertical", "position": "absolute", 
-                                    "offsetTop": "0px", "offsetBottom": "0px", "offsetStart": "0px", "offsetEnd": "0px",
-                                    "backgroundColor": "#ffffff80", # ✅ โปร่งใส 50% ตามรีเควส
-                                    "paddingAll": "lg", "justifyContent": "center",
-                                    "contents": [
-                                        {"type": "text", "text": "ข้อมูล & ข้อเสนอแนะ", "weight": "bold", "color": "#20364F", "align": "center", "margin": "sm"},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "height": "sm", "margin": "md", "action": {"type": "uri", "label": "🌐 เว็บไซต์มหาลัย", "uri": "https://www.kpru.ac.th"}},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "height": "sm", "margin": "sm", "action": {"type": "message", "label": "📝 แบบประเมิน", "text": "ทำแบบประเมิน"}}
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-            line_bot_api.reply_message(ReplyMessageRequest(
-                reply_token=event.reply_token, 
-                messages=[FlexMessage(alt_text="เมนูติดต่อ/ฉุกเฉิน", contents=FlexContainer.from_dict(flex_menu))]
-            ))
-            return
-        
-            # ================= 7 EVALUATION (แบบประเมิน) =================
-        elif user_msg == "ทำแบบประเมิน":
-            evaluation_flex = {
-                "type": "bubble",
-                "size": "giga",
+                "type": "bubble", 
+                "size": "mega", # ปรับขนาดให้ใหญ่ขึ้นเล็กน้อยเพื่อให้กดง่าย
+                "styles": {
+                    "header": {"backgroundColor": "#f44336"},
+                    "footer": {"separator": True}
+                },
+                "header": {
+                    "type": "box", "layout": "vertical", "paddingAll": "lg",
+                    "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": "#ffffff", "weight": "bold", "size": "md", "align": "center"}]
+                },
                 "body": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "paddingAll": "0px",
+                    "type": "box", "layout": "vertical", "spacing": "md", "paddingAll": "lg",
                     "contents": [
-                        # ส่วนหัว (Header Gradient)
                         {
-                            "type": "box", "layout": "vertical", "paddingAll": "xl",
-                            "background": {
-                                "type": "linearGradient", "angle": "90deg", "startColor": "#162660", "endColor": "#3D597B"
-                            },
+                            "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "แบบประเมิน KPRU UniGuide", "weight": "bold", "size": "xl", "color": "#ffffff", "align": "center"},
-                                {"type": "text", "text": "ช่วยเราพัฒนาบอทให้เก่งขึ้นหน่อยน้า", "size": "sm", "color": "#e0e0e0", "align": "center", "margin": "md"}
+                                {"type": "text", "text": "🚨 หัวหน้ารปภ.", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "093-923-8526", "color": "#e30000", "size": "sm", "weight": "bold", "align": "end", "flex": 6}
                             ]
                         },
-                        # ส่วนเนื้อหาคำถาม
+                        {"type": "separator"},
                         {
-                            "type": "box", "layout": "vertical", "paddingAll": "xl", "backgroundColor": "#E8ECEF",
+                            "type": "box", "layout": "horizontal",
                             "contents": [
-                                # คำถามข้อที่ 1
-                                {
-                                    "type": "box", "layout": "vertical", "backgroundColor": "#ffffff", "cornerRadius": "xl", "paddingAll": "lg",
-                                    "contents": [
-                                        {"type": "text", "text": "1. คุณคือใครเอ่ย?", "weight": "bold", "size": "md", "color": "#20364F"},
-                                        {
-                                            "type": "box", "layout": "horizontal", "margin": "md", "spacing": "sm",
-                                            "contents": [
-                                                {"type": "button", "style": "secondary", "color": "#F0F4F8", "action": {"type": "message", "label": "นักศึกษา", "text": "ประเมิน: นักศึกษา"}},
-                                                {"type": "button", "style": "secondary", "color": "#F0F4F8", "action": {"type": "message", "label": "บุคลากร", "text": "ประเมิน: บุคลากร"}},
-                                                {"type": "button", "style": "secondary", "color": "#F0F4F8", "action": {"type": "message", "label": "ทั่วไป", "text": "ประเมิน: บุคคลทั่วไป"}}
-                                            ]
-                                        }
-                                    ]
-                                },
-                                # คำถามข้อที่ 2
-                                {
-                                    "type": "box", "layout": "vertical", "backgroundColor": "#ffffff", "cornerRadius": "xl", "paddingAll": "lg", "margin": "xl",
-                                    "contents": [
-                                        {"type": "text", "text": "2. ให้คะแนนความพึงพอใจ", "weight": "bold", "size": "md", "color": "#20364F"},
-                                        {
-                                            "type": "box", "layout": "horizontal", "margin": "md", "spacing": "sm",
-                                            "contents": [
-                                                {"type": "button", "style": "primary", "color": "#4caf50", "action": {"type": "message", "label": "ดีมาก", "text": "คะแนน: 5"}},
-                                                {"type": "button", "style": "primary", "color": "#ff9800", "action": {"type": "message", "label": "พอใช้", "text": "คะแนน: 3"}},
-                                                {"type": "button", "style": "primary", "color": "#f44336", "action": {"type": "message", "label": "ปรับปรุง", "text": "คะแนน: 1"}}
-                                            ]
-                                        }
-                                    ]
-                                }
+                                {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 4},
+                                {"type": "text", "text": "055-706555 ต่อ 1360", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
-                        # ส่วนท้าย (Footer Gradient + Link)
+                        {"type": "separator"},
                         {
-                            "type": "box", "layout": "vertical", "paddingAll": "md",
-                            "background": {
-                                "type": "linearGradient", "angle": "90deg", "startColor": "#162660", "endColor": "#3D597B"
-                            },
+                            "type": "box", "layout": "horizontal",
                             "contents": [
-                                {
-                                    "type": "button", "style": "link", "color": "#ffffff",
-                                    "action": {
-                                        "type": "message", 
-                                        "label": "พิมพ์ข้อเสนอแนะ (คลิก)", 
-                                        "text": "ต้องการพิมพ์ข้อเสนอแนะ"
-                                    }
-                                }
+                                {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "055-706555 ต่อ 7909", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                             ]
+                        },
+                        {"type": "separator"},
+                        {
+                            "type": "box", "layout": "horizontal",
+                            "contents": [
+                                {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
+                            ]
+                        }
+                    ]
+                },
+                "footer": {
+                    "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
+                    "contents": [
+                        {
+                            "type": "button", "style": "primary", "color": "#20364F", "height": "sm",
+                            "action": {
+                                "type": "uri", "label": "🌐 เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"
+                            }
+                        },
+                        {
+                            "type": "button", "style": "secondary", "color": "#20364F", "height": "sm",
+                            "action": {
+                                "type": "uri", "label": "📝 ทำแบบประเมินบอท", 
+                                "uri": "https://forms.gle/GV6yWpDRYPu5Zino7" 
+                            }
                         }
                     ]
                 }
             }
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
-                messages=[FlexMessage(alt_text="แบบประเมิน KPRU UniGuide", contents=FlexContainer.from_dict(evaluation_flex))]
+                messages=[FlexMessage(alt_text="เมนูติดต่อ/ประเมิน", contents=FlexContainer.from_dict(flex_menu))]
             ))
             return
-        # ================= 8 HANDLE EVALUATION CLICKS (รับค่าประเมินและเสนอแนะ) =================
-        elif user_msg.startswith("ประเมิน:"):
-            role = user_msg.split(":")[1].strip() # ดึงคำว่า นักศึกษา/บุคลากร/บุคคลทั่วไป
-            user_id = event.source.user_id
-            
-            # ส่งไป Google Sheet
-            send_to_google_sheet(user_id, "กลุ่มผู้ใช้งาน", role)
-            
-            line_bot_api.reply_message(ReplyMessageRequest(
-                reply_token=event.reply_token, 
-                messages=[TextMessage(text=f"✅ บันทึกข้อมูลแล้วว่าคุณคือ '{role}'\nอย่าลืมให้คะแนนความพึงพอใจบอทในข้อ 2 ด้วยนะคะ!")]
-            ))
-            return
-
-        elif user_msg.startswith("คะแนน:"):
-            score = user_msg.split(":")[1].strip() # ดึงตัวเลขคะแนน 5/3/1
-            user_id = event.source.user_id
-            
-            # ส่งไป Google Sheet
-            send_to_google_sheet(user_id, "คะแนนความพึงพอใจ", score)
-            
-            line_bot_api.reply_message(ReplyMessageRequest(
-                reply_token=event.reply_token, 
-                messages=[TextMessage(text=f"💖 ขอบคุณสำหรับคะแนน {score} ดาวค่ะ!\nทุกความคิดเห็นจะถูกนำไปพัฒนา KPRU UniGuide ให้เก่งขึ้นแน่นอนค่ะ")]
-            ))
-            return
-
-        # เมื่อผู้ใช้กดปุ่ม "พิมพ์ข้อเสนอแนะ" บอทจะสอนวิธีพิมพ์
-        elif user_msg == "ต้องการพิมพ์ข้อเสนอแนะ":
-            line_bot_api.reply_message(ReplyMessageRequest(
-                reply_token=event.reply_token, 
-                messages=[TextMessage(text="💡 กรุณาพิมพ์ข้อความโดยขึ้นต้นด้วยคำว่า 'เสนอแนะ:' แล้วกดส่งได้เลยค่ะ\n\nตัวอย่าง:\nเสนอแนะ: อยากให้บอทมีเมนูค้นหาร้านอาหารเพิ่มครับ")]
-            ))
-            return
-
-        # ดักจับข้อความที่ขึ้นต้นด้วย "เสนอแนะ:"
-        elif user_msg.startswith("เสนอแนะ:"):
-            # ตัดคำว่า "เสนอแนะ:" ออก เพื่อเอาแค่ข้อความที่เขาพิมพ์มา
-            feedback_text = user_msg.split("เสนอแนะ:")[1].strip() 
-            user_id = event.source.user_id
-            
-            # ส่งข้อความไป Google Sheet
-            send_to_google_sheet(user_id, "ข้อเสนอแนะ", feedback_text)
-            
-            line_bot_api.reply_message(ReplyMessageRequest(
-                reply_token=event.reply_token, 
-                messages=[TextMessage(text="💌 ได้รับข้อเสนอแนะเรียบร้อยแล้วค่ะ!\nขอบคุณที่ช่วยพัฒนา KPRU UniGuide ให้เก่งขึ้นนะคะ")]
-            ))
-            return
-
 
 
 
