@@ -227,23 +227,26 @@ def handle_message(event):
             }
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="แผนที่", contents=FlexContainer.from_dict(flex_map))]))
             return
-
-# 2: สถานที่สำคัญ/จุดพักผ่อน
+# ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             flex_menu = {
                 "type": "bubble",
+                # ✅ สั่งให้ Body ไม่มี Padding เพื่อให้ภาพชิดขอบ (ไร้ขอบขาว)
                 "styles": {"body": {"paddingAll": "0px"}}, 
                 "body": {
                     "type": "box",
                     "layout": "vertical",
                     "contents": [
+                        # 1. ภาพพื้นหลัง (เช็คชื่อไฟล์ Landmark.JPG ใน GitHub ให้ตรงกันด้วยนะครับ)
                         {
                             "type": "image",
                             "url": f"{GITHUB_IMAGE_BASE}Landmark.JPG",
                             "size": "full",
                             "aspectRatio": "3:4", 
-                            "aspectMode": "cover"
+                            "aspectMode": "cover",
+                            "gravity": "center"
                         },
+                        # 2. กล่องเนื้อหาโปร่งใส 70% (#ffffffB3) แบบลอยทับภาพ
                         {
                             "type": "box",
                             "layout": "vertical",
@@ -252,19 +255,29 @@ def handle_message(event):
                             "offsetBottom": "10%",
                             "offsetStart": "8%",
                             "offsetEnd": "8%",
-                            # 📌 ปรับความโปร่งใสเป็น 70% ตามรีเควสครับ (#ffffffB3)
                             "backgroundColor": "#ffffffB3", 
                             "cornerRadius": "xl",
                             "paddingAll": "xl",
                             "contents": [
+                                # หัวข้อจัดวางกึ่งกลาง (align: center)
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
                                 
                                 {"type": "separator", "margin": "xl", "color": "#20364F1a"},
                                 
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "🏛️ สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "⛲ จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏸 ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                                # ปุ่มกดสีเดียวกันทั้งหมด (#20364F) พร้อม Emoji ที่เลือกไว้
+                                {
+                                    "type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", 
+                                    "action": {"type": "message", "label": "🏛️ สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}
+                                },
+                                {
+                                    "type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", 
+                                    "action": {"type": "message", "label": "⛲ จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}
+                                },
+                                {
+                                    "type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", 
+                                    "action": {"type": "message", "label": "🏸 ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}
+                                }
                             ]
                         }
                     ]
@@ -316,7 +329,7 @@ def handle_message(event):
                             "contents": [
                                 {
                                     "type": "image",
-                                    "url": f"{GITHUB_IMAGE_BASE}hero_academic_service.JPG",
+                                    "url": f"{GITHUB_IMAGE_BASE}service1.JPG",
                                     "size": "full", "aspectRatio": "20:13", "aspectMode": "cover", "gravity": "center"
                                 },
                                 {
@@ -367,7 +380,7 @@ def handle_message(event):
                             "contents": [
                                 {
                                     "type": "image",
-                                    "url": f"{GITHUB_IMAGE_BASE}hero_academic_service.JPG",
+                                    "url": f"{GITHUB_IMAGE_BASE}service3.JPG",
                                     "size": "full", "aspectRatio": "20:13", "aspectMode": "cover", "gravity": "center"
                                 },
                                 {
@@ -451,77 +464,303 @@ def handle_message(event):
                 finally:
                     if 'conn' in locals(): conn.close()
             return
-        
-        # 4: ร้านค้า/จุดบริการ
+    # ================= 4 SHOPS (ร้านค้าและจุดบริการ) =================
         elif user_msg == "Menu > ร้านค้า/จุดบริการ":
-            flex_shop = {
+            flex_menu = {
                 "type": "bubble",
-                "body": {"type": "box", "layout": "vertical", "contents": [
-                    {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "align": "center", "color": "#20364F"},
-                    {"type": "separator", "margin": "md", "color": "#E5E7EB"},
-                    {"type": "button", "style": "primary", "margin": "md", "color": "#20364F", "action": {"type": "message", "label": "ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
-                    {"type": "button", "style": "primary", "margin": "md", "color": "#3D597B", "action": {"type": "message", "label": "ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}},
-                    {"type": "button", "style": "primary", "margin": "md", "color": "#6084AB", "action": {"type": "message", "label": "ร้านทั้งหมด", "text": "ดูร้านทั้งหมด"}}
-                ]}
+                "styles": {"body": {"paddingAll": "0px"}}, 
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        # 1. ภาพพื้นหลัง
+                        {
+                            "type": "image",
+                            "url": f"{GITHUB_IMAGE_BASE}Shop1.JPG", 
+                            "size": "full",
+                            "aspectRatio": "3:4", 
+                            "aspectMode": "cover"
+                        },
+                        # 2. กล่องเนื้อหาโปร่งใส 70% (#ffffffB3)
+                        {
+                            "type": "box",
+                            "layout": "vertical",
+                            "position": "absolute",
+                            "offsetTop": "10%",
+                            "offsetBottom": "10%",
+                            "offsetStart": "8%",
+                            "offsetEnd": "8%",
+                            "backgroundColor": "#ffffffB3", 
+                            "cornerRadius": "xl",
+                            "paddingAll": "xl",
+                            "contents": [
+                                # หัวข้อจัดวางกึ่งกลาง
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
+                                
+                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
+                                
+                                # ปุ่มกด (สีเดียวกันทั้งหมด และใช้ Action ตามโค้ดเดิมของคุณเบิร์ด)
+                                {
+                                    "type": "button", 
+                                    "style": "primary", 
+                                    "height": "md", 
+                                    "color": "#20364F", 
+                                    "margin": "lg", 
+                                    "cornerRadius": "lg", 
+                                    "action": {"type": "message", "label": "☕ ร้านกาแฟ", "text": "ดูร้านกาแฟ"}
+                                },
+                                {
+                                    "type": "button", 
+                                    "style": "primary", 
+                                    "height": "md", 
+                                    "color": "#20364F", 
+                                    "margin": "md", 
+                                    "cornerRadius": "lg", 
+                                    "action": {"type": "message", "label": "🖨️ ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}
+                                },
+                                {
+                                    "type": "button", 
+                                    "style": "primary", 
+                                    "height": "md", 
+                                    "color": "#20364F", 
+                                    "margin": "md", 
+                                    "cornerRadius": "lg", 
+                                    "action": {"type": "message", "label": "🏪 ร้านทั้งหมด", "text": "ดูร้านทั้งหมด"}
+                                }
+                            ]
+                        }
+                    ]
+                }
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูร้านค้า", contents=FlexContainer.from_dict(flex_shop))]))
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[FlexMessage(alt_text="เมนูร้านค้าและบริการ", contents=FlexContainer.from_dict(flex_menu))]
+            ))
             return
 
+        # --- ส่วนดึงข้อมูลคงเดิมไว้เพื่อให้ทำงานร่วมกับระบบเดิมได้ ---
         elif user_msg in ["ดูร้านกาแฟ", "ดูร้านบริการ", "ดูร้านทั้งหมด"]:
              try:
                 conn = pymysql.connect(**DB_CONFIG)
                 with conn.cursor() as cursor:
-                    if "ร้านกาแฟ" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
-                    elif "ดูร้านบริการ" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'services'"
-                    else: sql = "SELECT * FROM locations WHERE location_type IN ('Cafe', 'services')"
+                    if "ร้านกาแฟ" in user_msg: 
+                        sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
+                    elif "ดูร้านบริการ" in user_msg: 
+                        sql = "SELECT * FROM locations WHERE location_type = 'services'"
+                    else: 
+                        sql = "SELECT * FROM locations WHERE location_type IN ('Cafe', 'services')"
+                    
                     cursor.execute(sql)
                     results = cursor.fetchall()
-                    if results: send_building_response(results)
+                    if results: 
+                        send_building_response(results)
              finally:
                 if 'conn' in locals(): conn.close()
              return
 
-        # 5: หอพัก
+       # ================= 5 DORMITORY (หอพัก) =================
         elif user_msg == "Menu > หอพัก":
-            flex_dorm = {
+            flex_menu = {
                 "type": "bubble",
-                "body": {"type": "box", "layout": "vertical", "contents": [
-                    {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "align": "center", "color": "#20364F"},
-                    {"type": "separator", "margin": "md", "color": "#E5E7EB"},
-                    {"type": "button", "style": "primary", "margin": "md", "color": "#20364F", "action": {"type": "message", "label": "หอพักหญิง", "text": "ดูหอพักหญิง"}},
-                    {"type": "button", "style": "primary", "margin": "md", "color": "#3D597B", "action": {"type": "message", "label": "หอพักชาย", "text": "ดูหอพักชาย"}},
-                    {"type": "button", "style": "primary", "margin": "md", "color": "#6084AB", "action": {"type": "message", "label": "หอพักบุคลากร/อาจารย์", "text": "ดูหอพักบุคลากร"}}
-                ]}
+                # ✅ ไร้ขอบขาว (Edge-to-Edge)
+                "styles": {"body": {"paddingAll": "0px"}}, 
+                "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                        # 1. ภาพพื้นหลัง (แนะนำให้ใช้ภาพหอพักใน ม. หรือภาพบรรยากาศที่พัก)
+                        {
+                            "type": "image",
+                            "url": f"{GITHUB_IMAGE_BASE}Dorm2.JPG", 
+                            "size": "full",
+                            "aspectRatio": "3:4", 
+                            "aspectMode": "cover",
+                            "gravity": "center"
+                        },
+                        # 2. กล่องเนื้อหาโปร่งใส 70% (#ffffffB3)
+                        {
+                            "type": "box",
+                            "layout": "vertical",
+                            "position": "absolute",
+                            "offsetTop": "10%",
+                            "offsetBottom": "10%",
+                            "offsetStart": "8%",
+                            "offsetEnd": "8%",
+                            "backgroundColor": "#ffffffB3", 
+                            "cornerRadius": "xl",
+                            "paddingAll": "xl",
+                            "contents": [
+                                # หัวข้อจัดวางกึ่งกลาง
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
+                                
+                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
+                                
+                                # ปุ่มกดสีเดียวกันทั้งหมด (#20364F) และใช้ Action ตามโค้ดเดิมของคุณเบิร์ด
+                                {
+                                    "type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", 
+                                    "action": {"type": "message", "label": "👩‍🎓 หอพักหญิง", "text": "ดูหอพักหญิง"}
+                                },
+                                {
+                                    "type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", 
+                                    "action": {"type": "message", "label": "👨‍🎓 หอพักชาย", "text": "ดูหอพักชาย"}
+                                },
+                                {
+                                    "type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", 
+                                    "action": {"type": "message", "label": "🏢 หอพักบุคลากร/อาจารย์", "text": "ดูหอพักบุคลากร"}
+                                }
+                            ]
+                        }
+                    ]
+                }
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูหอพัก", contents=FlexContainer.from_dict(flex_dorm))]))
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[FlexMessage(alt_text="เมนูหอพัก", contents=FlexContainer.from_dict(flex_menu))]
+            ))
             return
 
+        # --- ส่วนดึงข้อมูล Database คงเดิมตามโครงสร้างของคุณเบิร์ด ---
         elif user_msg in ["ดูหอพักหญิง", "ดูหอพักชาย", "ดูหอพักบุคลากร"]:
             try:
                 conn = pymysql.connect(**DB_CONFIG)
                 with conn.cursor() as cursor:
-                    if "หอพักหญิง" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%หญิง%'"
-                    elif "หอพักชาย" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%ชาย%'"
-                    else: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND (common_name LIKE '%บุคลากร%' OR common_name LIKE '%อาจารย์%')"
+                    if "หอพักหญิง" in user_msg: 
+                        sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%หญิง%'"
+                    elif "หอพักชาย" in user_msg: 
+                        sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%ชาย%'"
+                    else: 
+                        sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND (common_name LIKE '%บุคลากร%' OR common_name LIKE '%อาจารย์%')"
+                    
                     cursor.execute(sql)
                     results = cursor.fetchall()
-                    if results: send_building_response(results)
+                    if results: 
+                        send_building_response(results)
             finally:
                 if 'conn' in locals(): conn.close()
             return
-
+        
         # 6: ติดต่อ/ประเมิน
+        # ================= 6 CONTACT & EMERGENCY (ติดต่อ/ประเมิน) =================
         elif user_msg == "Menu > ติดต่อ/ประเมิน":
-            contact_flex = {
-                "type": "bubble",
-                "body": {"type": "box", "layout": "vertical", "spacing": "md", "contents": [
-                    {"type": "text", "text": "ติดต่อสอบถาม / ฉุกเฉิน", "weight": "bold", "size": "xl", "align": "center", "color": "#20364F"},
-                    {"type": "button", "style": "primary", "height": "sm", "color": "#3D597B", "action": {"type": "uri", "label": "หัวหน้า รปภ.", "uri": "tel:0939238526"}},
-                    {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "action": {"type": "uri", "label": "เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"}},
-                    {"type": "button", "style": "primary", "height": "sm", "color": "#6084AB", "action": {"type": "uri", "label": "ประเมินความพึงพอใจ", "uri": "https://forms.gle/your_link"}}
-                ]}
+            flex_menu = {
+                "type": "carousel",
+                "contents": [
+                    # การ์ดใบที่ 1: เบอร์โทรฉุกเฉิน (เน้นโทรออกทันที)
+                    {
+                        "type": "bubble",
+                        "size": "medium",
+                        "styles": {"header": {"backgroundColor": "#f44336"}},
+                        "header": {
+                            "type": "box", "layout": "vertical", "paddingAll": "lg",
+                            "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": "#ffffff", "weight": "bold", "size": "md", "align": "center"}]
+                        },
+                        "body": {
+                            "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
+                            "contents": [
+                                {"type": "button", "style": "primary", "color": "#20364F", "height": "sm", "action": {"type": "uri", "label": "🚨 หัวหน้ารปภ.", "uri": "tel:0939238526"}},
+                                {"type": "button", "style": "primary", "color": "#20364F", "height": "sm", "action": {"type": "uri", "label": "🏥 ห้องพยาบาล (กพ.)", "uri": "tel:055706555,1360"}},
+                                {"type": "separator", "margin": "md"},
+                                {"type": "button", "style": "secondary", "height": "sm", "action": {"type": "uri", "label": "👮 ป้อมยาม (หลังสถาบัน)", "uri": "tel:055706555,7909"}},
+                                {"type": "button", "style": "secondary", "height": "sm", "action": {"type": "uri", "label": "👮 ป้อมยาม (น้ำเพชร)", "uri": "tel:055706555,7910"}}
+                            ]
+                        }
+                    },
+                    # การ์ดใบที่ 2: ลิงก์และประเมิน (ดีไซน์ Glass เหมือนกลุ่มอื่น)
+                    {
+                        "type": "bubble",
+                        "size": "medium",
+                        "styles": {"body": {"paddingAll": "0px"}},
+                        "body": {
+                            "type": "box", "layout": "vertical",
+                            "contents": [
+                                {"type": "image", "url": f"{GITHUB_IMAGE_BASE}phone.JPG", "size": "full", "aspectRatio": "1:1", "aspectMode": "cover"},
+                                {
+                                    "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "0px", "offsetBottom": "0px", "offsetStart": "0px", "offsetEnd": "0px",
+                                    "backgroundColor": "#ffffffB3", "paddingAll": "lg", "justifyContent": "center",
+                                    "contents": [
+                                        {"type": "text", "text": "ข้อมูล & ข้อเสนอแนะ", "weight": "bold", "color": "#20364F", "align": "center", "margin": "sm"},
+                                        {"type": "button", "style": "primary", "color": "#3D597B", "height": "sm", "margin": "md", "action": {"type": "uri", "label": "🌐 เว็บไซต์มหาลัย", "uri": "https://www.kpru.ac.th"}},
+                                        {"type": "button", "style": "primary", "color": "#162660", "height": "sm", "margin": "sm", "action": {"type": "message", "label": "📝 แบบประเมินบอท", "text": "ทำแบบประเมิน"}}
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ติดต่อ", contents=FlexContainer.from_dict(contact_flex))]))
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[FlexMessage(alt_text="เมนูติดต่อ/ฉุกเฉิน", contents=FlexContainer.from_dict(flex_menu))]
+            ))
+            return
+
+        # ================= EVALUATION FORM (แบบประเมิน) =================
+        elif user_msg == "ทำแบบประเมิน":
+            evaluation_flex = {
+                "type": "bubble", "size": "giga",
+                "body": {
+                    "type": "box", "layout": "vertical", "paddingAll": "0px",
+                    "contents": [
+                        # ส่วนหัวไล่เฉดสีสวยๆ
+                        {
+                            "type": "box", "layout": "vertical", "paddingAll": "xl",
+                            "background": {"type": "linearGradient", "angle": "90deg", "startColor": "#162660", "endColor": "#3D597B"},
+                            "contents": [
+                                {"type": "text", "text": "📝 แบบประเมิน KPRU UniGuide", "weight": "bold", "size": "xl", "color": "#ffffff", "align": "center"},
+                                {"type": "text", "text": "ช่วยเราพัฒนาบอทให้เก่งขึ้นหน่อยนะ", "size": "sm", "color": "#e0e0e0", "align": "center", "margin": "md"}
+                            ]
+                        },
+                        # กล่องคำถาม
+                        {
+                            "type": "box", "layout": "vertical", "paddingAll": "xl", "backgroundColor": "#E8ECEF",
+                            "contents": [
+                                # ข้อ 1
+                                {
+                                    "type": "box", "layout": "vertical", "backgroundColor": "#ffffff", "cornerRadius": "xl", "paddingAll": "lg",
+                                    "contents": [
+                                        {"type": "text", "text": "1. คุณคือใครเอ่ย?", "weight": "bold", "size": "md", "color": "#20364F"},
+                                        {"type": "box", "layout": "horizontal", "margin": "md", "spacing": "sm",
+                                            "contents": [
+                                                {"type": "button", "style": "secondary", "color": "#F0F4F8", "action": {"type": "message", "label": "นักศึกษา", "text": "ประเมิน: นักศึกษา"}},
+                                                {"type": "button", "style": "secondary", "color": "#F0F4F8", "action": {"type": "message", "label": "บุคลากร", "text": "ประเมิน: บุคลากร"}},
+                                                {"type": "button", "style": "secondary", "color": "#F0F4F8", "action": {"type": "message", "label": "ทั่วไป", "text": "ประเมิน: บุคคลทั่วไป"}}
+                                            ]
+                                        }
+                                    ]
+                                },
+                                # ข้อ 2
+                                {
+                                    "type": "box", "layout": "vertical", "backgroundColor": "#ffffff", "cornerRadius": "xl", "paddingAll": "lg", "margin": "xl",
+                                    "contents": [
+                                        {"type": "text", "text": "2. ให้คะแนนความพึงพอใจ", "weight": "bold", "size": "md", "color": "#20364F"},
+                                        {"type": "box", "layout": "horizontal", "margin": "md", "spacing": "sm",
+                                            "contents": [
+                                                {"type": "button", "style": "primary", "color": "#4caf50", "action": {"type": "message", "label": "ดีมาก", "text": "คะแนน: 5"}},
+                                                {"type": "button", "style": "primary", "color": "#ff9800", "action": {"type": "message", "label": "พอใช้", "text": "คะแนน: 3"}},
+                                                {"type": "button", "style": "primary", "color": "#f44336", "action": {"type": "message", "label": "ปรับปรุง", "text": "คะแนน: 1"}}
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        # ส่วนท้ายสำหรับข้อเสนอแนะเพิ่มเติม (Google Form)
+                        {
+                            "type": "box", "layout": "vertical", "paddingAll": "md",
+                            "background": {"type": "linearGradient", "angle": "90deg", "startColor": "#162660", "endColor": "#3D597B"},
+                            "contents": [
+                                {"type": "button", "style": "link", "color": "#ffffff", "action": {"type": "uri", "label": "✍️ พิมพ์ข้อเสนอแนะเพิ่มเติม (คลิก)", "uri": "https://forms.gle/YOUR_GOOGLE_FORM_LINK"}}
+                            ]
+                        }
+                    ]
+                }
+            }
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[FlexMessage(alt_text="แบบประเมินความพึงพอใจ", contents=FlexContainer.from_dict(evaluation_flex))]
+            ))
             return
 
         # 📌 ค้นหาทั่วไป (พิมพ์ข้อความเข้ามาเอง)
