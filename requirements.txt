@@ -4,3 +4,4 @@ pymysql
 cryptography
 gunicorn
 httpx
+requests
