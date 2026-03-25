@@ -230,37 +230,38 @@ def handle_message(event):
 
         # 2: สถานที่สำคัญ/จุดพักผ่อน
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
+            # 💡 แก้ไขโครงสร้างใหม่ทั้งหมด: ใช้ "background" ในการใส่ภาพ 💡
             flex_menu = {
                 "type": "bubble",
-                "styles": {"body": {"paddingAll": "0px"}},
+                "styles": {"body": {"paddingAll": "0px"}}, # สั่งให้ตัวการ์ดหลักไม่มี Padding (เพื่อไม่ให้มีขอบขาว)
                 "body": {
                     "type": "box",
                     "layout": "vertical",
+                    # 👇 หัวใจสำคัญ: ใส่ภาพเป็นพื้นหลัง (background) ให้กับกล่องหลัก 👇
+                    "background": {
+                        "type": "image",
+                        "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.JPG", # ใช้ URL ภาพเดิมของคุณ
+                        "aspectMode": "cover",
+                        "gravity": "center"
+                    },
                     "contents": [
-                        {
-                            "type": "image",
-                            "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.JPG", 
-                            "size": "full",
-                            "aspectRatio": "20:13", 
-                            "aspectMode": "cover",
-                            "gravity": "center"
-                        },
+                        # 👇 1. ตัวเว้นระยะ (spacer) เพื่อดัน content ลงมาด้านล่างนิดนึง 💡
+                        { "type": "spacer", "size": "xl" }, # <== ปรับขนาด (xs, sm, md, lg, xl, xxl) เพื่อเว้นพื้นที่ด้านบน
+
+                        # 👇 2. กล่อง content (Rounded translucent card) ที่ต้องการวางทับภาพ 💡
                         {
                             "type": "box",
                             "layout": "vertical",
-                            "position": "absolute", 
-                            "offsetTop": "25%", 
-                            "offsetBottom": "0px",
-                            "offsetStart": "0px",
-                            "offsetEnd": "0px",
-                            "backgroundColor": "#ffffffcc", 
-                            "cornerRadius": "xl", 
-                            "paddingAll": "xl", 
-                            "spacing": "md", 
+                            "backgroundColor": "#ffffffcc", # สีขาวโปร่งแสง (Translucent)
+                            "cornerRadius": "xl", # ลบมุมกล่องเนื้อหา
+                            "paddingAll": "xl",
+                            "spacing": "md",
+                            "margin": "xl", # ดันกล่องเนื้อหาเข้ามาจากขอบการ์ดหลักเล็กน้อยเพื่อความสวยงาม
                             "contents": [
+                                # Same content as before (texts, separator, buttons)
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#20364F", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
-                                {"type": "separator", "margin": "xl", "color": "#20364F1a"}, 
+                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
                                 {"type": "button", "style": "primary", "height": "md", "color": "#162660", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
                                 {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
                                 {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
@@ -271,25 +272,6 @@ def handle_message(event):
             }
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญ", contents=FlexContainer.from_dict(flex_menu))]))
             return
-
-        elif user_msg in ["ดูสถานที่สำคัญ", "ดูจุดพักผ่อน", "ดูที่ออกกำลังกาย"]:
-            try:
-                conn = pymysql.connect(**DB_CONFIG)
-                with conn.cursor() as cursor:
-                    if "สถานที่สำคัญ" in user_msg:
-                        sql = "SELECT * FROM locations WHERE location_id IN (13, 14, 26, 28, 5)"
-                    elif "จุดพักผ่อน" in user_msg:
-                        sql = "SELECT * FROM locations WHERE location_id IN (56, 60, 50)"
-                    else:
-                        sql = "SELECT * FROM locations WHERE location_type = 'Exercise'"
-                    cursor.execute(sql)
-                    results = cursor.fetchall()
-                    if results: send_building_response(results)
-                    else: line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ยังไม่มีข้อมูลในระบบ")]))
-            finally:
-                if 'conn' in locals(): conn.close()
-            return
-
         # 3: ค่าเทอม/สอบ/ทุน
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
             flex_single = {
