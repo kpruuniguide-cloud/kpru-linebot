@@ -237,7 +237,7 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Landmark.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            # 📌 ลบ backgroundColor ออกแล้ว กล่องจะโปร่งใส 100%
+                            "backgroundColor": "#ffffff80",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
@@ -277,7 +277,7 @@ def handle_message(event):
                     {
                         "type": "bubble",
                         # 📌 จุดสังเกต: เช็คไฟล์ service1.JPG ใน GitHub ว่านามสกุลตัวพิมพ์ใหญ่หรือเล็ก
-                        "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}service1.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
+                        "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services1.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
@@ -299,7 +299,7 @@ def handle_message(event):
                     {
                         "type": "bubble",
                         # 📌 จุดสังเกต: เช็คไฟล์ service3.JPG ใน GitHub เช่นกันครับ
-                        "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}service3.jpg", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
+                        "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services3.jpg", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
@@ -352,7 +352,7 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Shop1.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            # 📌 โปร่งใส 100%
+                            "backgroundColor": "#ffffff80",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
@@ -393,15 +393,15 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Dorm2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            # 📌 โปร่งใส 100%
+                            "backgroundColor": "#ffffff80",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#20364F1a"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "👩‍🎓 หอพักหญิง", "text": "ดูหอพักหญิง"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "👨‍🎓 หอพักชาย", "text": "ดูหอพักชาย"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏢 หอพักบุคลากร/อาจารย์", "text": "ดูหอพักบุคลากร"}}
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักหญิง", "text": "ดูหอพักหญิง"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักชาย", "text": "ดูหอพักชาย"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักบุคลากร/อาจารย์", "text": "ดูหอพักบุคลากร"}}
                             ]
                         }
                     ]
@@ -429,9 +429,10 @@ def handle_message(event):
             flex_menu = {
                 "type": "carousel",
                 "contents": [
-                    # การ์ดใบที่ 1: เบอร์โทรฉุกเฉิน (เปลี่ยนเป็นแบบข้อความ Text ให้อ่านง่ายและใส่เบอร์ต่อได้)
+                    # การ์ดใบที่ 1: เบอร์โทรฉุกเฉิน
                     {
-                        "type": "bubble", "size": "medium",
+                        "type": "bubble", 
+                        "size": "medium",
                         "styles": {"header": {"backgroundColor": "#f44336"}},
                         "header": {
                             "type": "box", "layout": "vertical", "paddingAll": "lg",
@@ -440,7 +441,6 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "spacing": "md", "paddingAll": "lg",
                             "contents": [
-                                # หัวหน้ารปภ.
                                 {
                                     "type": "box", "layout": "horizontal",
                                     "contents": [
@@ -449,45 +449,45 @@ def handle_message(event):
                                     ]
                                 },
                                 {"type": "separator"},
-                                # ห้องพยาบาล
                                 {
                                     "type": "box", "layout": "horizontal",
                                     "contents": [
                                         {"type": "text", "text": "🏥 พยาบาล", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 4},
-                                        {"type": "text", "text": "055-706-555 ต่อ 1360", "color": "#666666", "size": "xs", "align": "end", "flex": 7, "wrap": True}
+                                        {"type": "text", "text": "ต่อ 1360", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                                     ]
                                 },
                                 {"type": "separator"},
-                                # ป้อมยาม 1
                                 {
                                     "type": "box", "layout": "horizontal",
                                     "contents": [
-                                        {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
-                                        {"type": "text", "text": "055-706-555 ต่อ 7909", "color": "#666666", "size": "xs", "align": "end", "flex": 7, "wrap": True}
+                                        {"type": "text", "text": " ป้อมยาม(หลัง)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
+                                        {"type": "text", "text": "ต่อ 7909", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                                     ]
                                 },
                                 {"type": "separator"},
-                                # ป้อมยาม 2
                                 {
                                     "type": "box", "layout": "horizontal",
                                     "contents": [
-                                        {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
-                                        {"type": "text", "text": "055-706-555 ต่อ 7910", "color": "#666666", "size": "xs", "align": "end", "flex": 7, "wrap": True}
+                                        {"type": "text", "text": " ป้อมยาม(หน้า)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
+                                        {"type": "text", "text": "ต่อ 7910", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                                     ]
                                 }
                             ]
                         }
                     },
-                    # การ์ดใบที่ 2: ลิงก์และประเมิน (โปร่งใส 100% ตามที่ปรับไว้)
+                    # การ์ดใบที่ 2: ลิงก์และประเมิน
                     {
-                        "type": "bubble", "size": "medium",
+                        "type": "bubble", 
+                        "size": "medium",
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "0px",
                             "contents": [
                                 {"type": "image", "url": f"{GITHUB_IMAGE_BASE}phone.JPG", "size": "full", "aspectRatio": "1:1", "aspectMode": "cover"},
                                 {
-                                    "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "0px", "offsetBottom": "0px", "offsetStart": "0px", "offsetEnd": "0px",
-                                    "backgroundColor": "#ffffff80", "paddingAll": "lg", "justifyContent": "center",
+                                    "type": "box", "layout": "vertical", "position": "absolute", 
+                                    "offsetTop": "0px", "offsetBottom": "0px", "offsetStart": "0px", "offsetEnd": "0px",
+                                    "backgroundColor": "#ffffff80", # ✅ โปร่งใส 50% ตามรีเควส
+                                    "paddingAll": "lg", "justifyContent": "center",
                                     "contents": [
                                         {"type": "text", "text": "ข้อมูล & ข้อเสนอแนะ", "weight": "bold", "color": "#20364F", "align": "center", "margin": "sm"},
                                         {"type": "button", "style": "primary", "color": "#3D597B", "height": "sm", "margin": "md", "action": {"type": "uri", "label": "🌐 เว็บไซต์มหาลัย", "uri": "https://www.kpru.ac.th"}},
@@ -499,9 +499,11 @@ def handle_message(event):
                     }
                 ]
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูติดต่อ/ฉุกเฉิน", contents=FlexContainer.from_dict(flex_menu))]))
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[FlexMessage(alt_text="เมนูติดต่อ/ฉุกเฉิน", contents=FlexContainer.from_dict(flex_menu))]
+            ))
             return
-
         # 📌 ค้นหาทั่วไป (พิมพ์ข้อความเข้ามาเอง)
         service = get_service_data(user_msg)
         if service:
