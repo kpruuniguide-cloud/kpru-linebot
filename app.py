@@ -37,7 +37,7 @@ def get_building_data(keyword):
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
-            # 1. ดึงข้อมูลแบบกว้างๆ ออกมาก่อน
+            # 1. ค้นหาแบบกว้างๆ ออกมาก่อน
             sql = "SELECT * FROM locations WHERE building_no = %s OR common_name LIKE %s OR official_name LIKE %s"
             cursor.execute(sql, (keyword, f"%{keyword}%", f"%{keyword}%"))
             results = cursor.fetchall()
@@ -45,10 +45,10 @@ def get_building_data(keyword):
             if not results:
                 return None
                 
-            # 2. 📌 ตัวกรองความแม่นยำ (เพื่อคัดแยก "ตึก 1" ออกจาก "ตึก 11, 12, 13")
+            # 📌 2. ตัวกรองความแม่นยำ (ป้องกันตึก 14, 11, 12 มาแย่งซีน ตึก 1)
             exact_matches = []
             for row in results:
-                # กันเหนียวเผื่อ common_name เป็นค่าว่าง (None)
+                # กันเหนียวเผื่อ common_name เป็นค่าว่าง
                 common_names_str = str(row.get('common_name') or '')
                 aliases = [x.strip() for x in common_names_str.split(',')]
                 
@@ -108,7 +108,7 @@ def create_building_flex(data):
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
             "size": "sm", 
-            "color": "#E01B22", # ใส่สีแดงเข้มให้เลขอาคารเด่นขึ้นมานิดนึง
+            "color": "#162660", 
             "weight": "bold"
         })
         
@@ -228,7 +228,7 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="แผนที่", contents=FlexContainer.from_dict(flex_map))]))
             return
 
-     # 2: สถานที่สำคัญ/จุดพักผ่อน
+# 2: สถานที่สำคัญ/จุดพักผ่อน
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             flex_menu = {
                 "type": "bubble",
@@ -237,6 +237,7 @@ def handle_message(event):
                     "layout": "vertical",
                     "paddingAll": "0px",
                     "contents": [
+                        # 1. ภาพพื้นหลัง (ยังใช้รูปเดิม แต่จะโชว์ส่วนบนชัดขึ้น)
                         {
                             "type": "image",
                             "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.JPG",
@@ -244,24 +245,37 @@ def handle_message(event):
                             "aspectRatio": "3:4", 
                             "aspectMode": "cover"
                         },
+                        # 2. กล่องเนื้อหา (ออกแบบสไตล์ Bottom Sheet ตามภาพอ้างอิง)
                         {
                             "type": "box",
                             "layout": "vertical",
                             "position": "absolute",
-                            "offsetTop": "10%",
-                            "offsetBottom": "10%",
-                            "offsetStart": "8%",
-                            "offsetEnd": "8%",
-                            "backgroundColor": "#ffffffcc", 
+                            # 📌 ลบ offsetTop ออก และใช้ offsetBottom เพื่อกดกล่องลงไปติดขอบล่าง
+                            "offsetBottom": "4%",
+                            "offsetStart": "5%",
+                            "offsetEnd": "5%",
+                            "backgroundColor": "#ffffffE6", # 📌 สีขาวโปร่งแสง 90% ดูคล้ายกระจก
                             "cornerRadius": "xl",
                             "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#20364F", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
-                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#162660", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                                # Header Text
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xs", "color": "#162660", "weight": "bold"},
+                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#111827", "wrap": True, "margin": "sm"},
+                                # 📌 เพิ่มข้อความรายละเอียดให้ดูเหมือนแอปจริงๆ
+                                {"type": "text", "text": "เลือกหมวดหมู่สถานที่ที่คุณต้องการค้นหา หรือนำทางภายในมหาวิทยาลัยราชภัฏกำแพงเพชร", "size": "sm", "color": "#6B7280", "wrap": True, "margin": "md"},
+                                
+                                # กล่องรวมปุ่มกด (จัดระยะให้ชิดกันสวยงามขึ้น)
+                                {
+                                    "type": "box",
+                                    "layout": "vertical",
+                                    "margin": "lg",
+                                    "spacing": "sm",
+                                    "contents": [
+                                        {"type": "button", "style": "primary", "color": "#162660", "action": {"type": "message", "label": "🏛️ สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
+                                        {"type": "button", "style": "primary", "color": "#20364F", "action": {"type": "message", "label": "🌳 จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
+                                        {"type": "button", "style": "primary", "color": "#3D597B", "action": {"type": "message", "label": "🏃 ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                                    ]
+                                }
                             ]
                         }
                     ]
@@ -271,6 +285,7 @@ def handle_message(event):
                 reply_token=event.reply_token, 
                 messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญ", contents=FlexContainer.from_dict(flex_menu))]
             ))
+            return
 
         elif user_msg in ["ดูสถานที่สำคัญ", "ดูจุดพักผ่อน", "ดูที่ออกกำลังกาย"]:
             try:
