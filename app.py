@@ -349,7 +349,7 @@ def handle_message(event):
                 "body": {
                     "type": "box", "layout": "vertical", "paddingAll": "0px",
                     "contents": [
-                        {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Shop1.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover"},
+                        {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Shop2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
                             "backgroundColor": "#ffffff80",
@@ -432,7 +432,6 @@ def handle_message(event):
                     # การ์ดใบที่ 1: เบอร์โทรฉุกเฉิน
                     {
                         "type": "bubble", 
-                        "size": "medium",
                         "styles": {"header": {"backgroundColor": "#f44336"}},
                         "header": {
                             "type": "box", "layout": "vertical", "paddingAll": "lg",
@@ -478,7 +477,6 @@ def handle_message(event):
                     # การ์ดใบที่ 2: ลิงก์และประเมิน
                     {
                         "type": "bubble", 
-                        "size": "medium",
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "0px",
                             "contents": [
@@ -504,6 +502,10 @@ def handle_message(event):
                 messages=[FlexMessage(alt_text="เมนูติดต่อ/ฉุกเฉิน", contents=FlexContainer.from_dict(flex_menu))]
             ))
             return
+
+
+
+
         # 📌 ค้นหาทั่วไป (พิมพ์ข้อความเข้ามาเอง)
         service = get_service_data(user_msg)
         if service:
