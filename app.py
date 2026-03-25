@@ -240,7 +240,7 @@ def handle_message(event):
                         # 1. ภาพพื้นหลัง (ยังใช้รูปเดิม แต่จะโชว์ส่วนบนชัดขึ้น)
                         {
                             "type": "image",
-                            "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.JPG",
+                            "url": f"{GITHUB_IMAGE_BASE}Landmark.JPG",
                             "size": "full",
                             "aspectRatio": "3:4", 
                             "aspectMode": "cover"
