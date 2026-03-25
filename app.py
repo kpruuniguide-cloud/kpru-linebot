@@ -229,62 +229,49 @@ def handle_message(event):
             return
 
         # 2: สถานที่สำคัญ/จุดพักผ่อน
-        # โค้ดดักจับเมื่อผู้ใช้กดปุ่มที่ 6 (ติดต่อและประเมิน)
-        elif user_msg == "Menu > ติดต่อและประเมิน":
-            # เอาโครงสร้าง JSON ที่เราคุยกันมาแปลงเป็น Dictionary ใน Python
-            flex_evaluation = {
-                "type": "bubble",
-                "size": "giga",
-                "header": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                        {"type": "text", "text": "รีวิวให้หน่อยน้าา 🥺", "weight": "bold", "size": "xl", "color": "#162660", "align": "center"},
-                        {"type": "text", "text": "บอทแนะนำตึกเรียนของเราเวิร์คไหม?", "size": "sm", "color": "#3D597B", "align": "center", "margin": "sm"}
-                    ],
-                    "paddingAll": "xl"
-                },
-                "body": {
-                    "type": "box",
-                    "layout": "vertical",
-                    "contents": [
-                        {"type": "text", "text": "กดเลือกคะแนนได้เลย 👇", "align": "center", "color": "#aaaaaa", "size": "xs", "margin": "md"},
-                        {
-                            "type": "box",
-                            "layout": "horizontal",
-                            "margin": "lg",
-                            "spacing": "sm",
-                            "contents": [
-                                {"type": "button", "style": "secondary", "color": "#e8f5e9", "action": {"type": "message", "label": "🤩 ดีเริ่ด!", "text": "#รีวิว 5 ดาว"}},
-                                {"type": "button", "style": "secondary", "color": "#fff8e1", "action": {"type": "message", "label": "🤔 เฉยๆ", "text": "#รีวิว 3 ดาว"}},
-                                {"type": "button", "style": "secondary", "color": "#ffebee", "action": {"type": "message", "label": "😭 ต้องแก้", "text": "#รีวิว 1 ดาว"}}
-                            ]
+        elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
+                # 💡 แก้ไขโครงสร้างใหม่ทั้งหมด: ใช้ "background" ในการใส่ภาพ 💡
+                flex_menu = {
+                    "type": "bubble",
+                    "styles": {"body": {"paddingAll": "0px"}}, # สั่งให้ตัวการ์ดหลักไม่มี Padding (เพื่อไม่ให้มีขอบขาว)
+                    "body": {
+                        "type": "box",
+                        "layout": "vertical",
+                        # 👇 หัวใจสำคัญ: ใส่ภาพเป็นพื้นหลัง (background) ให้กับกล่องหลัก 👇
+                        "background": {
+                            "type": "image",
+                            "url": f"{GITHUB_IMAGE_BASE}hero_Landmark.JPG", # ใช้ URL ภาพเดิมของคุณ
+                            "aspectMode": "cover",
+                            "gravity": "center"
                         },
-                        {"type": "separator", "margin": "xl"},
-                        {
-                            "type": "button",
-                            "style": "link",
-                            "height": "sm",
-                            "action": {
-                                "type": "uri",
-                                "label": "📝 พิมพ์ข้อเสนอแนะเพิ่มเติมคลิก",
-                                "uri": "https://forms.gle/ใส่ลิงก์ฟอร์มของคุณตรงนี้นะครับ" 
-                            },
-                            "color": "#162660",
-                            "margin": "lg"
-                        }
-                    ]
+                        "contents": [
+                            # 👇 1. ตัวเว้นระยะ (spacer) เพื่อดัน content ลงมาด้านล่างนิดนึง 💡
+                            { "type": "spacer", "size": "xl" }, # <== ปรับขนาด (xs, sm, md, lg, xl, xxl) เพื่อเว้นพื้นที่ด้านบน
+
+                            # 👇 2. กล่อง content (Rounded translucent card) ที่ต้องการวางทับภาพ 💡
+                            {
+                                "type": "box",
+                                "layout": "vertical",
+                                "backgroundColor": "#ffffffcc", # สีขาวโปร่งแสง (Translucent)
+                                "cornerRadius": "xl", # ลบมุมกล่องเนื้อหา
+                                "paddingAll": "xl",
+                                "spacing": "md",
+                                "margin": "xl", # ดันกล่องเนื้อหาเข้ามาจากขอบการ์ดหลักเล็กน้อยเพื่อความสวยงาม
+                                "contents": [
+                                    # Same content as before (texts, separator, buttons)
+                                    {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#20364F", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                    {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
+                                    {"type": "separator", "margin": "xl", "color": "#20364F1a"},
+                                    {"type": "button", "style": "primary", "height": "md", "color": "#162660", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
+                                    {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
+                                    {"type": "button", "style": "primary", "height": "md", "color": "#3D597B", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                                ]
+                            }
+                        ]
+                    }
                 }
-            }
-            
-            # สั่งให้บอทส่ง Flex Message ตัวนี้กลับไป
-            line_bot_api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token, 
-                    messages=[FlexMessage(alt_text="แบบประเมินการใช้งาน", contents=FlexContainer.from_dict(flex_evaluation))]
-                )
-            )
-            return
+                line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูสถานที่สำคัญ", contents=FlexContainer.from_dict(flex_menu))]))
+                return
 
         elif user_msg in ["ดูสถานที่สำคัญ", "ดูจุดพักผ่อน", "ดูที่ออกกำลังกาย"]:
             try:
