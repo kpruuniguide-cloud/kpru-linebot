@@ -503,20 +503,30 @@ def handle_message(event):
 
 
 
-        # 📌 ค้นหาทั่วไป (พิมพ์ข้อความเข้ามาเอง)
-        service = get_service_data(user_msg)
-        if service:
-            b = get_building_by_id(service.get('location_id'))
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict(create_service_flex(service, b)))]))
-            return
-            
+       # ==========================================
+        # 📌 แก้ไขลำดับการค้นหาใหม่ (Location First)
+        # ==========================================
+        
+        # 1. ค้นหาสถานที่ก่อน (เช่น พิมพ์ "ตึก 1" ต้องเจอสถานที่ก่อน)
         buildings = get_building_data(user_msg)
         if buildings:
             send_building_response(buildings)
             return
 
-        # กรณีหาอะไรไม่เจอเลย
-        line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' ค่ะ 🙏 ลองพิมพ์ชื่อสถานที่ หรือบริการที่ต้องการอีกครั้งนะคะ")]))
+        # 2. ถ้าไม่เจอสถานที่ ค่อยไปค้นหาบริการ (Services)
+        service = get_service_data(user_msg)
+        if service:
+            b = get_building_by_id(service.get('location_id'))
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict(create_service_flex(service, b)))]
+            ))
+            return
 
+        # 3. กรณีหาอะไรไม่เจอเลย
+        line_bot_api.reply_message(ReplyMessageRequest(
+            reply_token=event.reply_token, 
+            messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' ค่ะ 🙏 ลองพิมพ์ชื่อสถานที่ หรือบริการที่ต้องการอีกครั้งนะคะ")]
+        ))
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
