@@ -485,11 +485,10 @@ def handle_message(event):
                             }
                         },
                         {
-                            "type": "button", "style": "secondary", "color": "#20364F", "height": "sm",
+                            "type": "button", "style": "primary", "color": "#20364F", "height": "sm",
                             "action": {
                                 "type": "uri", "label": "📝 ทำแบบประเมินบอท", 
-                                "uri": "https://forms.gle/GV6yWpDRYPu5Zino7",
-                                "color": "#FFFFFF"
+                                "uri": "https://forms.gle/GV6yWpDRYPu5Zino7"
                             }
                         }
                     ]
