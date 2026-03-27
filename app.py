@@ -487,7 +487,7 @@ def handle_message(event):
                         {
                             "type": "button", "style": "primary", "color": "#20364F", "height": "sm",
                             "action": {
-                                "type": "uri", "label": "📝 ทำแบบประเมินบอท", 
+                                "type": "uri", "label": "📝 ทำแบบประเมิน", 
                                 "uri": "https://forms.gle/GV6yWpDRYPu5Zino7"
                             }
                         }
