@@ -1,12 +1,12 @@
 import os
 import pymysql
 from flask import Flask, request, abort
-from linebot.models import TextMessage, FlexMessage, ReplyMessageRequest, QuickReply, QuickReplyButton, MessageAction
 from linebot.v3.webhook import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import (
     Configuration, ApiClient, MessagingApi, ReplyMessageRequest,
-    TextMessage, FlexMessage, FlexContainer
+    TextMessage, FlexMessage, FlexContainer,
+    QuickReply, QuickReplyItem, MessageAction
 )
 from linebot.v3.webhooks import (
     MessageEvent, 
@@ -217,7 +217,6 @@ def handle_message(event):
                 messages=[FlexMessage(alt_text="ผลการค้นหาสถานที่", contents=FlexContainer.from_dict(carousel))]
             ))
 
-
         # 1: แผนที่มหาวิทยาลัย
         if user_msg == "Menu > แผนที่มหาวิทยาลัย":
             img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png" 
@@ -331,11 +330,11 @@ def handle_message(event):
             # 📌 4. สร้างปุ่ม Quick Reply 
             quick_reply_buttons = QuickReply(
                 items=[
-                    QuickReplyButton(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
-                    QuickReplyButton(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
-                    QuickReplyButton(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
-                    QuickReplyButton(action=MessageAction(label="ห้องสมุด", text="ห้องสมุด")),
-                    QuickReplyButton(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร"))
+                    QuickReplyItem(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
+                    QuickReplyItem(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
+                    QuickReplyItem(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
+                    QuickReplyItem(action=MessageAction(label="ห้องสมุด", text="ห้องสมุด")),
+                    QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร"))
                 ]
             )
             
