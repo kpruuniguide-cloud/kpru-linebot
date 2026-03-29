@@ -216,19 +216,112 @@ def handle_message(event):
                 messages=[FlexMessage(alt_text="ผลการค้นหาสถานที่", contents=FlexContainer.from_dict(carousel))]
             ))
 
-        # 1: แผนที่มหาวิทยาลัย
+
+            # 1: แผนที่มหาวิทยาลัย
         if user_msg == "Menu > แผนที่มหาวิทยาลัย":
-            img_url = f"{GITHUB_IMAGE_BASE}kpru_map.JPG"
+            img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png" 
+            
+            # 1. รายชื่ออาคารทั้งหมด (เรียงตามแผนที่ 1-49 และ A-D)
+            building_names = [
+                "1. อาคาร 1 สถาบันวิจัยและพัฒนา",
+                "2. อาคาร 2 (คณะครุศาสตร์เก่า)",
+                "3. อาคาร 3 (คณะมนุษยศาสตร์และสังคมศาสตร์เก่า)",
+                "4. อาคาร 4 (คณะพยาบาลศาสตร์)",
+                "5. โรงอาหาร",
+                "6. อาคารเรียนศูนย์การแพทย์ทางเลือก",
+                "7. อาคารน้ำเพชร 1",
+                "8. อาคารโปรแกรมดนตรี",
+                "9. อาคารโปรแกรมศิลปะ",
+                "10. กองพัฒนานักศึกษา (หลังเก่า)",
+                "11. อาคารเฉลิมพระเกียรติ ๖ รอบพระชนมพรรษา อาคาร 2 (คณะวิทยาการจัดการ)",
+                "12. อาคารเฉลิมพระเกียรติ ๖ รอบพระชนมพรรษา อาคาร 1 (อาคารเรียนรวม)",
+                "13. หอประชุมทีปังกรรัศมีโชติ",
+                "14. อาคารเรียนรวมและอำนวยการ",
+                "15. อาคารศูนย์กีฬารวม",
+                "16. อาคารจุฬาภรณ์วลัยลักษณ์",
+                "17. อาคารคณะวิทยาศาสตร์และเทคโนโลยี (เก่า)",
+                "18. อาคารเฉลิมพระเกียรติ ๕๐ พรรษา มหาวชิราลงกรณ์ (คณะเทคโนโลยีอุตสาหกรรม)",
+                "19. อาคารเรียนภาควิชาเกษตรศาสตร์",
+                "20. อาคารเทคโนโลยีไฟฟ้า",
+                "21. อาคารศูนย์ส่งเสริมและตรวจสอบการผลิตฯ",
+                "22. อาคารเรียนภาควิชาคหกรรมศาสตร์",
+                "23. อาคารศูนย์การศึกษาพิเศษ",
+                "24. อาคารศูนย์เด็กปฐมวัย",
+                "25. อาคารศูนย์ภาษาและคอมพิวเตอร์",
+                "26. อาคารบรรณราชนครินทร์ (สำนักวิทยบริการฯ)",
+                "27. อาคารเอวี",
+                "28. หอประชุมรัตนอาภา (หอประชุมเก่า)",
+                "29. อาคารออกแบบและพัฒนาผลิตภัณฑ์",
+                "30. อาคารเทคโนโลยีก่อสร้าง",
+                "32. ศูนย์กีฬาในร่มเอนกประสงค์ (โรงยิมใหม่)",
+                "38. คณะมนุษยศาสตร์และสังคมศาสตร์",
+                "41. อาคารภูมิภาคพิทยา (ศูนย์ศิลปะและวัฒนธรรม)",
+                "44. สำนักวิทยบริการและเทคโนโลยีสารสนเทศ (ใหม่)",
+                "46. คณะครุศาสตร์",
+                "47. อาคารกองพัฒนานักศึกษา (SAC)",
+                "48. อาคารเรียนและปฏิบัติการทางวิทยาศาสตร์",
+                "49. KPRU HOME",
+                "A. ศาลาพระพุทธวิทานปัญญาบดี",
+                "B. ลานกิจกรรมหน้าหอประชุมทีปังกรรัศมีโชติ",
+                "C. สวนพลังงาน KPRU",
+                "D. KPRU Place"
+            ]
+
+            # 2. แปลงข้อความใน List ให้เป็นรูปแบบ Flex Message แบบอัตโนมัติ
+            building_contents = []
+            for name in building_names:
+                building_contents.append({
+                    "type": "text", 
+                    "text": name, 
+                    "size": "xs",  # ใช้ขนาด xs เพื่อให้ชื่อยาวๆ ไม่ล้นบรรทัด
+                    "color": "#4A4A4A", 
+                    "wrap": True, 
+                    "margin": "sm"
+                })
+
+            # 3. สร้างโครงสร้าง Flex Message
             flex_map = {
                 "type": "bubble",
-                "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "1:1", "aspectMode": "cover"},
-                "body": {"type": "box", "layout": "vertical", "contents": [{"type": "text", "text": "แผนที่มหาวิทยาลัย KPRU", "weight": "bold", "size": "lg", "align": "center", "color": "#20364F"}]},
-                "footer": {"type": "box", "layout": "vertical", "contents": [
-                    {"type": "button", "style": "primary", "color": "#3D597B", "action": {"type": "uri", "label": "ดูแผนที่ความละเอียดสูง", "uri": img_url}}
-                ]}
+                "size": "giga", 
+                "hero": {
+                    "type": "image", 
+                    "url": img_url, 
+                    "size": "full", 
+                    "aspectRatio": "1.5:1", 
+                    "aspectMode": "cover",
+                    "action": {"type": "uri", "label": "ดูแผนที่ความละเอียดสูง", "uri": img_url} 
+                },
+                "body": {
+                    "type": "box", "layout": "vertical", 
+                    "contents": [
+                        {
+                            "type": "text", "text": "📍 รายชื่ออาคาร (เลื่อนดูด้านล่าง)", 
+                            "weight": "bold", "size": "md", "color": "#20364F"
+                        },
+                        {"type": "separator", "margin": "md"},
+                        {
+                            "type": "box", "layout": "vertical", "margin": "md", 
+                            "contents": building_contents 
+                        }
+                    ]
+                },
+                "footer": {
+                    "type": "box", "layout": "vertical", 
+                    "contents": [
+                        {
+                            "type": "button", "style": "primary", "color": "#162660", 
+                            "action": {"type": "uri", "label": "🔍 ซูมดูแผนที่ขนาดเต็ม", "uri": img_url}
+                        }
+                    ]
+                }
             }
-            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="แผนที่", contents=FlexContainer.from_dict(flex_map))]))
+            
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[FlexMessage(alt_text="แผนที่มหาวิทยาลัยและรายชื่ออาคาร", contents=FlexContainer.from_dict(flex_map))]
+            ))
             return
+        
 # ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             flex_menu = {
