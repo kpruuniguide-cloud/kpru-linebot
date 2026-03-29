@@ -1,6 +1,7 @@
 import os
 import pymysql
 from flask import Flask, request, abort
+from linebot.models import TextMessage, FlexMessage, ReplyMessageRequest, QuickReply, QuickReplyButton, MessageAction
 from linebot.v3.webhook import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import (
@@ -217,7 +218,7 @@ def handle_message(event):
             ))
 
 
-            # 1: แผนที่มหาวิทยาลัย
+        # 1: แผนที่มหาวิทยาลัย
         if user_msg == "Menu > แผนที่มหาวิทยาลัย":
             img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png" 
             
@@ -273,7 +274,7 @@ def handle_message(event):
                 building_contents.append({
                     "type": "text", 
                     "text": name, 
-                    "size": "xs",  # ใช้ขนาด xs เพื่อให้ชื่อยาวๆ ไม่ล้นบรรทัด
+                    "size": "xs",  
                     "color": "#4A4A4A", 
                     "wrap": True, 
                     "margin": "sm"
@@ -306,19 +307,46 @@ def handle_message(event):
                     ]
                 },
                 "footer": {
-                    "type": "box", "layout": "vertical", 
+                    "type": "box", "layout": "vertical", "spacing": "md",
                     "contents": [
+                        # 📌 เพิ่มข้อความแนะนำที่นี่
                         {
-                            "type": "button", "style": "primary", "color": "#162660", 
+                            "type": "text", 
+                            "text": "💡 พิมพ์ \"หมายเลข\" หรือ \"ชื่ออาคาร\"\nเพื่อดูรายละเอียดได้เลยค่ะ!", 
+                            "size": "xs", 
+                            "color": "#666666",  
+                            "align": "center", 
+                            "wrap": True,
+                            "weight": "bold",
+                            "margin": "lg"
+                        },
+                        {
+                            "type": "button", "style": "primary", "color": "#162660", "margin": "md",
                             "action": {"type": "uri", "label": "🔍 ซูมดูแผนที่ขนาดเต็ม", "uri": img_url}
                         }
                     ]
                 }
             }
             
+            # 📌 4. สร้างปุ่ม Quick Reply 
+            quick_reply_buttons = QuickReply(
+                items=[
+                    QuickReplyButton(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
+                    QuickReplyButton(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
+                    QuickReplyButton(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
+                    QuickReplyButton(action=MessageAction(label="ห้องสมุด", text="ห้องสมุด")),
+                    QuickReplyButton(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร"))
+                ]
+            )
+            
+            # 📌 5. ส่ง Flex Message (ใส่ quick_reply พ่วงเข้าไปกับ Flex เลย)
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
-                messages=[FlexMessage(alt_text="แผนที่มหาวิทยาลัยและรายชื่ออาคาร", contents=FlexContainer.from_dict(flex_map))]
+                messages=[FlexMessage(
+                    alt_text="แผนที่มหาวิทยาลัยและรายชื่ออาคาร", 
+                    contents=FlexContainer.from_dict(flex_map),
+                    quick_reply=quick_reply_buttons  # แนบปุ่มด่วนตรงนี้!
+                )]
             ))
             return
         
