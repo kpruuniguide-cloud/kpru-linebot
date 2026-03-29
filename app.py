@@ -308,17 +308,6 @@ def handle_message(event):
                 "footer": {
                     "type": "box", "layout": "vertical", "spacing": "md",
                     "contents": [
-                        # 📌 เพิ่มข้อความแนะนำที่นี่
-                        {
-                            "type": "text", 
-                            "text": "💡 พิมพ์ \"หมายเลข\" หรือ \"ชื่ออาคาร\"\nเพื่อดูรายละเอียดได้เลยค่ะ!", 
-                            "size": "xs", 
-                            "color": "#666666",  
-                            "align": "center", 
-                            "wrap": True,
-                            "weight": "bold",
-                            "margin": "lg"
-                        },
                         {
                             "type": "button", "style": "primary", "color": "#162660", "margin": "md",
                             "action": {"type": "uri", "label": "🔍 ซูมดูแผนที่ขนาดเต็ม", "uri": img_url}
