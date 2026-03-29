@@ -295,7 +295,7 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", 
                     "contents": [
                         {
-                            "type": "text", "text": "📍 รายชื่ออาคารทั้งหมด ", 
+                            "type": "text", "text": "รายชื่ออาคารทั้งหมด ", 
                             "weight": "bold", "size": "md", "color": "#20364F"
                         },
                         {"type": "separator", "margin": "md"},
@@ -308,15 +308,6 @@ def handle_message(event):
                 "footer": {
                     "type": "box", "layout": "vertical", 
                     "contents": [
-                        {
-                            "type": "text", 
-                            "text": "💡 พิมพ์ \"หมายเลข\" หรือ \"ชื่ออาคาร\"\nเพื่อดูรายละเอียดได้เลยค่ะ!", 
-                            "size": "xs", 
-                            "color": "#666666",  # ใช้สีเทาให้ดูเป็นคำแนะนำ ไม่แย่งซีนปุ่ม
-                            "align": "center", 
-                            "wrap": True,
-                            "weight": "bold"
-                        },
                         {
                             "type": "button", "style": "primary", "color": "#162660", 
                             "action": {"type": "uri", "label": "🔍 ซูมดูแผนที่ขนาดเต็ม", "uri": img_url}
