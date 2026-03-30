@@ -204,6 +204,17 @@ def callback():
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
     user_msg = event.message.text.strip()
+
+    if not user_msg.startswith("Menu >") and not user_msg.startswith("Admin>"):
+        try:
+            conn = pymysql.connect(**DB_CONFIG)
+            with conn.cursor() as cursor:
+                cursor.execute("INSERT INTO search_logs (keyword) VALUES (%s)", (user_msg,))
+                conn.commit()
+        except Exception as e:
+            print("Error saving log:", e)
+        finally:
+            if 'conn' in locals(): conn.close()
     
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
@@ -609,7 +620,69 @@ def handle_message(event):
             ))
             return
 
+# ================= 7 ADMIN (คำสั่งลับดูสถิติ) =================
+        elif user_msg == "Admin>ดูสถิติ":
+            try:
+                conn = pymysql.connect(**DB_CONFIG)
+                with conn.cursor() as cursor:
+                    sql = """
+                        SELECT keyword, COUNT(*) as search_count 
+                        FROM search_logs 
+                        GROUP BY keyword 
+                        ORDER BY search_count DESC 
+                        LIMIT 5
+                    """
+                    cursor.execute(sql)
+                    top_searches = cursor.fetchall()
 
+                    if top_searches:
+                        reply_text = "📊 สถิติคำค้นหายอดฮิต 5 อันดับแรก:\n\n"
+                        for i, row in enumerate(top_searches):
+                            reply_text += f"{i+1}. {row['keyword']} ({row['search_count']} ครั้ง)\n"
+                    else:
+                        reply_text = "ยังไม่มีข้อมูลสถิติการค้นหาในระบบค่ะ"
+
+                    line_bot_api.reply_message(ReplyMessageRequest(
+                        reply_token=event.reply_token, 
+                        messages=[TextMessage(text=reply_text)]
+                    ))
+            except Exception as e:
+                print("Error fetching stats:", e)
+            finally:
+                if 'conn' in locals(): conn.close()
+            return
+
+        elif user_msg == "Admin>เวลาฮิต":
+            try:
+                conn = pymysql.connect(**DB_CONFIG)
+                with conn.cursor() as cursor:
+                    sql = """
+                        SELECT HOUR(search_time) AS hour_of_day, COUNT(*) as total_searches 
+                        FROM search_logs 
+                        GROUP BY hour_of_day 
+                        ORDER BY total_searches DESC 
+                        LIMIT 5
+                    """
+                    cursor.execute(sql)
+                    peak_times = cursor.fetchall()
+
+                    if peak_times:
+                        reply_text = "⏰ สถิติช่วงเวลาที่มีการใช้งานสูงสุด:\n\n"
+                        for i, row in enumerate(peak_times):
+                            h = row['hour_of_day']
+                            reply_text += f"{i+1}. ช่วง {h:02d}:00 - {h:02d}:59 น. (ใช้งาน {row['total_searches']} ครั้ง)\n"
+                    else:
+                        reply_text = "ยังไม่มีข้อมูลสถิติเวลาการใช้งานค่ะ"
+
+                    line_bot_api.reply_message(ReplyMessageRequest(
+                        reply_token=event.reply_token, 
+                        messages=[TextMessage(text=reply_text)]
+                    ))
+            except Exception as e:
+                print("Error fetching peak times:", e)
+            finally:
+                if 'conn' in locals(): conn.close()
+            return
 
        # ==========================================
         # 📌 แก้ไขลำดับการค้นหาใหม่ (Location First)
