@@ -96,43 +96,37 @@ def get_building_by_id(building_id):
         if 'conn' in locals(): conn.close()
 
 # ================== FLEX MESSAGE BUILDERS ==================
-
 def create_building_flex(data):
     img_url = f"{GITHUB_IMAGE_BASE}{data['image_url']}" if data and data.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
-    # 1. สร้างกล่องข้อความเตรียมไว้ก่อน
     body_contents = []
     
-    # 2. 📌 เช็กว่ามี "หมายเลขอาคาร" ไหม? (และต้องไม่ใช่เครื่องหมาย - หรือค่าว่าง)
     building_no = data.get('building_no')
     if building_no and str(building_no).strip() not in ["", "-", "None"]:
-        # ถ้ามีเลขอาคาร ให้เอาคำว่า "หมายเลขอาคาร X" ใส่เป็นบรรทัดแรก
         body_contents.append({
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
-            "size": "sm", 
+            "size": "xs", # 📌 ขนาดเล็กพิเศษ
             "color": "#162660", 
             "weight": "bold"
         })
         
-    # 3. ใส่ "ชื่อทางการ" ต่อท้ายลงไป
     body_contents.append({
         "type": "text", 
         "text": data.get('official_name', 'ไม่ทราบชื่ออาคาร'), 
         "weight": "bold", 
-        "size": "xl", 
+        "size": "md", # 📌 ลดจาก xl หรือ lg ลงมาเหลือ md
         "wrap": True, 
         "color": "#20364F"
     })
     
-    # 4. ใส่ "รายละเอียด" เป็นบรรทัดสุดท้าย
     body_contents.append({
         "type": "text", 
         "text": data.get('description', 'ไม่มีข้อมูลรายละเอียด'), 
-        "size": "sm", 
+        "size": "xs", # 📌 ลดขนาดรายละเอียดให้อ่านง่ายและไม่แย่งซีนหัวข้อ
         "color": "#708090", 
         "wrap": True, 
-        "margin": "md"
+        "margin": "sm"
     })
 
     return {
@@ -142,20 +136,34 @@ def create_building_flex(data):
         "body": {
             "type": "box", 
             "layout": "vertical",
-            "contents": body_contents # 📌 เอาข้อมูลที่เราจัดเรียง 3 สเตปข้างบนมาใส่ตรงนี้
+            "contents": body_contents 
         },
         "footer": {
-            "type": "box", "layout": "vertical",
+            "type": "box", "layout": "vertical", "spacing": "sm",
             "contents": [
-                {"type": "button", "style": "primary", "color": "#162660", "action": {"type": "uri", "label": " 🗺️ นำทางไปที่นี่", "uri": f"https://www.google.com/maps/search/?api=1&query={data.get('latitude', '')},{data.get('longitude', '')}"}}
+                {
+                    "type": "button", 
+                    "style": "primary", 
+                    "color": "#16266080", # 📌 ปุ่มโปร่งแสง 50%
+                    "height": "sm",
+                    "action": {
+                        "type": "uri", 
+                        "label": " 🗺️ นำทางไปที่นี่", 
+                        "uri": f"https://www.google.com/maps/search/?api=1&query={data.get('latitude', '')},{data.get('longitude', '')}"
+                    }
+                }
             ]
         }
     }
 
 def create_service_flex(service, building):
-    # 📌 ดึงลิงก์รูปภาพจากตาราง locations มาโชว์ในส่วนบริการ
     img_url = f"{GITHUB_IMAGE_BASE}{building['image_url']}" if building and building.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
+    # 📌 ดึงลิงก์จากฐานข้อมูล ถ้าในฐานข้อมูลไม่มี (เป็น None หรือว่างเปล่า) ให้ใช้เว็บมหาลัยเป็นค่าเริ่มต้น
+    link_url = service.get('external_link')
+    if not link_url or str(link_url).strip() == "":
+        link_url = "https://www.kpru.ac.th"
+
     return {
         "type": "bubble",
         "styles": {"body": {"backgroundColor": "#FFFFFF"}},
@@ -167,17 +175,62 @@ def create_service_flex(service, building):
             "aspectMode": "cover"
         },
         "body": {
-            "type": "box", "layout": "vertical",
+            "type": "box", "layout": "vertical", "spacing": "md",
             "contents": [
-                {"type": "text", "text": service.get('service_name', 'ไม่ทราบชื่อบริการ'), "weight": "bold", "size": "xl", "color": "#20364F", "wrap": True},
-                {"type": "text", "text": f"ตั้งอยู่ที่: {building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ'}", "size": "md", "margin": "md", "wrap": True, "color": "#20364F"},
-                {"type": "text", "text": f"{service.get('service_details', 'ไม่ระบุ')}", "size": "sm", "color": "#708090", "wrap": True}
+                {
+                    "type": "text", 
+                    "text": service.get('service_name', 'ไม่ทราบชื่อบริการ/หน่วยงาน'), 
+                    "weight": "bold", 
+                    "size": "md", 
+                    "color": "#20364F", 
+                    "wrap": True
+                },
+                {
+                    "type": "box", "layout": "vertical", "spacing": "sm",
+                    "contents": [
+                        {
+                            "type": "box", "layout": "baseline", "spacing": "sm",
+                            "contents": [
+                                {"type": "text", "text": "📍 สถานที่:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2},
+                                {"type": "text", "text": building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ', "wrap": True, "color": "#4b5563", "size": "xs", "flex": 6}
+                            ]
+                        },
+                        {
+                            "type": "box", "layout": "baseline", "spacing": "sm",
+                            "contents": [
+                                {"type": "text", "text": "📄 ข้อมูล:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2},
+                                {"type": "text", "text": service.get('service_details', 'ไม่ระบุ'), "wrap": True, "color": "#708090", "size": "xs", "flex": 6}
+                            ]
+                        }
+                    ]
+                }
             ]
         },
         "footer": {
-            "type": "box", "layout": "vertical",
+            "type": "box", "layout": "vertical", "spacing": "sm",
             "contents": [
-                {"type": "button", "style": "primary", "color": "#162660", "action": {"type": "uri", "label": "🗺️ นำทางไปอาคารนี้", "uri": f"https://www.google.com/maps/search/?api=1&query={building.get('latitude', '')},{building.get('longitude', '')}" if building else "#"}}
+                {
+                    "type": "button", 
+                    "style": "primary", 
+                    "color": "#16266080", 
+                    "height": "sm",
+                    "action": {
+                        "type": "uri", 
+                        "label": "🌐 ข้อมูลเพิ่มเติม", 
+                        "uri": link_url # 📌 ใส่ตัวแปรลิงก์ที่ดึงมา
+                    }
+                },
+                {
+                    "type": "button", 
+                    "style": "primary", 
+                    "color": "#20364F80", 
+                    "height": "sm",
+                    "action": {
+                        "type": "uri", 
+                        "label": "🗺️  นำทางไปที่นี่", 
+                        "uri": f"https://www.google.com/maps/search/?api=1&query={building.get('latitude', '')},{building.get('longitude', '')}" if building else "#"
+                    }
+                }
             ]
         }
     }
@@ -391,50 +444,58 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
             return
         
-       # ================= 3 SERVICES (ค่าเทอม/สอบ/ทุน) =================
+# ================= 3 SERVICES (บริการนักศึกษา 3 หมวดหมู่) =================
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
             flex_menu = {
                 "type": "carousel",
                 "contents": [
                     {
-                        "type": "bubble",
-                        # 📌 จุดสังเกต: เช็คไฟล์ service1.JPG ใน GitHub ว่านามสกุลตัวพิมพ์ใหญ่หรือเล็ก
+                        "type": "bubble", # --- การ์ดที่ 1: การเงินและทุนการศึกษา ---
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services1.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "บริการนักศึกษา KPRU", "weight": "bold", "size": "lg", "color": "#111827", "align": "center"},
-                                {"type": "separator", "margin": "md", "color": "#e0e0e0"},
-                                {
-                                    "type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
+                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#111827", "align": "center"},
+                                {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "สมัครเรียน", "text": "ดูสมัครเรียน"}, "contents": [{"type": "text", "text": "🎓 สมัครเรียน", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "ทุนการศึกษา", "text": "ดูทุนการศึกษา"}, "contents": [{"type": "text", "text": "🏦 ทุนการศึกษา / กยศ.", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "ทำบัตรนักศึกษา", "text": "ดูทำบัตรใหม่"}, "contents": [{"type": "text", "text": "🪪 ทำบัตรนักศึกษาใหม่", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "ชำระค่าเทอม", "text": "ดูชำระค่าเทอม"}, "contents": [{"type": "text", "text": "💸 ชำระค่าเทอม", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "เทียบโอน", "text": "ดูเทียบโอน"}, "contents": [{"type": "text", "text": "📑 เทียบโอนผลการเรียน", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]}
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "💸 ชำระค่าเทอม", "text": "ดูชำระค่าเทอม"}},
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🏦 ทุนการศึกษา / กยศ.", "text": "ดูทุนการศึกษา"}}
                                     ]
                                 }
                             ]
                         }
                     },
                     {
-                        "type": "bubble",
-                        # 📌 จุดสังเกต: เช็คไฟล์ service3.JPG ใน GitHub เช่นกันครับ
+                        "type": "bubble", # --- การ์ดที่ 2: การเรียนและสถานภาพ ---
+                        "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services2.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
+                        "body": {
+                            "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
+                            "contents": [
+                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#111827", "align": "center"},
+                                {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
+                                    "contents": [
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🎓 สมัครเรียน", "text": "ดูสมัครเรียน"}},
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "📝 สอบซ้อน", "text": "ดูสอบซ้อน"}},
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "📈 รักษาสภาพนักศึกษา", "text": "ดูรักษาสภาพ"}},
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "📑 เทียบโอนผลการเรียน", "text": "ดูเทียบโอน"}}
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "bubble", # --- การ์ดที่ 3: สวัสดิการและบริการทั่วไป ---
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services3.jpg", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "บริการนักศึกษา KPRU", "weight": "bold", "size": "lg", "color": "#111827", "align": "center"},
-                                {"type": "separator", "margin": "md", "color": "#e0e0e0"},
-                                {
-                                    "type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
+                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#111827", "align": "center"},
+                                {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "สอบซ้อน", "text": "ดูสอบซ้อน"}, "contents": [{"type": "text", "text": "📝 สอบซ้อน", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "รักษาสภาพ", "text": "ดูรักษาสภาพ"}, "contents": [{"type": "text", "text": "📈 รักษาสภาพนักศึกษา", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "ห้องพยาบาล", "text": "ดูห้องพยาบาล"}, "contents": [{"type": "text", "text": "🏥 ห้องพยาบาล", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "เบิกประกัน", "text": "ดูเบิกประกัน"}, "contents": [{"type": "text", "text": "🛡️ ประกันอุบัติเหตุ", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]},
-                                        {"type": "box", "layout": "horizontal", "backgroundColor": "#20364F", "cornerRadius": "md", "paddingAll": "12px", "action": {"type": "message", "label": "แจ้งของหาย", "text": "ดูแจ้งของหาย"}, "contents": [{"type": "text", "text": "📦 แจ้งของหาย", "color": "#FFFFFF", "weight": "bold", "size": "sm"}]}
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🪪 ทำบัตรนักศึกษาใหม่", "text": "ดูทำบัตรใหม่"}},
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🏥 ห้องพยาบาล", "text": "ดูห้องพยาบาล"}},
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🛡️ ประกันอุบัติเหตุ", "text": "ดูเบิกประกัน"}},
+                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "📦 แจ้งของหาย", "text": "ดูแจ้งของหาย"}}
                                     ]
                                 }
                             ]
@@ -446,13 +507,18 @@ def handle_message(event):
             return
 
         elif user_msg in ["ดูสมัครเรียน", "ดูทุนการศึกษา", "ดูทำบัตรใหม่", "ดูชำระค่าเทอม", "ดูเทียบโอน", "ดูสอบซ้อน", "ดูรักษาสภาพ", "ดูห้องพยาบาล", "ดูเบิกประกัน", "ดูแจ้งของหาย"]:
-            keyword_map = {"ดูสมัครเรียน": "สมัครเรียน", "ดูทุนการศึกษา": "กยศ", "ดูทำบัตรใหม่": "บัตรนักศึกษา", "ดูชำระค่าเทอม": "ค่าเทอม", "ดูเทียบโอน": "เทียบโอน", "ดูสอบซ้อน": "สอบซ้อน", "ดูรักษาสภาพ": "รักษาสภาพ", "ดูห้องพยาบาล": "พยาบาล", "ดูเบิกประกัน": "ประกัน", "ดูแจ้งของหาย": "ของหาย"}
+            keyword_map = {
+                "ดูสมัครเรียน": "สมัครเรียน", "ดูทุนการศึกษา": "กยศ", "ดูทำบัตรใหม่": "บัตรนักศึกษา", 
+                "ดูชำระค่าเทอม": "ค่าเทอม", "ดูเทียบโอน": "เทียบโอน", "ดูสอบซ้อน": "สอบซ้อน", 
+                "ดูรักษาสภาพ": "รักษาสภาพ", "ดูห้องพยาบาล": "พยาบาล", "ดูเบิกประกัน": "ประกัน", "ดูแจ้งของหาย": "ของหาย"
+            }
             search_keyword = keyword_map.get(user_msg)
             if search_keyword:
                 try:
                     conn = pymysql.connect(**DB_CONFIG)
                     with conn.cursor() as cursor:
-                        sql = "SELECT s.service_name, s.service_details, l.official_name, l.latitude, l.longitude, l.image_url FROM services s LEFT JOIN locations l ON s.location_id = l.location_id WHERE s.keywords LIKE %s OR s.service_name LIKE %s"
+                        # 📌 เพิ่มการ Select คอลัมน์ s.external_link เข้ามาในคำสั่ง SQL ด้วย
+                        sql = "SELECT s.service_name, s.service_details, s.external_link, l.official_name, l.latitude, l.longitude, l.image_url FROM services s LEFT JOIN locations l ON s.location_id = l.location_id WHERE s.keywords LIKE %s OR s.service_name LIKE %s"
                         cursor.execute(sql, (f"%{search_keyword}%", f"%{search_keyword}%"))
                         results = cursor.fetchall()
                         if results:
@@ -463,8 +529,8 @@ def handle_message(event):
                 finally:
                     if 'conn' in locals(): conn.close()
             return
-
-        # ================= 4 SHOPS (ร้านค้าและจุดบริการ) =================
+        
+# ================= 4 SHOPS (ร้านค้าและจุดบริการ) =================
         elif user_msg == "Menu > ร้านค้า/จุดบริการ":
             flex_menu = {
                 "type": "bubble",
@@ -481,8 +547,7 @@ def handle_message(event):
                                 {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#20364F1a"},
                                 {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "☕ ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🖨️ ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏪 ร้านทั้งหมด", "text": "ดูร้านทั้งหมด"}}
+                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🖨️ ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}}
                             ]
                         }
                     ]
@@ -491,13 +556,15 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูร้านค้าและบริการ", contents=FlexContainer.from_dict(flex_menu))]))
             return
 
-        elif user_msg in ["ดูร้านกาแฟ", "ดูร้านบริการ", "ดูร้านทั้งหมด"]:
+        elif user_msg in ["ดูร้านกาแฟ", "ดูร้านบริการ"]:
              try:
                 conn = pymysql.connect(**DB_CONFIG)
                 with conn.cursor() as cursor:
-                    if "ร้านกาแฟ" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
-                    elif "ดูร้านบริการ" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'services'"
-                    else: sql = "SELECT * FROM locations WHERE location_type IN ('Cafe', 'services')"
+                    if "ร้านกาแฟ" in user_msg: 
+                        sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
+                    elif "ดูร้านบริการ" in user_msg: 
+                        sql = "SELECT * FROM locations WHERE location_type = 'services'"
+                    
                     cursor.execute(sql)
                     results = cursor.fetchall()
                     if results: send_building_response(results)
@@ -546,8 +613,8 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
             return
         
-# ================= 6 CONTACT & EMERGENCY (ติดต่อ/ประเมิน) =================
-        elif user_msg == "Menu > ติดต่อ/ประเมิน":
+# ================= 6 CONTACT & EMERGENCY (ติดต่อ) =================
+        elif user_msg == "Menu > ติดต่อ/ฉุกเฉิน":
             flex_menu = {
                 "type": "bubble", 
                 "size": "mega", # ปรับขนาดให้ใหญ่ขึ้นเล็กน้อยเพื่อให้กดง่าย
@@ -603,20 +670,13 @@ def handle_message(event):
                             "action": {
                                 "type": "uri", "label": "🌐 เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"
                             }
-                        },
-                        {
-                            "type": "button", "style": "primary", "color": "#20364F", "height": "sm",
-                            "action": {
-                                "type": "uri", "label": "📝 ทำแบบประเมิน", 
-                                "uri": "https://forms.gle/GV6yWpDRYPu5Zino7"
-                            }
                         }
                     ]
                 }
             }
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
-                messages=[FlexMessage(alt_text="เมนูติดต่อ/ประเมิน", contents=FlexContainer.from_dict(flex_menu))]
+                messages=[FlexMessage(alt_text="เมนูติดต่อ", contents=FlexContainer.from_dict(flex_menu))]
             ))
             return
 
@@ -683,6 +743,12 @@ def handle_message(event):
             finally:
                 if 'conn' in locals(): conn.close()
             return
+        
+        # ================= 8 EVALUATION (ปล่อยให้เว็บ LINE OA ส่งรูปแทน) =================
+        elif user_msg in ["ประเมิน", "ประเมินระบบ"]:
+            return # สั่ง return ทิ้งไปเลย เพื่อให้ Python เงียบ แล้วปล่อยให้ LINE Manager ทำงาน
+
+
 
        # ==========================================
         # 📌 แก้ไขลำดับการค้นหาใหม่ (Location First)
