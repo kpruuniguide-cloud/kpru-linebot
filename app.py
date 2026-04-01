@@ -744,11 +744,9 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
             return
         
-        # ================= 8 EVALUATION (ปล่อยให้เว็บ LINE OA ส่งรูปแทน) =================
-        elif user_msg in ["ประเมิน", "ประเมินระบบ"]:
-            return # สั่ง return ทิ้งไปเลย เพื่อให้ Python เงียบ แล้วปล่อยให้ LINE Manager ทำงาน
-
-
+        # ================= 8 EVALUATION (ดักคีย์เวิร์ดให้ครบ) =================
+        elif user_msg in ["ประเมิน", "ประเมินระบบ", "แบบประเมิน", "เสนอแนะ"]:
+            return # ให้ Python เงียบ เพื่อให้ LINE OA Manager ส่งรูป Rich Message แทน
 
        # ==========================================
         # 📌 แก้ไขลำดับการค้นหาใหม่ (Location First)
