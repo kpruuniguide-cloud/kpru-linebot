@@ -212,22 +212,22 @@ def create_service_flex(service, building):
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#162660", # 📌 ปรับเป็นสีทึบ (ลบ 80 ออก) แจ่มเหมือนเดิม
+                    "color": "#FF9035", 
                     "height": "sm",
                     "action": {
                         "type": "uri", 
                         "label": "🌐 ข้อมูลเพิ่มเติม", 
-                        "uri": link_url # 📌 เชื่อมกับคอลัมน์ external_link เรียบร้อยครับ
+                        "uri": link_url 
                     }
                 },
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#20364F", # 📌 สีทึบ แจ่มเหมือนเดิม
+                    "color": "#162660", 
                     "height": "sm",
                     "action": {
                         "type": "uri", 
-                        "label": "🗺️  นำทางไปที่นี่", 
+                        "label": "🗺️ นำทางไปที่นี่", 
                         "uri": f"https://www.google.com/maps/search/?api=1&query={building.get('latitude', '')},{building.get('longitude', '')}" if building else "#"
                     }
                 }
@@ -372,7 +372,7 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "md",
                     "contents": [
                         {
-                            "type": "button", "style": "primary", "color": "#162660", "margin": "md",
+                            "type": "button", "style": "primary", "color": "#152f57", "margin": "md",
                             "action": {"type": "uri", "label": "🔍 ซูมดูแผนที่ขนาดเต็ม", "uri": img_url}
                         }
                     ]
@@ -417,9 +417,9 @@ def handle_message(event):
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#20364F1a"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "🏛️ สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "⛲ จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏸 ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                                {"type": "button", "style": "primary", "height": "md", "color": "#9aaabf", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "🏛️ สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#495b7d", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "⛲ จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#2a4876", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏸 ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
                             ]
                         }
                     ]
@@ -443,8 +443,30 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
             return
         
-# ================= 3 SERVICES (บริการนักศึกษา 3 หมวดหมู่) =================
+# ================= 3 SERVICES (เมนูหลัก: หัวข้อกลาง ปุ่มชิดซ้ายแบบแยกสี) =================
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
+            # 1. แก้ไขฟังก์ชันให้รับค่า color_code เพิ่มเข้ามา
+            def create_left_align_button(label, text_val, color_code):
+                return {
+                    "type": "box", 
+                    "layout": "horizontal", 
+                    "backgroundColor": color_code, # 📌 ใช้สีที่ส่งมาจากตอนเรียกใช้
+                    "cornerRadius": "md", 
+                    "paddingAll": "12px", 
+                    "margin": "xs",
+                    "action": {"type": "message", "label": label, "text": text_val},
+                    "contents": [
+                        {
+                            "type": "text", 
+                            "text": label, 
+                            "color": "#FFFFFF", 
+                            "weight": "bold", 
+                            "size": "sm", 
+                            "align": "start"
+                        }
+                    ]
+                }
+
             flex_menu = {
                 "type": "carousel",
                 "contents": [
@@ -454,11 +476,12 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#111827", "align": "center"},
+                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#111827", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "💸 ชำระค่าเทอม", "text": "ดูชำระค่าเทอม"}},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🏦 ทุนการศึกษา / กยศ.", "text": "ดูทุนการศึกษา"}}
+                                        # 📌 ระบุสีทีละปุ่มตรงนี้ (ตัวอย่าง: ส้ม และ น้ำเงินกรมท่า)
+                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#9aaabf"),
+                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#9aaabf")
                                     ]
                                 }
                             ]
@@ -470,13 +493,14 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#111827", "align": "center"},
+                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#111827", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🎓 สมัครเรียน", "text": "ดูสมัครเรียน"}},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "📝 สอบซ้อน", "text": "ดูสอบซ้อน"}},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "📈 รักษาสภาพนักศึกษา", "text": "ดูรักษาสภาพ"}},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "📑 เทียบโอนผลการเรียน", "text": "ดูเทียบโอน"}}
+                                        # 📌 กำหนดสีแยกตามความสำคัญหรือหมวดหมู่
+                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#495b7d"),
+                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#495b7d"),
+                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#495b7d"),
+                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#495b7d")
                                     ]
                                 }
                             ]
@@ -488,13 +512,13 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#111827", "align": "center"},
+                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#111827", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🪪 ทำบัตรนักศึกษาใหม่", "text": "ดูทำบัตรใหม่"}},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🏥 ห้องพยาบาล", "text": "ดูห้องพยาบาล"}},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "🛡️ ประกันอุบัติเหตุ", "text": "ดูเบิกประกัน"}},
-                                        {"type": "button", "style": "primary", "color": "#20364F", "margin": "xs", "height": "sm", "action": {"type": "message", "label": "📦 แจ้งของหาย", "text": "ดูแจ้งของหาย"}}
+                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#2a4876"),
+                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#2a4876"), 
+                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#2a4876"),
+                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#2a4876")  
                                     ]
                                 }
                             ]
@@ -505,6 +529,7 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูบริการนักศึกษา", contents=FlexContainer.from_dict(flex_menu))]))
             return
 
+        # ================= ส่วนการค้นหาบริการ (Search Services) =================
         elif user_msg in ["ดูสมัครเรียน", "ดูทุนการศึกษา", "ดูทำบัตรใหม่", "ดูชำระค่าเทอม", "ดูเทียบโอน", "ดูสอบซ้อน", "ดูรักษาสภาพ", "ดูห้องพยาบาล", "ดูเบิกประกัน", "ดูแจ้งของหาย"]:
             keyword_map = {
                 "ดูสมัครเรียน": "สมัครเรียน", "ดูทุนการศึกษา": "กยศ", "ดูทำบัตรใหม่": "บัตรนักศึกษา", 
@@ -516,15 +541,28 @@ def handle_message(event):
                 try:
                     conn = pymysql.connect(**DB_CONFIG)
                     with conn.cursor() as cursor:
-                        # 📌 เพิ่มการ Select คอลัมน์ s.external_link เข้ามาในคำสั่ง SQL ด้วย
-                        sql = "SELECT s.service_name, s.service_details, s.external_link, l.official_name, l.latitude, l.longitude, l.image_url FROM services s LEFT JOIN locations l ON s.location_id = l.location_id WHERE s.keywords LIKE %s OR s.service_name LIKE %s"
+                        # ดึงข้อมูลมาแสดงผล (รวมลิ้งค์ภายนอก external_link)
+                        sql = """
+                            SELECT s.service_name, s.service_details, s.external_link, 
+                                   l.official_name, l.latitude, l.longitude, l.image_url 
+                            FROM services s 
+                            LEFT JOIN locations l ON s.location_id = l.location_id 
+                            WHERE s.keywords LIKE %s OR s.service_name LIKE %s
+                        """
                         cursor.execute(sql, (f"%{search_keyword}%", f"%{search_keyword}%"))
                         results = cursor.fetchall()
                         if results:
+                            # ใช้ฟังก์ชัน create_service_flex ที่เราปรับแก้เรื่องปุ่มชิดซ้ายไว้แล้ว
                             bubbles = [create_service_flex(row, row) for row in results[:10]]
-                            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict({"type": "carousel", "contents": bubbles}))]))
+                            line_bot_api.reply_message(ReplyMessageRequest(
+                                reply_token=event.reply_token, 
+                                messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict({"type": "carousel", "contents": bubbles}))]
+                            ))
                         else:
-                            line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ยังไม่มีข้อมูลบริการนี้ในระบบค่ะ")]))
+                            line_bot_api.reply_message(ReplyMessageRequest(
+                                reply_token=event.reply_token, 
+                                messages=[TextMessage(text="ยังไม่มีข้อมูลบริการนี้ในระบบค่ะ")]
+                            ))
                 finally:
                     if 'conn' in locals(): conn.close()
             return
@@ -545,8 +583,8 @@ def handle_message(event):
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#20364F1a"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "☕ ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🖨️ ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}}
+                                {"type": "button", "style": "primary", "height": "md", "color": "#9aaabf", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "☕ ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#495b7d", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🖨️ ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}}
                             ]
                         }
                     ]
@@ -587,9 +625,9 @@ def handle_message(event):
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#20364F1a"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักหญิง", "text": "ดูหอพักหญิง"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักชาย", "text": "ดูหอพักชาย"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#20364F", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักบุคลากร/อาจารย์", "text": "ดูหอพักบุคลากร"}}
+                                {"type": "button", "style": "primary", "height": "md", "color": "#9aaabf", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักหญิง", "text": "ดูหอพักหญิง"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#495b7d", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักชาย", "text": "ดูหอพักชาย"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#2a4876", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักบุคลากร/อาจารย์", "text": "ดูหอพักบุคลากร"}}
                             ]
                         }
                     ]
@@ -665,7 +703,7 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
                     "contents": [
                         {
-                            "type": "button", "style": "primary", "color": "#20364F", "height": "sm",
+                            "type": "button", "style": "primary", "color": "#2a4876", "height": "sm",
                             "action": {
                                 "type": "uri", "label": "🌐 เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"
                             }
