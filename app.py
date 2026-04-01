@@ -497,10 +497,10 @@ def handle_message(event):
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         # 📌 กำหนดสีแยกตามความสำคัญหรือหมวดหมู่
-                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#495b7d"),
-                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#495b7d"),
-                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#495b7d"),
-                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#495b7d")
+                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#2a4876"),
+                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#2a4876"),
+                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#2a4876"),
+                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#2a4876")
                                     ]
                                 }
                             ]
@@ -515,10 +515,10 @@ def handle_message(event):
                                 {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#111827", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#2a4876"),
-                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#2a4876"), 
-                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#2a4876"),
-                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#2a4876")  
+                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#152f57"),
+                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#152f57"), 
+                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#152f57"),
+                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#152f57")  
                                     ]
                                 }
                             ]
