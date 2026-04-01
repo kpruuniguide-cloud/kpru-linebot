@@ -106,7 +106,7 @@ def create_building_flex(data):
         body_contents.append({
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
-            "size": "xs", # 📌 ขนาดเล็กพิเศษ
+            "size": "xs", 
             "color": "#162660", 
             "weight": "bold"
         })
@@ -115,7 +115,7 @@ def create_building_flex(data):
         "type": "text", 
         "text": data.get('official_name', 'ไม่ทราบชื่ออาคาร'), 
         "weight": "bold", 
-        "size": "md", # 📌 ลดจาก xl หรือ lg ลงมาเหลือ md
+        "size": "md", 
         "wrap": True, 
         "color": "#20364F"
     })
@@ -123,7 +123,7 @@ def create_building_flex(data):
     body_contents.append({
         "type": "text", 
         "text": data.get('description', 'ไม่มีข้อมูลรายละเอียด'), 
-        "size": "xs", # 📌 ลดขนาดรายละเอียดให้อ่านง่ายและไม่แย่งซีนหัวข้อ
+        "size": "xs", 
         "color": "#708090", 
         "wrap": True, 
         "margin": "sm"
@@ -144,7 +144,7 @@ def create_building_flex(data):
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#16266080", # 📌 ปุ่มโปร่งแสง 50%
+                    "color": "#162660", # 📌 ปรับเป็นสีทึบ แจ่มเหมือนเดิม
                     "height": "sm",
                     "action": {
                         "type": "uri", 
@@ -159,7 +159,7 @@ def create_building_flex(data):
 def create_service_flex(service, building):
     img_url = f"{GITHUB_IMAGE_BASE}{building['image_url']}" if building and building.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
-    # 📌 ดึงลิงก์จากฐานข้อมูล ถ้าในฐานข้อมูลไม่มี (เป็น None หรือว่างเปล่า) ให้ใช้เว็บมหาลัยเป็นค่าเริ่มต้น
+    # 📌 ดึงลิงก์จากคอลัมน์ external_link ในฐานข้อมูล
     link_url = service.get('external_link')
     if not link_url or str(link_url).strip() == "":
         link_url = "https://www.kpru.ac.th"
@@ -212,18 +212,18 @@ def create_service_flex(service, building):
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#16266080", 
+                    "color": "#162660", # 📌 ปรับเป็นสีทึบ (ลบ 80 ออก) แจ่มเหมือนเดิม
                     "height": "sm",
                     "action": {
                         "type": "uri", 
                         "label": "🌐 ข้อมูลเพิ่มเติม", 
-                        "uri": link_url # 📌 ใส่ตัวแปรลิงก์ที่ดึงมา
+                        "uri": link_url # 📌 เชื่อมกับคอลัมน์ external_link เรียบร้อยครับ
                     }
                 },
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#20364F80", 
+                    "color": "#20364F", # 📌 สีทึบ แจ่มเหมือนเดิม
                     "height": "sm",
                     "action": {
                         "type": "uri", 
@@ -234,7 +234,6 @@ def create_service_flex(service, building):
             ]
         }
     }
-
 # ================== FLASK ROUTES ==================
 
 @app.route("/")
