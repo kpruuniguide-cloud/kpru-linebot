@@ -107,7 +107,7 @@ def create_building_flex(data):
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
             "size": "xs", 
-            "color": "#162660", 
+            "color": "#152f57", 
             "weight": "bold"
         })
         
@@ -223,7 +223,7 @@ def create_service_flex(service, building):
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#162660", 
+                    "color": "#152f57", 
                     "height": "sm",
                     "action": {
                         "type": "uri", 
@@ -432,7 +432,7 @@ def handle_message(event):
             try:
                 conn = pymysql.connect(**DB_CONFIG)
                 with conn.cursor() as cursor:
-                    if "สถานที่สำคัญ" in user_msg: sql = "SELECT * FROM locations WHERE location_id IN (13, 14, 26, 28, 5)"
+                    if "สถานที่สำคัญ" in user_msg: sql = "SELECT * FROM locations WHERE location_id IN (13, 14, 26, 47, 5)"
                     elif "จุดพักผ่อน" in user_msg: sql = "SELECT * FROM locations WHERE location_id IN (56, 60, 50)"
                     else: sql = "SELECT * FROM locations WHERE location_type = 'Exercise'"
                     cursor.execute(sql)
