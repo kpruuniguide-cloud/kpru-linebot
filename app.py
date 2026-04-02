@@ -144,7 +144,7 @@ def create_building_flex(data):
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#162660", 
+                    "color": "#1c2b48", 
                     "height": "sm",
                     "action": {
                         "type": "uri", 
@@ -224,7 +224,7 @@ def create_service_flex(service, building):
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#152f57", 
+                    "color": "#1c2b48", 
                     "height": "sm",
                     "action": {
                         "type": "uri", 
@@ -374,7 +374,7 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "md",
                     "contents": [
                         {
-                            "type": "button", "style": "primary", "color": "#152f57", "margin": "md",
+                            "type": "button", "style": "primary", "color": "#1c2b48", "margin": "md",
                             "action": {"type": "uri", "label": "🔍 ซูมดูแผนที่ขนาดเต็ม", "uri": img_url}
                         }
                     ]
@@ -402,8 +402,24 @@ def handle_message(event):
                 )]
             ))
             return
-        # ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
+     # ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
+            
+            # 📌 ฟังก์ชันสร้างปุ่มแบบกำหนดสีพื้นหลังและสีตัวหนังสือได้เอง
+            def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
+                return {
+                    "type": "box", 
+                    "layout": "vertical", 
+                    "backgroundColor": bg_color, 
+                    "cornerRadius": "lg", 
+                    "paddingAll": "12px", 
+                    "margin": margin_val,
+                    "action": {"type": "message", "label": label, "text": text_val},
+                    "contents": [
+                        {"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}
+                    ]
+                }
+
             flex_menu = {
                 "type": "bubble",
                 "body": {
@@ -415,12 +431,34 @@ def handle_message(event):
                             "backgroundColor": "#ffffff80",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#1c2b48", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#1c2b48", "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#20364F1a"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#9aaabf", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "🏛️ สถานที่สำคัญ", "text": "ดูสถานที่สำคัญ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#495b7d", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "⛲ จุดพักผ่อน", "text": "ดูจุดพักผ่อน"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#2a4876", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🏸 ออกกำลังกาย", "text": "ดูที่ออกกำลังกาย"}}
+                                
+                                # 📌 แก้ไขสีปุ่มที่ 1: สถานที่สำคัญ (แก้สีพื้นหลัง กับ สีตัวหนังสือตรงนี้ได้เลย)
+                                create_custom_btn(
+                                    label="🏛️ สถานที่สำคัญ", 
+                                    text_val="ดูสถานที่สำคัญ", 
+                                    bg_color="#a7c7e7",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#162660", # <-- แก้สีตัวหนังสือตรงนี้
+                                    margin_val="lg"
+                                ),
+                                
+                                # 📌 แก้ไขสีปุ่มที่ 2: จุดพักผ่อน 
+                                create_custom_btn(
+                                    label="⛲ จุดพักผ่อน", 
+                                    text_val="ดูจุดพักผ่อน", 
+                                    bg_color="#1C2B48",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#e8ecef"  # <-- แก้สีตัวหนังสือตรงนี้
+                                ),
+                                
+                                # 📌 แก้ไขสีปุ่มที่ 3: ออกกำลังกาย
+                                create_custom_btn(
+                                    label="🏸 ออกกำลังกาย", 
+                                    text_val="ดูที่ออกกำลังกาย", 
+                                    bg_color="#e8ecef",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#162660"  # <-- แก้สีตัวหนังสือตรงนี้
+                                )
                             ]
                         }
                     ]
@@ -443,15 +481,14 @@ def handle_message(event):
             finally:
                 if 'conn' in locals(): conn.close()
             return
-        
-# ================= 3 SERVICES (เมนูหลัก: หัวข้อกลาง ปุ่มชิดซ้ายแบบแยกสี) =================
+# ================= 3 SERVICES (เมนูหลัก: หัวข้อกลาง ปุ่มชิดซ้ายแบบแยกสีพื้นและสีฟอนต์) =================
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
-            # 1. แก้ไขฟังก์ชันให้รับค่า color_code เพิ่มเข้ามา
-            def create_left_align_button(label, text_val, color_code):
+            # 1. แก้ไขฟังก์ชันให้รับค่า bg_color (สีพื้นหลัง) และ text_color (สีตัวหนังสือ)
+            def create_left_align_button(label, text_val, bg_color, text_color):
                 return {
                     "type": "box", 
                     "layout": "horizontal", 
-                    "backgroundColor": color_code, # 📌 ใช้สีที่ส่งมาจากตอนเรียกใช้
+                    "backgroundColor": bg_color, # 📌 ใช้สีพื้นหลังที่ส่งมา
                     "cornerRadius": "md", 
                     "paddingAll": "12px", 
                     "margin": "xs",
@@ -460,7 +497,7 @@ def handle_message(event):
                         {
                             "type": "text", 
                             "text": label, 
-                            "color": "#FFFFFF", 
+                            "color": text_color, # 📌 ใช้สีตัวหนังสือที่ส่งมา
                             "weight": "bold", 
                             "size": "sm", 
                             "align": "start"
@@ -477,12 +514,12 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#111827", "align": "center", "lineHeight": "22px"},
+                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        # 📌 ระบุสีทีละปุ่มตรงนี้ (ตัวอย่าง: ส้ม และ น้ำเงินกรมท่า)
-                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#9aaabf"),
-                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#9aaabf")
+                                        # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นสว่าง ฟอนต์เข้ม)
+                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#8eb1d1", "#1c2b48"),
+                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#8eb1d1", "#1c2b48")
                                     ]
                                 }
                             ]
@@ -494,14 +531,14 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#111827", "align": "center", "lineHeight": "22px"},
+                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        # 📌 กำหนดสีแยกตามความสำคัญหรือหมวดหมู่
-                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#2a4876"),
-                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#2a4876"),
-                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#2a4876"),
-                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#2a4876")
+                                        # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นเข้ม ฟอนต์ขาว)
+                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#1c2b48", "#e8ecef"),
+                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#1c2b48", "#e8ecef"),
+                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#1c2b48", "#e8ecef"),
+                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#1c2b48", "#e8ecef")
                                     ]
                                 }
                             ]
@@ -513,13 +550,14 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#111827", "align": "center", "lineHeight": "22px"},
+                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#152f57"),
-                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#152f57"), 
-                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#152f57"),
-                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#152f57")  
+                                        # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นเข้มมาก ฟอนต์ขาว)
+                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#e8ecef", "#1c2b48"),
+                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#e8ecef", "#1c2b48"), 
+                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#e8ecef", "#1c2b48"),
+                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#e8ecef", "#1c2b48")  
                                     ]
                                 }
                             ]
@@ -529,7 +567,6 @@ def handle_message(event):
             }
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูบริการนักศึกษา", contents=FlexContainer.from_dict(flex_menu))]))
             return
-
         # ================= ส่วนการค้นหาบริการ (Search Services) =================
         elif user_msg in ["ดูสมัครเรียน", "ดูทุนการศึกษา", "ดูทำบัตรใหม่", "ดูชำระค่าเทอม", "ดูเทียบโอน", "ดูสอบซ้อน", "ดูรักษาสภาพ", "ดูห้องพยาบาล", "ดูเบิกประกัน", "ดูแจ้งของหาย"]:
             keyword_map = {
@@ -581,11 +618,11 @@ def handle_message(event):
                             "backgroundColor": "#ffffff80",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
-                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#9aaabf", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "☕ ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#495b7d", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "🖨️ ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}}
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#1c2b48", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#1c2b48", "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "separator", "margin": "xl", "color": "#e8ecef"},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#1c2b48", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#1c2b48", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}}
                             ]
                         }
                     ]
@@ -612,6 +649,22 @@ def handle_message(event):
 
        # ================= 5 DORMITORY (หอพัก) =================
         elif user_msg == "Menu > หอพัก":
+            
+            # 📌 ฟังก์ชันสร้างปุ่มแบบกำหนดสีพื้นหลังและสีตัวหนังสือได้เอง
+            def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
+                return {
+                    "type": "box", 
+                    "layout": "vertical", 
+                    "backgroundColor": bg_color, 
+                    "cornerRadius": "lg", 
+                    "paddingAll": "12px", 
+                    "margin": margin_val,
+                    "action": {"type": "message", "label": label, "text": text_val},
+                    "contents": [
+                        {"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}
+                    ]
+                }
+
             flex_menu = {
                 "type": "bubble",
                 "body": {
@@ -623,12 +676,34 @@ def handle_message(event):
                             "backgroundColor": "#ffffff80",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#20364F", "align": "center", "wrap": True, "margin": "xs"},
-                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#9aaabf", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักหญิง", "text": "ดูหอพักหญิง"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#495b7d", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักชาย", "text": "ดูหอพักชาย"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#2a4876", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "หอพักบุคลากร/อาจารย์", "text": "ดูหอพักบุคลากร"}}
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#1C2B48", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#1C2B48", "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "separator", "margin": "xl", "color": "#1C2B48"},
+                                
+                                # 📌 แก้ไขสีปุ่มที่ 1: หอพักหญิง
+                                create_custom_btn(
+                                    label="หอพักหญิง", 
+                                    text_val="ดูหอพักหญิง", 
+                                    bg_color="#a7c7e7",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#1C2B48", # <-- แก้สีตัวหนังสือตรงนี้
+                                    margin_val="lg"
+                                ),
+                                
+                                # 📌 แก้ไขสีปุ่มที่ 2: หอพักชาย
+                                create_custom_btn(
+                                    label="หอพักชาย", 
+                                    text_val="ดูหอพักชาย", 
+                                    bg_color="#1C2B48",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#e8ecef"  # <-- แก้สีตัวหนังสือตรงนี้
+                                ),
+                                
+                                # 📌 แก้ไขสีปุ่มที่ 3: หอพักบุคลากร/อาจารย์
+                                create_custom_btn(
+                                    label="หอพักบุคลากร/อาจารย์", 
+                                    text_val="ดูหอพักบุคลากร", 
+                                    bg_color="#e8ecef",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#1C2B48"  # <-- แก้สีตัวหนังสือตรงนี้
+                                )
                             ]
                         }
                     ]
@@ -636,7 +711,6 @@ def handle_message(event):
             }
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูหอพัก", contents=FlexContainer.from_dict(flex_menu))]))
             return
-
         elif user_msg in ["ดูหอพักหญิง", "ดูหอพักชาย", "ดูหอพักบุคลากร"]:
             try:
                 conn = pymysql.connect(**DB_CONFIG)
@@ -678,7 +752,7 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 4},
+                                {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": "#1C2B48", "size": "sm", "flex": 4},
                                 {"type": "text", "text": "055-706555 ต่อ 1360", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
@@ -686,7 +760,7 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": "#1C2B48", "size": "sm", "flex": 5},
                                 {"type": "text", "text": "055-706555 ต่อ 7909", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
@@ -694,7 +768,7 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": "#1C2B48", "size": "sm", "flex": 5},
                                 {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                             ]
                         }
@@ -704,7 +778,7 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
                     "contents": [
                         {
-                            "type": "button", "style": "primary", "color": "#2a4876", "height": "sm",
+                            "type": "button", "style": "primary", "color": "#1C2B48", "height": "sm",
                             "action": {
                                 "type": "uri", "label": "🌐 เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"
                             }
