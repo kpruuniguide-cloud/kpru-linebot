@@ -107,7 +107,7 @@ def create_building_flex(data):
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
             "size": "xs", 
-            "color": "#152f57", 
+            "color": "#12284b", 
             "weight": "bold"
         })
         
@@ -213,7 +213,7 @@ def create_service_flex(service, building):
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#FF9035", 
+                    "color": "#225688", 
                     "height": "sm",
                     "action": {
                         "type": "uri", 
@@ -224,7 +224,7 @@ def create_service_flex(service, building):
                 {
                     "type": "button", 
                     "style": "primary", 
-                    "color": "#1c2b48", 
+                    "color": "#12284b", 
                     "height": "sm",
                     "action": {
                         "type": "uri", 
@@ -347,7 +347,7 @@ def handle_message(event):
             # 3. สร้างโครงสร้าง Flex Message
             flex_map = {
                 "type": "bubble",
-                "size": "giga", 
+                "size": "mega", 
                 "hero": {
                     "type": "image", 
                     "url": img_url, 
@@ -374,7 +374,7 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "md",
                     "contents": [
                         {
-                            "type": "button", "style": "primary", "color": "#1c2b48", "margin": "md",
+                            "type": "button", "style": "primary", "color": "#12284b", "margin": "md", 
                             "action": {"type": "uri", "label": "🔍 ซูมดูแผนที่ขนาดเต็ม", "uri": img_url}
                         }
                     ]
@@ -439,8 +439,8 @@ def handle_message(event):
                                 create_custom_btn(
                                     label="🏛️ สถานที่สำคัญ", 
                                     text_val="ดูสถานที่สำคัญ", 
-                                    bg_color="#a7c7e7",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#162660", # <-- แก้สีตัวหนังสือตรงนี้
+                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้.  ##225688 #12284b #12284b
+                                    text_color="#ffffff", # <-- แก้สีตัวหนังสือตรงนี้
                                     margin_val="lg"
                                 ),
                                 
@@ -448,16 +448,16 @@ def handle_message(event):
                                 create_custom_btn(
                                     label="⛲ จุดพักผ่อน", 
                                     text_val="ดูจุดพักผ่อน", 
-                                    bg_color="#1C2B48",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#e8ecef"  # <-- แก้สีตัวหนังสือตรงนี้
+                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#ffffff"  # <-- แก้สีตัวหนังสือตรงนี้
                                 ),
                                 
                                 # 📌 แก้ไขสีปุ่มที่ 3: ออกกำลังกาย
                                 create_custom_btn(
                                     label="🏸 ออกกำลังกาย", 
                                     text_val="ดูที่ออกกำลังกาย", 
-                                    bg_color="#e8ecef",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#162660"  # <-- แก้สีตัวหนังสือตรงนี้
+                                    bg_color="#225688",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#ffffff"  # <-- แก้สีตัวหนังสือตรงนี้
                                 )
                             ]
                         }
@@ -518,8 +518,8 @@ def handle_message(event):
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นสว่าง ฟอนต์เข้ม)
-                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#8eb1d1", "#1c2b48"),
-                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#8eb1d1", "#1c2b48")
+                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#225688", "#ffffff"),
+                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#225688", "#ffffff")
                                     ]
                                 }
                             ]
@@ -535,10 +535,10 @@ def handle_message(event):
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นเข้ม ฟอนต์ขาว)
-                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#1c2b48", "#e8ecef"),
-                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#1c2b48", "#e8ecef"),
-                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#1c2b48", "#e8ecef"),
-                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#1c2b48", "#e8ecef")
+                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#00345d", "#e8ecef"),
+                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#00345d", "#e8ecef"),
+                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#00345d", "#e8ecef"),
+                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#00345d", "#e8ecef")
                                     ]
                                 }
                             ]
@@ -554,10 +554,10 @@ def handle_message(event):
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นเข้มมาก ฟอนต์ขาว)
-                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#e8ecef", "#1c2b48"),
-                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#e8ecef", "#1c2b48"), 
-                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#e8ecef", "#1c2b48"),
-                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#e8ecef", "#1c2b48")  
+                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#668ca9", "#e8ecef"), #225688
+                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#668ca9", "#e8ecef"), 
+                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#668ca9", "#e8ecef"),
+                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#668ca9", "#e8ecef")  
                                     ]
                                 }
                             ]
@@ -621,8 +621,8 @@ def handle_message(event):
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#1c2b48", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#1c2b48", "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#e8ecef"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#1c2b48", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#1c2b48", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}}
+                                {"type": "button", "style": "primary", "height": "md", "color": "#00345d", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
+                                {"type": "button", "style": "primary", "height": "md", "color": "#00345d", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}}
                             ]
                         }
                     ]
@@ -684,8 +684,8 @@ def handle_message(event):
                                 create_custom_btn(
                                     label="หอพักหญิง", 
                                     text_val="ดูหอพักหญิง", 
-                                    bg_color="#a7c7e7",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#1C2B48", # <-- แก้สีตัวหนังสือตรงนี้
+                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#e8ecef", # <-- แก้สีตัวหนังสือตรงนี้
                                     margin_val="lg"
                                 ),
                                 
@@ -693,7 +693,7 @@ def handle_message(event):
                                 create_custom_btn(
                                     label="หอพักชาย", 
                                     text_val="ดูหอพักชาย", 
-                                    bg_color="#1C2B48",   # <-- แก้สีพื้นหลังตรงนี้
+                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
                                     text_color="#e8ecef"  # <-- แก้สีตัวหนังสือตรงนี้
                                 ),
                                 
@@ -701,8 +701,8 @@ def handle_message(event):
                                 create_custom_btn(
                                     label="หอพักบุคลากร/อาจารย์", 
                                     text_val="ดูหอพักบุคลากร", 
-                                    bg_color="#e8ecef",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#1C2B48"  # <-- แก้สีตัวหนังสือตรงนี้
+                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
+                                    text_color="#e8ecef"  # <-- แก้สีตัวหนังสือตรงนี้
                                 )
                             ]
                         }
@@ -778,7 +778,7 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
                     "contents": [
                         {
-                            "type": "button", "style": "primary", "color": "#1C2B48", "height": "sm",
+                            "type": "button", "style": "primary", "color": "#12284b", "height": "sm",
                             "action": {
                                 "type": "uri", "label": "🌐 เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"
                             }
