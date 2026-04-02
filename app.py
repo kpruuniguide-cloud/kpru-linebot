@@ -456,7 +456,7 @@ def handle_message(event):
                                 create_custom_btn(
                                     label="🏸 ออกกำลังกาย", 
                                     text_val="ดูที่ออกกำลังกาย", 
-                                    bg_color="#225688",   # <-- แก้สีพื้นหลังตรงนี้
+                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
                                     text_color="#ffffff"  # <-- แก้สีตัวหนังสือตรงนี้
                                 )
                             ]
@@ -518,8 +518,8 @@ def handle_message(event):
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นสว่าง ฟอนต์เข้ม)
-                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#225688", "#ffffff"),
-                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#225688", "#ffffff")
+                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#206a98", "#ffffff"),
+                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#206a98", "#ffffff")
                                     ]
                                 }
                             ]
