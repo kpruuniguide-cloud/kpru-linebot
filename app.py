@@ -357,7 +357,7 @@ def handle_message(event):
                     "action": {"type": "uri", "label": "ดูแผนที่ความละเอียดสูง", "uri": img_url} 
                 },
                 "body": {
-                    "type": "box", "layout": "vertical", 
+                    "type": "box", "layout": "vertical", "paddingAll": "12px",
                     "contents": [
                         {
                             "type": "text", "text": "รายชื่ออาคารทั้งหมด ", 
