@@ -286,50 +286,102 @@ def handle_message(event):
         if user_msg == "Menu > แผนที่มหาวิทยาลัย":
             img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png" 
             
-            # 1. สร้างโครงสร้าง Flex Message (รูปภาพ + หัวข้อ + ปุ่มดูขนาดเต็ม)
+            # 1. รายชื่ออาคารทั้งหมด (เรียงตามแผนที่ 1-49 และ A-D)
+            building_names = [
+                "1. อาคาร 1 สถาบันวิจัยและพัฒนา",
+                "2. อาคาร 2 (คณะครุศาสตร์เก่า)",
+                "3. อาคาร 3 (คณะมนุษยศาสตร์และสังคมศาสตร์เก่า)",
+                "4. อาคาร 4 (คณะพยาบาลศาสตร์)",
+                "5. โรงอาหาร",
+                "6. อาคารเรียนศูนย์การแพทย์ทางเลือก",
+                "7. อาคารน้ำเพชร 1",
+                "8. อาคารโปรแกรมดนตรี",
+                "9. อาคารโปรแกรมศิลปะ",
+                "10. กองพัฒนานักศึกษา (หลังเก่า)",
+                "11. อาคารเฉลิมพระเกียรติ ๖ รอบพระชนมพรรษา อาคาร 2 (คณะวิทยาการจัดการ)",
+                "12. อาคารเฉลิมพระเกียรติ ๖ รอบพระชนมพรรษา อาคาร 1 (อาคารเรียนรวม)",
+                "13. หอประชุมทีปังกรรัศมีโชติ",
+                "14. อาคารเรียนรวมและอำนวยการ",
+                "15. อาคารศูนย์กีฬารวม",
+                "16. อาคารจุฬาภรณ์วลัยลักษณ์",
+                "17. อาคารคณะวิทยาศาสตร์และเทคโนโลยี (เก่า)",
+                "18. อาคารเฉลิมพระเกียรติ ๕๐ พรรษา มหาวชิราลงกรณ์ (คณะเทคโนโลยีอุตสาหกรรม)",
+                "19. อาคารเรียนภาควิชาเกษตรศาสตร์",
+                "20. อาคารเทคโนโลยีไฟฟ้า",
+                "21. อาคารศูนย์ส่งเสริมและตรวจสอบการผลิตฯ",
+                "22. อาคารเรียนภาควิชาคหกรรมศาสตร์",
+                "23. อาคารศูนย์การศึกษาพิเศษ",
+                "24. อาคารศูนย์เด็กปฐมวัย",
+                "25. อาคารศูนย์ภาษาและคอมพิวเตอร์",
+                "26. อาคารบรรณราชนครินทร์ (สำนักวิทยบริการฯ)",
+                "27. อาคารเอวี",
+                "28. หอประชุมรัตนอาภา (หอประชุมเก่า)",
+                "29. อาคารออกแบบและพัฒนาผลิตภัณฑ์",
+                "30. อาคารเทคโนโลยีก่อสร้าง",
+                "32. ศูนย์กีฬาในร่มเอนกประสงค์ (โรงยิมใหม่)",
+                "38. คณะมนุษยศาสตร์และสังคมศาสตร์",
+                "41. อาคารภูมิภาคพิทยา (ศูนย์ศิลปะและวัฒนธรรม)",
+                "44. สำนักวิทยบริการและเทคโนโลยีสารสนเทศ (ใหม่)",
+                "46. คณะครุศาสตร์",
+                "47. อาคารกองพัฒนานักศึกษา (SAC)",
+                "48. อาคารเรียนและปฏิบัติการทางวิทยาศาสตร์",
+                "49. KPRU HOME",
+                "A. ศาลาพระพุทธวิทานปัญญาบดี",
+                "B. ลานกิจกรรมหน้าหอประชุมทีปังกรรัศมีโชติ",
+                "C. สวนพลังงาน KPRU",
+                "D. KPRU Place"
+            ]
+
+            # 2. แปลงข้อความใน List ให้เป็นรูปแบบ Flex Message แบบอัตโนมัติ
+            building_contents = []
+            for name in building_names:
+                building_contents.append({
+                    "type": "text", 
+                    "text": name, 
+                    "size": "xs",  
+                    "color": "#4A4A4A", 
+                    "wrap": True, 
+                    "margin": "sm"
+                })
+
+            # 3. สร้างโครงสร้าง Flex Message
             flex_map = {
                 "type": "bubble",
+                "size": "giga", 
                 "hero": {
-                    "type": "image",
-                    "url": img_url,
-                    "size": "full",
-                    "aspectRatio": "20:13",
+                    "type": "image", 
+                    "url": img_url, 
+                    "size": "full", 
+                    "aspectRatio": "1.5:1", 
                     "aspectMode": "cover",
-                    "action": {"type": "uri", "uri": img_url} # กดที่รูปเพื่อขยายได้เลย
+                    "action": {"type": "uri", "label": "ดูแผนที่ความละเอียดสูง", "uri": img_url} 
                 },
                 "body": {
-                    "type": "box",
-                    "layout": "vertical",
+                    "type": "box", "layout": "vertical", 
                     "contents": [
                         {
-                            "type": "text",
-                            "text": "แผนผังมหาวิทยาลัยราชภัฏกำแพงเพชร",
-                            "weight": "bold",
-                            "size": "md",
-                            "color": "#111827",
-                            "align": "center"
+                            "type": "text", "text": "รายชื่ออาคารทั้งหมด ", 
+                            "weight": "bold", "size": "md", "color": "#20364F"
+                        },
+                        {"type": "separator", "margin": "md"},
+                        {
+                            "type": "box", "layout": "vertical", "margin": "md", 
+                            "contents": building_contents 
                         }
                     ]
                 },
                 "footer": {
-                    "type": "box",
-                    "layout": "vertical",
+                    "type": "box", "layout": "vertical", "spacing": "md",
                     "contents": [
                         {
-                            "type": "button",
-                            "style": "primary",
-                            "color": "#152f57",
-                            "action": {
-                                "type": "uri",
-                                "label": "🔍 ดูภาพขนาดเต็ม",
-                                "uri": img_url
-                            }
+                            "type": "button", "style": "primary", "color": "#152f57", "margin": "md",
+                            "action": {"type": "uri", "label": "🔍 ซูมดูแผนที่ขนาดเต็ม", "uri": img_url}
                         }
                     ]
                 }
             }
-
-            # 2. ปุ่ม Quick Reply ด้านล่างสำหรับค้นหาต่อ
+            
+            # 📌 4. สร้างปุ่ม Quick Reply 
             quick_reply_buttons = QuickReply(
                 items=[
                     QuickReplyItem(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
@@ -339,18 +391,18 @@ def handle_message(event):
                     QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร"))
                 ]
             )
-
-            # 3. ส่งข้อความออกไป
+            
+            # 📌 5. ส่ง Flex Message (ใส่ quick_reply พ่วงเข้าไปกับ Flex เลย)
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
                 messages=[FlexMessage(
-                    alt_text="แผนผังมหาวิทยาลัยราชภัฏกำแพงเพชร", 
+                    alt_text="แผนที่มหาวิทยาลัยและรายชื่ออาคาร", 
                     contents=FlexContainer.from_dict(flex_map),
-                    quick_reply=quick_reply_buttons
+                    quick_reply=quick_reply_buttons  # แนบปุ่มด่วนตรงนี้!
                 )]
             ))
             return
-# ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
+        # ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             flex_menu = {
                 "type": "bubble",
