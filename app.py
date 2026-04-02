@@ -518,8 +518,8 @@ def handle_message(event):
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นสว่าง ฟอนต์เข้ม)
-                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#206a98", "#ffffff"),
-                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#206a98", "#ffffff")
+                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#00345d", "#e8ecef"),
+                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#00345d", "#e8ecef")
                                     ]
                                 }
                             ]
@@ -554,10 +554,10 @@ def handle_message(event):
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นเข้มมาก ฟอนต์ขาว)
-                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#668ca9", "#e8ecef"), #225688
-                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#668ca9", "#e8ecef"), 
-                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#668ca9", "#e8ecef"),
-                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#668ca9", "#e8ecef")  
+                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#00345d", "#e8ecef"), 
+                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#00345d", "#e8ecef"), 
+                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#00345d", "#e8ecef"),
+                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#00345d", "#e8ecef")  
                                     ]
                                 }
                             ]
