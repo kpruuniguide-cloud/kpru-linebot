@@ -102,7 +102,7 @@ def create_building_flex(data):
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
             "size": "xs", 
-            "color": "#567C8D", # Teal
+            "color": "#162660", # Royal Blue
             "weight": "bold"
         })
         
@@ -112,7 +112,7 @@ def create_building_flex(data):
         "weight": "bold", 
         "size": "md", 
         "wrap": True, 
-        "color": "#2F4156" # Navy
+        "color": "#162660" # Royal Blue
     })
     
     body_contents.append({
@@ -127,8 +127,8 @@ def create_building_flex(data):
     return {
         "type": "bubble",
         "styles": {
-            "body": {"backgroundColor": "#F5EFEB"},   # Beige
-            "footer": {"backgroundColor": "#F5EFEB"}  # Beige
+            "body": {"backgroundColor": "#FFFFFF"},   # 📌 ปรับกลับเป็น White
+            "footer": {"backgroundColor": "#FFFFFF"}  # 📌 ปรับกลับเป็น White
         },
         "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
         "body": {
@@ -141,7 +141,7 @@ def create_building_flex(data):
             "contents": [
                 {
                     "type": "box", "layout": "vertical", 
-                    "backgroundColor": "#567C8D", # Teal
+                    "backgroundColor": "#162660", # Royal Blue
                     "cornerRadius": "md", "paddingAll": "10px",
                     "action": {
                         "type": "uri", 
@@ -168,8 +168,8 @@ def create_service_flex(service, building):
     return {
         "type": "bubble",
         "styles": {
-            "body": {"backgroundColor": "#F5EFEB"},   # Beige
-            "footer": {"backgroundColor": "#F5EFEB"}  # Beige
+            "body": {"backgroundColor": "#FFFFFF"},   # 📌 ปรับกลับเป็น White
+            "footer": {"backgroundColor": "#FFFFFF"}  # 📌 ปรับกลับเป็น White
         },
         "hero": {
             "type": "image", 
@@ -186,7 +186,7 @@ def create_service_flex(service, building):
                     "text": service.get('service_name', 'ไม่ทราบชื่อบริการ/หน่วยงาน'), 
                     "weight": "bold", 
                     "size": "md", 
-                    "color": "#2F4156", # Navy
+                    "color": "#162660", # Royal Blue
                     "wrap": True
                 },
                 {
@@ -195,14 +195,14 @@ def create_service_flex(service, building):
                         {
                             "type": "box", "layout": "baseline", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "📍 สถานที่:", "color": "#567C8D", "size": "xs", "weight": "bold", "flex": 2}, # Teal
-                                {"type": "text", "text": building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ', "wrap": True, "color": "#2F4156", "size": "xs", "flex": 6} # Navy
+                                {"type": "text", "text": "📍 สถานที่:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2}, # Royal Blue
+                                {"type": "text", "text": building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ', "wrap": True, "color": "#162660", "size": "xs", "flex": 6} # Royal Blue
                             ]
                         },
                         {
                             "type": "box", "layout": "baseline", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "📄 ข้อมูล:", "color": "#567C8D", "size": "xs", "weight": "bold", "flex": 2}, # Teal
+                                {"type": "text", "text": "📄 ข้อมูล:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2}, # Royal Blue
                                 {"type": "text", "text": service.get('service_details', 'ไม่ระบุ'), "wrap": True, "color": "#708090", "size": "xs", "flex": 6}
                             ]
                         }
@@ -215,14 +215,14 @@ def create_service_flex(service, building):
             "contents": [
                 {
                     "type": "box", "layout": "vertical", 
-                    "backgroundColor": "#567C8D", # Teal
+                    "backgroundColor": "#D0E6FD", # Powder Blue
                     "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "ข้อมูลเพิ่มเติม", "uri": link_url},
-                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # White
+                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}] # Royal Blue
                 },
                 {
                     "type": "box", "layout": "vertical", 
-                    "backgroundColor": "#567C8D", # Teal
+                    "backgroundColor": "#162660", # Royal Blue
                     "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "นำทางไปที่นี่", "uri": f"https://www.google.com/maps/dir/?api=1&destination={building.get('latitude', '')},{building.get('longitude', '')}&travelmode=walking" if building else "#"},
                     "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # White
@@ -301,15 +301,15 @@ def handle_message(event):
             building_contents = []
             for name in building_names:
                 building_contents.append({
-                    "type": "text", "text": name, "size": "xs", "color": "#2F4156", "wrap": True, "margin": "sm" # Navy
+                    "type": "text", "text": name, "size": "xs", "color": "#162660", "wrap": True, "margin": "sm" # Royal Blue
                 })
 
             flex_map = {
                 "type": "bubble",
                 "size": "mega", 
                 "styles": {
-                    "body": {"backgroundColor": "#F5EFEB"},   # Beige
-                    "footer": {"backgroundColor": "#F5EFEB"}  # Beige
+                    "body": {"backgroundColor": "#FFFFFF"},   # 📌 ปรับกลับเป็น White
+                    "footer": {"backgroundColor": "#FFFFFF"}  # 📌 ปรับกลับเป็น White
                 },
                 "hero": {
                     "type": "image", "url": img_url, "size": "full", "aspectRatio": "1.5:1", "aspectMode": "cover",
@@ -318,8 +318,8 @@ def handle_message(event):
                 "body": {
                     "type": "box", "layout": "vertical", "paddingAll": "12px",
                     "contents": [
-                        {"type": "text", "text": "รายชื่ออาคารทั้งหมด ", "weight": "bold", "size": "md", "color": "#2F4156"}, # Navy
-                        {"type": "separator", "margin": "md", "color": "#C8D9E6"}, # Sky Blue
+                        {"type": "text", "text": "รายชื่ออาคารทั้งหมด ", "weight": "bold", "size": "md", "color": "#162660"}, # Royal Blue
+                        {"type": "separator", "margin": "md", "color": "#D0E6FD"}, # Powder Blue
                         {"type": "box", "layout": "vertical", "margin": "md", "contents": building_contents}
                     ]
                 },
@@ -328,10 +328,10 @@ def handle_message(event):
                     "contents": [
                         {
                             "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#567C8D", # Teal
+                            "backgroundColor": "#D0E6FD", # Powder Blue
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "ซูมดูแผนที่ขนาดเต็ม", "uri": img_url},
-                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # White
+                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}] # Royal Blue
                         }
                     ]
                 }
@@ -375,15 +375,15 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Landmark.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#f5efebe6", # Beige โปร่งแสง
+                            "backgroundColor": "#ffffffcc", # 📌 ปรับกลับเป็น White โปร่งแสง
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#567C8D", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Teal
-                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#2F4156", "align": "center", "wrap": True, "margin": "xs"}, # Navy
-                                {"type": "separator", "margin": "xl", "color": "#C8D9E6"}, # Sky Blue
-                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", "#567C8D", "#FFFFFF", "lg"), # Teal / White
-                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", "#567C8D", "#FFFFFF"), 
-                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", "#567C8D", "#FFFFFF") 
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Royal Blue
+                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, # Royal Blue
+                                {"type": "separator", "margin": "xl", "color": "#D0E6FD"}, # Powder Blue
+                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", "#D0E6FD", "#162660", "lg"), 
+                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", "#D0E6FD", "#162660"), 
+                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", "#D0E6FD", "#162660") 
                             ]
                         }
                     ]
@@ -413,10 +413,10 @@ def handle_message(event):
             def create_left_align_button(label, text_val):
                 return {
                     "type": "box", "layout": "horizontal", 
-                    "backgroundColor": "#567C8D", # Teal
+                    "backgroundColor": "#D0E6FD", # Powder Blue
                     "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
                     "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [{"type": "text", "text": label, "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}] # White
+                    "contents": [{"type": "text", "text": label, "color": "#162660", "weight": "bold", "size": "sm", "align": "start"}] # Royal Blue
                 }
 
             flex_menu = {
@@ -424,12 +424,12 @@ def handle_message(event):
                 "contents": [
                     {
                         "type": "bubble", 
-                        "styles": {"body": {"backgroundColor": "#F5EFEB"}}, # Beige
+                        "styles": {"body": {"backgroundColor": "#FFFFFF"}}, # 📌 ปรับกลับเป็น White
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services1.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#2F4156", "align": "center", "lineHeight": "22px"}, # Navy
+                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#162660", "align": "center", "lineHeight": "22px"}, # Royal Blue
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม"),
@@ -441,12 +441,12 @@ def handle_message(event):
                     },
                     {
                         "type": "bubble", 
-                        "styles": {"body": {"backgroundColor": "#F5EFEB"}}, # Beige
+                        "styles": {"body": {"backgroundColor": "#FFFFFF"}}, # 📌 ปรับกลับเป็น White
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services2.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#2F4156", "align": "center", "lineHeight": "22px"}, # Navy
+                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#162660", "align": "center", "lineHeight": "22px"}, # Royal Blue
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         create_left_align_button("สมัครเรียน", "ดูสมัครเรียน"), 
@@ -460,12 +460,12 @@ def handle_message(event):
                     },
                     {
                         "type": "bubble",
-                        "styles": {"body": {"backgroundColor": "#F5EFEB"}}, # Beige
+                        "styles": {"body": {"backgroundColor": "#FFFFFF"}}, # 📌 ปรับกลับเป็น White
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services3.jpg", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#2F4156", "align": "center", "lineHeight": "22px"}, # Navy
+                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#162660", "align": "center", "lineHeight": "22px"}, # Royal Blue
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่"),
@@ -534,14 +534,14 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Shop2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#f5efebe6", # Beige โปร่งแสง
+                            "backgroundColor": "#ffffffcc", # 📌 ปรับกลับเป็น White โปร่งแสง
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#567C8D", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Teal
-                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#2F4156", "align": "center", "wrap": True, "margin": "xs"}, # Navy
-                                {"type": "separator", "margin": "xl", "color": "#2F4156"}, # Navy
-                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", "#567C8D", "#FFFFFF", "lg"), # Teal / White
-                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#567C8D", "#FFFFFF") 
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Royal Blue
+                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, # Royal Blue
+                                {"type": "separator", "margin": "xl", "color": "#162660"}, # Royal Blue
+                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", "#D0E6FD", "#162660", "lg"), 
+                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#D0E6FD", "#162660") 
                             ]
                         }
                     ]
@@ -584,15 +584,15 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Dorm2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#f5efebe6", # Beige โปร่งแสง
+                            "backgroundColor": "#ffffffcc", # 📌 ปรับกลับเป็น White โปร่งแสง
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#567C8D", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Teal
-                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#2F4156", "align": "center", "wrap": True, "margin": "xs"}, # Navy
-                                {"type": "separator", "margin": "xl", "color": "#2F4156"}, # Navy
-                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", "#567C8D", "#FFFFFF", "lg"), # Teal / White
-                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", "#567C8D", "#FFFFFF"), 
-                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", "#567C8D", "#FFFFFF") 
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Royal Blue
+                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, # Royal Blue
+                                {"type": "separator", "margin": "xl", "color": "#162660"}, # Royal Blue
+                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", "#D0E6FD", "#162660", "lg"), 
+                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", "#D0E6FD", "#162660"), 
+                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", "#D0E6FD", "#162660") 
                             ]
                         }
                     ]
@@ -621,9 +621,9 @@ def handle_message(event):
                 "type": "bubble", 
                 "size": "mega", 
                 "styles": {
-                    "header": {"backgroundColor": "#567C8D"}, # Teal
-                    "body": {"backgroundColor": "#F5EFEB"},   # Beige
-                    "footer": {"backgroundColor": "#F5EFEB", "separator": True} # Beige
+                    "header": {"backgroundColor": "#162660"}, # Royal Blue
+                    "body": {"backgroundColor": "#FFFFFF"},   # 📌 ปรับกลับเป็น White
+                    "footer": {"backgroundColor": "#FFFFFF", "separator": True} # 📌 ปรับกลับเป็น White
                 },
                 "header": {
                     "type": "box", "layout": "vertical", "paddingAll": "lg",
@@ -635,32 +635,32 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "🚨 หัวหน้ารปภ.", "weight": "bold", "color": "#2F4156", "size": "sm", "flex": 5}, # Navy
-                                {"type": "text", "text": "093-923-8526", "color": "#567C8D", "size": "sm", "weight": "bold", "align": "end", "flex": 6} # Teal
+                                {"type": "text", "text": "🚨 หัวหน้ารปภ.", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5}, # Royal Blue
+                                {"type": "text", "text": "093-923-8526", "color": "#162660", "size": "sm", "weight": "bold", "align": "end", "flex": 6} # Royal Blue
                             ]
                         },
                         {"type": "separator"},
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": "#2F4156", "size": "sm", "flex": 4},
-                                {"type": "text", "text": "055-706555 ต่อ 1360", "color": "#2F4156", "size": "xs", "align": "end", "flex": 7}
+                                {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": "055-706555 ต่อ 1360", "color": "#162660", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
                         {"type": "separator"},
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": "#2F4156", "size": "sm", "flex": 5},
-                                {"type": "text", "text": "055-706555 ต่อ 7909", "color": "#2F4156", "size": "xs", "align": "end", "flex": 7}
+                                {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "055-706555 ต่อ 7909", "color": "#162660", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
                         {"type": "separator"},
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": "#2F4156", "size": "sm", "flex": 5},
-                                {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#2F4156", "size": "xs", "align": "end", "flex": 7}
+                                {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#162660", "size": "xs", "align": "end", "flex": 7}
                             ]
                         }
                     ]
@@ -670,10 +670,10 @@ def handle_message(event):
                     "contents": [
                         {
                             "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#567C8D", # Teal
+                            "backgroundColor": "#D0E6FD", # Powder Blue
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"},
-                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # White
+                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}] # Royal Blue
                         }
                     ]
                 }
