@@ -102,7 +102,7 @@ def create_building_flex(data):
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
             "size": "xs", 
-            "color": "#A6CCE3", # Sky Dream
+            "color": "#1E5E86", # Sky Dream
             "weight": "bold"
         })
         
@@ -406,8 +406,8 @@ def handle_message(event):
                                 {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#FDEBDD", "#1C2B48"), # Vanilla Cream
-                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#FDEBDD", "#1C2B48")
+                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#FAE7A1", "#1C2B48"), # Vanilla Cream
+                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#FAE7A1", "#1C2B48")
                                     ]
                                 }
                             ]
@@ -509,11 +509,11 @@ def handle_message(event):
                             "backgroundColor": "#ffffffcc",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#F7C7D9", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#1C2B48", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#1C2B48", "align": "center", "wrap": True, "margin": "xs"},
-                                {"type": "separator", "margin": "xl", "color": "#e8ecef"},
-                                create_custom_btn("☕ ร้านกาแฟ", "ดูร้านกาแฟ", "#FDEBDD", "#1C2B48", "lg"), # Vanilla Cream
-                                create_custom_btn("🖨️ ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#F7C7D9", "#1C2B48") # Soft Pink
+                                {"type": "separator", "margin": "xl", "color": "#1C2B48"},
+                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", "#A6CCE3", "#1C2B48", "lg"), # Vanilla Cream
+                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#A6CCE3", "#1C2B48") # Soft Pink
                             ]
                         }
                     ]
@@ -593,7 +593,7 @@ def handle_message(event):
                 "type": "bubble", 
                 "size": "mega", 
                 "styles": {
-                    "header": {"backgroundColor": "#F7C7D9"}, # Soft Pink
+                    "header": {"backgroundColor": "#FAE7A1"}, # Soft Pink
                     "footer": {"separator": True}
                 },
                 "header": {
