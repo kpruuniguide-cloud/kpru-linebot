@@ -32,6 +32,16 @@ GITHUB_IMAGE_BASE = "https://raw.githubusercontent.com/kpruuniguide-cloud/kpru-l
 handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
 configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'))
 
+# ================== PALETTE ==================
+# 📌 3 สีหลักตามที่เบิร์ดกำหนด
+PALETTE = {
+    "caramel": "#BF7E46",
+    "papaya": "#FBEDD6",
+    "baby_blue": "#97C6E0",
+    "dark_text": "#1C2B48", # น้ำเงินเข้มสำหรับอ่านง่ายบนพื้นสว่าง
+    "light_text": "#FFFFFF" # ขาวสำหรับอ่านบนพื้นเข้ม
+}
+
 # ================== DATABASE LOGIC ==================
 
 def get_building_data(keyword):
@@ -102,7 +112,7 @@ def create_building_flex(data):
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
             "size": "xs", 
-            "color": "#1E5E86", # Sky Dream
+            "color": PALETTE["caramel"], 
             "weight": "bold"
         })
         
@@ -112,7 +122,7 @@ def create_building_flex(data):
         "weight": "bold", 
         "size": "md", 
         "wrap": True, 
-        "color": "#1C2B48"
+        "color": PALETTE["dark_text"]
     })
     
     body_contents.append({
@@ -137,13 +147,13 @@ def create_building_flex(data):
             "type": "box", "layout": "vertical", "spacing": "sm",
             "contents": [
                 {
-                    "type": "box", "layout": "vertical", "backgroundColor": "#B9E3DD", "cornerRadius": "md", "paddingAll": "10px",
+                    "type": "box", "layout": "vertical", "backgroundColor": PALETTE["baby_blue"], "cornerRadius": "md", "paddingAll": "10px",
                     "action": {
                         "type": "uri", 
                         "label": "นำทางไปที่นี่", 
                         "uri": f"https://www.google.com/maps/dir/?api=1&destination={data.get('latitude', '')},{data.get('longitude', '')}&travelmode=walking"
                     },
-                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
+                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
                 }
             ]
         }
@@ -174,7 +184,7 @@ def create_service_flex(service, building):
                     "text": service.get('service_name', 'ไม่ทราบชื่อบริการ/หน่วยงาน'), 
                     "weight": "bold", 
                     "size": "md", 
-                    "color": "#1C2B48", 
+                    "color": PALETTE["dark_text"], 
                     "wrap": True
                 },
                 {
@@ -183,14 +193,14 @@ def create_service_flex(service, building):
                         {
                             "type": "box", "layout": "baseline", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "📍 สถานที่:", "color": "#A6CCE3", "size": "xs", "weight": "bold", "flex": 2},
+                                {"type": "text", "text": "📍 สถานที่:", "color": PALETTE["caramel"], "size": "xs", "weight": "bold", "flex": 2},
                                 {"type": "text", "text": building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ', "wrap": True, "color": "#4b5563", "size": "xs", "flex": 6}
                             ]
                         },
                         {
                             "type": "box", "layout": "baseline", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "📄 ข้อมูล:", "color": "#A6CCE3", "size": "xs", "weight": "bold", "flex": 2},
+                                {"type": "text", "text": "📄 ข้อมูล:", "color": PALETTE["caramel"], "size": "xs", "weight": "bold", "flex": 2},
                                 {"type": "text", "text": service.get('service_details', 'ไม่ระบุ'), "wrap": True, "color": "#708090", "size": "xs", "flex": 6}
                             ]
                         }
@@ -202,14 +212,14 @@ def create_service_flex(service, building):
             "type": "box", "layout": "vertical", "spacing": "sm",
             "contents": [
                 {
-                    "type": "box", "layout": "vertical", "backgroundColor": "#FDEBDD", "cornerRadius": "md", "paddingAll": "10px",
+                    "type": "box", "layout": "vertical", "backgroundColor": PALETTE["papaya"], "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "ข้อมูลเพิ่มเติม", "uri": link_url},
-                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
+                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
                 },
                 {
-                    "type": "box", "layout": "vertical", "backgroundColor": "#B9E3DD", "cornerRadius": "md", "paddingAll": "10px",
+                    "type": "box", "layout": "vertical", "backgroundColor": PALETTE["baby_blue"], "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "นำทางไปที่นี่", "uri": f"https://www.google.com/maps/dir/?api=1&destination={building.get('latitude', '')},{building.get('longitude', '')}&travelmode=walking" if building else "#"},
-                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
+                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
                 }
             ]
         }
@@ -285,7 +295,7 @@ def handle_message(event):
             building_contents = []
             for name in building_names:
                 building_contents.append({
-                    "type": "text", "text": name, "size": "xs", "color": "#4A4A4A", "wrap": True, "margin": "sm"
+                    "type": "text", "text": name, "size": "xs", "color": PALETTE["dark_text"], "wrap": True, "margin": "sm"
                 })
 
             flex_map = {
@@ -298,7 +308,7 @@ def handle_message(event):
                 "body": {
                     "type": "box", "layout": "vertical", "paddingAll": "12px",
                     "contents": [
-                        {"type": "text", "text": "รายชื่ออาคารทั้งหมด ", "weight": "bold", "size": "md", "color": "#1C2B48"},
+                        {"type": "text", "text": "รายชื่ออาคารทั้งหมด ", "weight": "bold", "size": "md", "color": PALETTE["dark_text"]},
                         {"type": "separator", "margin": "md"},
                         {"type": "box", "layout": "vertical", "margin": "md", "contents": building_contents}
                     ]
@@ -307,9 +317,9 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "md",
                     "contents": [
                         {
-                            "type": "box", "layout": "vertical", "backgroundColor": "#A6CCE3", "cornerRadius": "md", "paddingAll": "10px",
+                            "type": "box", "layout": "vertical", "backgroundColor": PALETTE["baby_blue"], "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "ซูมดูแผนที่ขนาดเต็ม", "uri": img_url},
-                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
+                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
                         }
                     ]
                 }
@@ -356,12 +366,12 @@ def handle_message(event):
                             "backgroundColor": "#ffffffcc",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#A6CCE3", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#1c2b48", "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": PALETTE["caramel"], "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": PALETTE["dark_text"], "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#e8ecef"},
-                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", "#A6CCE3", "#1C2B48", "lg"), # Sky Dream
-                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", "#B9E3DD", "#1C2B48"), # Mint Breezet
-                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", "#D9CDE4", "#1C2B48") # Lilac Mist
+                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", PALETTE["caramel"], PALETTE["light_text"], "lg"), 
+                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", PALETTE["papaya"], PALETTE["dark_text"]), 
+                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", PALETTE["baby_blue"], PALETTE["dark_text"]) 
                             ]
                         }
                     ]
@@ -403,11 +413,11 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
+                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": PALETTE["dark_text"], "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#FAE7A1", "#1C2B48"), # Vanilla Cream
-                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#FAE7A1", "#1C2B48")
+                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", PALETTE["papaya"], PALETTE["dark_text"]),
+                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", PALETTE["papaya"], PALETTE["dark_text"])
                                     ]
                                 }
                             ]
@@ -419,13 +429,13 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
+                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": PALETTE["dark_text"], "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#A6CCE3", "#1C2B48"), # Sky Dream
-                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#A6CCE3", "#1C2B48"),
-                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#A6CCE3", "#1C2B48"),
-                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#A6CCE3", "#1C2B48")
+                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", PALETTE["baby_blue"], PALETTE["dark_text"]), 
+                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", PALETTE["baby_blue"], PALETTE["dark_text"]),
+                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", PALETTE["baby_blue"], PALETTE["dark_text"]),
+                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", PALETTE["baby_blue"], PALETTE["dark_text"])
                                     ]
                                 }
                             ]
@@ -437,13 +447,13 @@ def handle_message(event):
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
+                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": PALETTE["dark_text"], "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#B9E3DD", "#1C2B48"), # Mint Breezet
-                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#B9E3DD", "#1C2B48"), 
-                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#B9E3DD", "#1C2B48"),
-                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#B9E3DD", "#1C2B48")  
+                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", PALETTE["caramel"], PALETTE["light_text"]),
+                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", PALETTE["caramel"], PALETTE["light_text"]), 
+                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", PALETTE["caramel"], PALETTE["light_text"]),
+                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", PALETTE["caramel"], PALETTE["light_text"])  
                                     ]
                                 }
                             ]
@@ -509,11 +519,11 @@ def handle_message(event):
                             "backgroundColor": "#ffffffcc",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#1C2B48", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#1C2B48", "align": "center", "wrap": True, "margin": "xs"},
-                                {"type": "separator", "margin": "xl", "color": "#1C2B48"},
-                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", "#A6CCE3", "#1C2B48", "lg"), # Vanilla Cream
-                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#A6CCE3", "#1C2B48") # Soft Pink
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": PALETTE["caramel"], "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": PALETTE["dark_text"], "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "separator", "margin": "xl", "color": PALETTE["dark_text"]},
+                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", PALETTE["papaya"], PALETTE["dark_text"], "lg"), 
+                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", PALETTE["baby_blue"], PALETTE["dark_text"]) 
                             ]
                         }
                     ]
@@ -559,12 +569,12 @@ def handle_message(event):
                             "backgroundColor": "#ffffffcc",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#D9CDE4", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#1C2B48", "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": PALETTE["caramel"], "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": PALETTE["dark_text"], "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#e8ecef"},
-                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", "#F7C7D9", "#1C2B48", "lg"), # Soft Pink
-                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", "#A6CCE3", "#1C2B48"), # Sky Dream
-                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", "#D9CDE4", "#1C2B48") # Lilac Mist
+                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", PALETTE["caramel"], PALETTE["light_text"], "lg"), 
+                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", PALETTE["baby_blue"], PALETTE["dark_text"]), 
+                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", PALETTE["papaya"], PALETTE["dark_text"]) 
                             ]
                         }
                     ]
@@ -593,12 +603,12 @@ def handle_message(event):
                 "type": "bubble", 
                 "size": "mega", 
                 "styles": {
-                    "header": {"backgroundColor": "#FAE7A1"}, # Soft Pink
+                    "header": {"backgroundColor": PALETTE["caramel"]}, 
                     "footer": {"separator": True}
                 },
                 "header": {
                     "type": "box", "layout": "vertical", "paddingAll": "lg",
-                    "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": "#1C2B48", "weight": "bold", "size": "md", "align": "center"}]
+                    "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": PALETTE["light_text"], "weight": "bold", "size": "md", "align": "center"}]
                 },
                 "body": {
                     "type": "box", "layout": "vertical", "spacing": "md", "paddingAll": "lg",
@@ -606,7 +616,7 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "🚨 หัวหน้ารปภ.", "weight": "bold", "color": "#20364F", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "🚨 หัวหน้ารปภ.", "weight": "bold", "color": PALETTE["dark_text"], "size": "sm", "flex": 5},
                                 {"type": "text", "text": "093-923-8526", "color": "#e30000", "size": "sm", "weight": "bold", "align": "end", "flex": 6}
                             ]
                         },
@@ -614,7 +624,7 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": "#1C2B48", "size": "sm", "flex": 4},
+                                {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": PALETTE["dark_text"], "size": "sm", "flex": 4},
                                 {"type": "text", "text": "055-706555 ต่อ 1360", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
@@ -622,7 +632,7 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": "#1C2B48", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": PALETTE["dark_text"], "size": "sm", "flex": 5},
                                 {"type": "text", "text": "055-706555 ต่อ 7909", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
@@ -630,7 +640,7 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": "#1C2B48", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": PALETTE["dark_text"], "size": "sm", "flex": 5},
                                 {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
                             ]
                         }
@@ -640,9 +650,9 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
                     "contents": [
                         {
-                            "type": "box", "layout": "vertical", "backgroundColor": "#B9E3DD", "cornerRadius": "md", "paddingAll": "10px",
+                            "type": "box", "layout": "vertical", "backgroundColor": PALETTE["baby_blue"], "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"},
-                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
+                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
                         }
                     ]
                 }
