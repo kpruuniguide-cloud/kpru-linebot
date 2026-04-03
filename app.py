@@ -215,10 +215,10 @@ def create_service_flex(service, building):
             "contents": [
                 {
                     "type": "box", "layout": "vertical", 
-                    "backgroundColor": "#D0E6FD", # Powder Blue
+                    "backgroundColor": "#162660", # 📌 แก้ไขเป็น Royal Blue
                     "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "ข้อมูลเพิ่มเติม", "uri": link_url},
-                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}] # Royal Blue
+                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # 📌 แก้ตัวอักษรเป็น White
                 },
                 {
                     "type": "box", "layout": "vertical", 
@@ -319,7 +319,7 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "paddingAll": "12px",
                     "contents": [
                         {"type": "text", "text": "รายชื่ออาคารทั้งหมด ", "weight": "bold", "size": "md", "color": "#162660"}, # Royal Blue
-                        {"type": "separator", "margin": "md", "color": "#D0E6FD"}, # Powder Blue
+                        {"type": "separator", "margin": "md", "color": "#162660"}, # 📌 แก้ไขเป็น Royal Blue
                         {"type": "box", "layout": "vertical", "margin": "md", "contents": building_contents}
                     ]
                 },
@@ -328,10 +328,10 @@ def handle_message(event):
                     "contents": [
                         {
                             "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#D0E6FD", # Powder Blue
+                            "backgroundColor": "#162660", # 📌 แก้ไขเป็น Royal Blue
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "ซูมดูแผนที่ขนาดเต็ม", "uri": img_url},
-                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}] # Royal Blue
+                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # 📌 แก้ตัวอักษรเป็น White
                         }
                     ]
                 }
@@ -380,10 +380,10 @@ def handle_message(event):
                             "contents": [
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Royal Blue
                                 {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, # Royal Blue
-                                {"type": "separator", "margin": "xl", "color": "#D0E6FD"}, # Powder Blue
-                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", "#D0E6FD", "#162660", "lg"), 
-                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", "#D0E6FD", "#162660"), 
-                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", "#D0E6FD", "#162660") 
+                                {"type": "separator", "margin": "xl", "color": "#162660"}, # 📌 แก้ไขเป็น Royal Blue
+                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", "#162660", "#FFFFFF", "lg"), # 📌 แก้ปุ่มเป็น Royal Blue
+                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", "#162660", "#FFFFFF"), # 📌 แก้ปุ่มเป็น Royal Blue
+                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", "#162660", "#FFFFFF") # 📌 แก้ปุ่มเป็น Royal Blue
                             ]
                         }
                     ]
@@ -413,10 +413,10 @@ def handle_message(event):
             def create_left_align_button(label, text_val):
                 return {
                     "type": "box", "layout": "horizontal", 
-                    "backgroundColor": "#D0E6FD", # Powder Blue
+                    "backgroundColor": "#162660", # 📌 แก้ไขเป็น Royal Blue
                     "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
                     "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [{"type": "text", "text": label, "color": "#162660", "weight": "bold", "size": "sm", "align": "start"}] # Royal Blue
+                    "contents": [{"type": "text", "text": label, "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}] # 📌 แก้ตัวอักษรเป็น White
                 }
 
             flex_menu = {
@@ -539,9 +539,9 @@ def handle_message(event):
                             "contents": [
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Royal Blue
                                 {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, # Royal Blue
-                                {"type": "separator", "margin": "xl", "color": "#162660"}, # Royal Blue
-                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", "#D0E6FD", "#162660", "lg"), 
-                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#D0E6FD", "#162660") 
+                                {"type": "separator", "margin": "xl", "color": "#162660"}, # 📌 แก้ไขเป็น Royal Blue
+                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", "#162660", "#FFFFFF", "lg"), # 📌 แก้ปุ่มเป็น Royal Blue
+                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#162660", "#FFFFFF") # 📌 แก้ปุ่มเป็น Royal Blue
                             ]
                         }
                     ]
@@ -589,10 +589,10 @@ def handle_message(event):
                             "contents": [
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Royal Blue
                                 {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, # Royal Blue
-                                {"type": "separator", "margin": "xl", "color": "#162660"}, # Royal Blue
-                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", "#D0E6FD", "#162660", "lg"), 
-                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", "#D0E6FD", "#162660"), 
-                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", "#D0E6FD", "#162660") 
+                                {"type": "separator", "margin": "xl", "color": "#162660"}, # 📌 แก้ไขเป็น Royal Blue
+                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", "#162660", "#FFFFFF", "lg"), # 📌 แก้ปุ่มเป็น Royal Blue
+                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", "#162660", "#FFFFFF"), # 📌 แก้ปุ่มเป็น Royal Blue
+                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", "#162660", "#FFFFFF") # 📌 แก้ปุ่มเป็น Royal Blue
                             ]
                         }
                     ]
@@ -670,10 +670,10 @@ def handle_message(event):
                     "contents": [
                         {
                             "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#D0E6FD", # Powder Blue
+                            "backgroundColor": "#162660", # 📌 แก้ไขเป็น Royal Blue
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"},
-                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}] # Royal Blue
+                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # 📌 แก้ตัวอักษรเป็น White
                         }
                     ]
                 }
