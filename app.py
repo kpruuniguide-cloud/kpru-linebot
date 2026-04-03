@@ -36,10 +36,11 @@ configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'
 # 📌 3 สีหลักตามที่เบิร์ดกำหนด
 PALETTE = {
     "caramel": "#BF7E46",
+    "coffee": "#6F4E37",
     "papaya": "#FBEDD6",
     "baby_blue": "#97C6E0",
-    "dark_text": "#1C2B48", # น้ำเงินเข้มสำหรับอ่านง่ายบนพื้นสว่าง
-    "light_text": "#FFFFFF" # ขาวสำหรับอ่านบนพื้นเข้ม
+    "mint": "#B9E3DD",
+    "dark_text": "#1C2B48"
 }
 
 # ================== DATABASE LOGIC ==================
@@ -136,7 +137,10 @@ def create_building_flex(data):
 
     return {
         "type": "bubble",
-        "styles": {"body": {"backgroundColor": "#FFFFFF"}},
+        "styles": {
+            "body": {"backgroundColor": "#FAF8F0"},   # 📌 พื้นหลังส่วนเนื้อหา
+            "footer": {"backgroundColor": "#FAF8F0"}  # 📌 พื้นหลังส่วนท้ายการ์ด (ให้เนียนเป็นสีเดียวกัน)
+        },
         "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
         "body": {
             "type": "box", 
@@ -147,13 +151,19 @@ def create_building_flex(data):
             "type": "box", "layout": "vertical", "spacing": "sm",
             "contents": [
                 {
-                    "type": "box", "layout": "vertical", "backgroundColor": PALETTE["baby_blue"], "cornerRadius": "md", "paddingAll": "10px",
+                    "type": "box", "layout": "vertical", 
+                    "backgroundColor": "#6F4E37", # 📌 สีปุ่ม Coffee
+                    "cornerRadius": "md", "paddingAll": "10px",
                     "action": {
                         "type": "uri", 
                         "label": "นำทางไปที่นี่", 
                         "uri": f"https://www.google.com/maps/dir/?api=1&destination={data.get('latitude', '')},{data.get('longitude', '')}&travelmode=walking"
                     },
-                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
+                    "contents": [{
+                        "type": "text", "text": "🗺️ นำทางไปที่นี่", 
+                        "color": "#FBEDD6", # 📌 สีตัวอักษร Papaya
+                        "weight": "bold", "size": "sm", "align": "center"
+                    }]
                 }
             ]
         }
@@ -168,7 +178,10 @@ def create_service_flex(service, building):
 
     return {
         "type": "bubble",
-        "styles": {"body": {"backgroundColor": "#FFFFFF"}},
+        "styles": {
+            "body": {"backgroundColor": "#FAF8F0"},   # 📌 เปลี่ยนพื้นหลังส่วนเนื้อหา
+            "footer": {"backgroundColor": "#FAF8F0"}  # 📌 เปลี่ยนพื้นหลังส่วนท้ายให้เนียนเป็นสีเดียวกัน
+        },
         "hero": {
             "type": "image", 
             "url": img_url, 
@@ -212,14 +225,18 @@ def create_service_flex(service, building):
             "type": "box", "layout": "vertical", "spacing": "sm",
             "contents": [
                 {
-                    "type": "box", "layout": "vertical", "backgroundColor": PALETTE["papaya"], "cornerRadius": "md", "paddingAll": "10px",
+                    "type": "box", "layout": "vertical", 
+                    "backgroundColor": "#6F4E37", # 📌 สีปุ่ม Coffee
+                    "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "ข้อมูลเพิ่มเติม", "uri": link_url},
-                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
+                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#FBEDD6", "weight": "bold", "size": "sm", "align": "center"}] # 📌 สีอักษร Papaya
                 },
                 {
-                    "type": "box", "layout": "vertical", "backgroundColor": PALETTE["baby_blue"], "cornerRadius": "md", "paddingAll": "10px",
+                    "type": "box", "layout": "vertical", 
+                    "backgroundColor": "#6F4E37", # 📌 สีปุ่ม Coffee
+                    "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "นำทางไปที่นี่", "uri": f"https://www.google.com/maps/dir/?api=1&destination={building.get('latitude', '')},{building.get('longitude', '')}&travelmode=walking" if building else "#"},
-                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
+                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#FBEDD6", "weight": "bold", "size": "sm", "align": "center"}] # 📌 สีอักษร Papaya
                 }
             ]
         }
@@ -301,6 +318,10 @@ def handle_message(event):
             flex_map = {
                 "type": "bubble",
                 "size": "mega", 
+                "styles": {
+                    "body": {"backgroundColor": "#FAF8F0"},   # 📌 เพิ่มพื้นหลังส่วนเนื้อหา
+                    "footer": {"backgroundColor": "#FAF8F0"}  # 📌 เพิ่มพื้นหลังส่วนท้าย
+                },
                 "hero": {
                     "type": "image", "url": img_url, "size": "full", "aspectRatio": "1.5:1", "aspectMode": "cover",
                     "action": {"type": "uri", "label": "ดูแผนที่ความละเอียดสูง", "uri": img_url} 
@@ -317,9 +338,11 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "md",
                     "contents": [
                         {
-                            "type": "box", "layout": "vertical", "backgroundColor": PALETTE["baby_blue"], "cornerRadius": "md", "paddingAll": "10px",
+                            "type": "box", "layout": "vertical", 
+                            "backgroundColor": "#6F4E37", # 📌 สีปุ่ม Coffee
+                            "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "ซูมดูแผนที่ขนาดเต็ม", "uri": img_url},
-                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
+                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#FBEDD6", "weight": "bold", "size": "sm", "align": "center"}] # 📌 สีอักษร Papaya
                         }
                     ]
                 }
@@ -343,9 +366,8 @@ def handle_message(event):
                     quick_reply=quick_reply_buttons
                 )]
             ))
-            return
-            
-     # ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
+            return       
+# ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             
             def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
@@ -363,15 +385,16 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Landmark.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#ffffffcc",
+                            "backgroundColor": "#faf8f0f0", # 📌 ปรับพื้นหลังกล่องให้เป็นโทนคาเฟ่โปร่งแสง
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": PALETTE["caramel"], "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": PALETTE["dark_text"], "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#e8ecef"},
-                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", PALETTE["caramel"], PALETTE["light_text"], "lg"), 
-                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", PALETTE["papaya"], PALETTE["dark_text"]), 
-                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", PALETTE["baby_blue"], PALETTE["dark_text"]) 
+                                # 📌 ใช้สี Coffee (#6F4E37) และตัวอักษร Papaya (#FBEDD6) ในทุกปุ่มให้คุมโทน
+                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", "#6F4E37", "#FBEDD6", "lg"), 
+                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", "#6F4E37", "#FBEDD6"), 
+                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", "#6F4E37", "#FBEDD6") 
                             ]
                         }
                     ]
@@ -393,15 +416,19 @@ def handle_message(event):
                     else: line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ยังไม่มีข้อมูลในระบบ")]))
             finally:
                 if 'conn' in locals(): conn.close()
-            return
-            
+            return       
+             
 # ================= 3 SERVICES =================
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
-            def create_left_align_button(label, text_val, bg_color, text_color):
+            
+            # 📌 ปรับแก้ฟังก์ชันปุ่มให้ใช้สี Coffee และ Papaya อัตโนมัติตามแพทเทิร์นคาเฟ่
+            def create_left_align_button(label, text_val):
                 return {
-                    "type": "box", "layout": "horizontal", "backgroundColor": bg_color, "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
+                    "type": "box", "layout": "horizontal", 
+                    "backgroundColor": PALETTE["coffee"], # 📌 ใช้สี Coffee
+                    "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
                     "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [{"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "sm", "align": "start"}]
+                    "contents": [{"type": "text", "text": label, "color": PALETTE["papaya"], "weight": "bold", "size": "sm", "align": "start"}] # 📌 ใช้สี Papaya
                 }
 
             flex_menu = {
@@ -409,6 +436,7 @@ def handle_message(event):
                 "contents": [
                     {
                         "type": "bubble", 
+                        "styles": {"body": {"backgroundColor": PALETTE["ligt_borwn"]}}, # 📌 พื้นหลังการ์ดสีคาเฟ่ (#FAF8F0)
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services1.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
@@ -416,8 +444,8 @@ def handle_message(event):
                                 {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": PALETTE["dark_text"], "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", PALETTE["papaya"], PALETTE["dark_text"]),
-                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", PALETTE["papaya"], PALETTE["dark_text"])
+                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม"),
+                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา")
                                     ]
                                 }
                             ]
@@ -425,6 +453,7 @@ def handle_message(event):
                     },
                     {
                         "type": "bubble", 
+                        "styles": {"body": {"backgroundColor": PALETTE["ligt_borwn"]}}, # 📌 พื้นหลังการ์ดสีคาเฟ่ (#FAF8F0)
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services2.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
@@ -432,10 +461,10 @@ def handle_message(event):
                                 {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": PALETTE["dark_text"], "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", PALETTE["baby_blue"], PALETTE["dark_text"]), 
-                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", PALETTE["baby_blue"], PALETTE["dark_text"]),
-                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", PALETTE["baby_blue"], PALETTE["dark_text"]),
-                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", PALETTE["baby_blue"], PALETTE["dark_text"])
+                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน"), 
+                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน"),
+                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ"),
+                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน")
                                     ]
                                 }
                             ]
@@ -443,6 +472,7 @@ def handle_message(event):
                     },
                     {
                         "type": "bubble",
+                        "styles": {"body": {"backgroundColor": PALETTE["ligt_borwn"]}}, # 📌 พื้นหลังการ์ดสีคาเฟ่ (#FAF8F0)
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services3.jpg", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
@@ -450,10 +480,10 @@ def handle_message(event):
                                 {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": PALETTE["dark_text"], "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", PALETTE["caramel"], PALETTE["light_text"]),
-                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", PALETTE["caramel"], PALETTE["light_text"]), 
-                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", PALETTE["caramel"], PALETTE["light_text"]),
-                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", PALETTE["caramel"], PALETTE["light_text"])  
+                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่"),
+                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล"), 
+                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน"),
+                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย")  
                                     ]
                                 }
                             ]
@@ -498,8 +528,7 @@ def handle_message(event):
                 finally:
                     if 'conn' in locals(): conn.close()
             return
-        
-# ================= 4 SHOPS =================
+ # ================= 4 SHOPS =================
         elif user_msg == "Menu > ร้านค้า/จุดบริการ":
             def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
                 return {
@@ -516,14 +545,15 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Shop2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#ffffffcc",
+                            "backgroundColor": "#faf8f0f0", # 📌 ปรับพื้นหลังกล่องโปร่งแสงเป็นสีคาเฟ่
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": PALETTE["caramel"], "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": PALETTE["dark_text"], "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": PALETTE["dark_text"]},
-                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", PALETTE["papaya"], PALETTE["dark_text"], "lg"), 
-                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", PALETTE["baby_blue"], PALETTE["dark_text"]) 
+                                # 📌 ใช้สี Coffee เป็นพื้นหลังปุ่ม และตัวอักษรสี Papaya
+                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", PALETTE["coffee"], PALETTE["papaya"], "lg"), 
+                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", PALETTE["coffee"], PALETTE["papaya"]) 
                             ]
                         }
                     ]
@@ -547,8 +577,7 @@ def handle_message(event):
              finally:
                 if 'conn' in locals(): conn.close()
              return
-
-       # ================= 5 DORMITORY =================
+# ================= 5 DORMITORY =================
         elif user_msg == "Menu > หอพัก":
             
             def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
@@ -566,15 +595,16 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Dorm2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#ffffffcc",
+                            "backgroundColor": "#faf8f0f0", # 📌 ปรับพื้นหลังกล่องโปร่งแสงเป็นโทนคาเฟ่
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": PALETTE["caramel"], "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": PALETTE["dark_text"], "align": "center", "wrap": True, "margin": "xs"},
-                                {"type": "separator", "margin": "xl", "color": "#e8ecef"},
-                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", PALETTE["caramel"], PALETTE["light_text"], "lg"), 
-                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", PALETTE["baby_blue"], PALETTE["dark_text"]), 
-                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", PALETTE["papaya"], PALETTE["dark_text"]) 
+                                {"type": "separator", "margin": "xl", "color": PALETTE["dark_text"]}, # 📌 เปลี่ยนสีเส้นคั่นให้คมชัดขึ้น
+                                # 📌 เปลี่ยนสีปุ่มเป็น Coffee และตัวอักษร Papaya ทั้งหมด
+                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", PALETTE["coffee"], PALETTE["papaya"], "lg"), 
+                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", PALETTE["coffee"], PALETTE["papaya"]), 
+                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", PALETTE["coffee"], PALETTE["papaya"]) 
                             ]
                         }
                     ]
@@ -603,12 +633,13 @@ def handle_message(event):
                 "type": "bubble", 
                 "size": "mega", 
                 "styles": {
-                    "header": {"backgroundColor": PALETTE["caramel"]}, 
-                    "footer": {"separator": True}
+                    "header": {"backgroundColor": PALETTE["coffee"]}, # 📌 ส่วนหัวสี Coffee
+                    "body": {"backgroundColor": "#FAF8F0"},   # 📌 พื้นหลังสีคาเฟ่
+                    "footer": {"backgroundColor": "#FAF8F0", "separator": True} # 📌 พื้นหลังสีคาเฟ่
                 },
                 "header": {
                     "type": "box", "layout": "vertical", "paddingAll": "lg",
-                    "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": PALETTE["light_text"], "weight": "bold", "size": "md", "align": "center"}]
+                    "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": PALETTE["papaya"], "weight": "bold", "size": "md", "align": "center"}] # 📌 ตัวอักษรสี Papaya
                 },
                 "body": {
                     "type": "box", "layout": "vertical", "spacing": "md", "paddingAll": "lg",
@@ -617,7 +648,7 @@ def handle_message(event):
                             "type": "box", "layout": "horizontal",
                             "contents": [
                                 {"type": "text", "text": "🚨 หัวหน้ารปภ.", "weight": "bold", "color": PALETTE["dark_text"], "size": "sm", "flex": 5},
-                                {"type": "text", "text": "093-923-8526", "color": "#e30000", "size": "sm", "weight": "bold", "align": "end", "flex": 6}
+                                {"type": "text", "text": "093-923-8526", "color": PALETTE["coffee"], "size": "sm", "weight": "bold", "align": "end", "flex": 6} # 📌 เบอร์โทรสี Coffee
                             ]
                         },
                         {"type": "separator"},
@@ -625,7 +656,7 @@ def handle_message(event):
                             "type": "box", "layout": "horizontal",
                             "contents": [
                                 {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": PALETTE["dark_text"], "size": "sm", "flex": 4},
-                                {"type": "text", "text": "055-706555 ต่อ 1360", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
+                                {"type": "text", "text": "055-706555 ต่อ 1360", "color": PALETTE["dark_text"], "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
                         {"type": "separator"},
@@ -633,7 +664,7 @@ def handle_message(event):
                             "type": "box", "layout": "horizontal",
                             "contents": [
                                 {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": PALETTE["dark_text"], "size": "sm", "flex": 5},
-                                {"type": "text", "text": "055-706555 ต่อ 7909", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
+                                {"type": "text", "text": "055-706555 ต่อ 7909", "color": PALETTE["dark_text"], "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
                         {"type": "separator"},
@@ -641,7 +672,7 @@ def handle_message(event):
                             "type": "box", "layout": "horizontal",
                             "contents": [
                                 {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": PALETTE["dark_text"], "size": "sm", "flex": 5},
-                                {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#666666", "size": "xs", "align": "end", "flex": 7}
+                                {"type": "text", "text": "055-706555 ต่อ 7910", "color": PALETTE["dark_text"], "size": "xs", "align": "end", "flex": 7}
                             ]
                         }
                     ]
@@ -650,9 +681,11 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
                     "contents": [
                         {
-                            "type": "box", "layout": "vertical", "backgroundColor": PALETTE["baby_blue"], "cornerRadius": "md", "paddingAll": "10px",
+                            "type": "box", "layout": "vertical", 
+                            "backgroundColor": PALETTE["coffee"], # 📌 ปุ่มสี Coffee
+                            "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"},
-                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": PALETTE["dark_text"], "weight": "bold", "size": "sm", "align": "center"}]
+                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": PALETTE["papaya"], "weight": "bold", "size": "sm", "align": "center"}] # 📌 ตัวอักษรสี Papaya
                         }
                     ]
                 }
@@ -765,7 +798,7 @@ def handle_message(event):
         # ดักจับคำด่า/คำหยาบ (ป้องกันบอทตอบกลับแบบไม่เหมาะสม)
         rude_words = ["ควย", "สัส", "เหี้ย", "ไอ้บ้า", "โง่"]
         if any(word in user_msg for word in rude_words):
-            reply_text = "UniGuide Bot เป็นบอทผู้ช่วยน่ารักๆ นะคะ 🥺 พิมพ์ชื่อสถานที่หรือบริการที่ต้องการค้นหาดีกว่าค่ะ"
+            reply_text = "UniGuide Bot เป็นบอทผู้ช่วยน่ารักๆ นะคะ 🥺 พิมพ์แบบนี้ไม่น่ารักนะคะ"
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
                 messages=[TextMessage(text=reply_text)]
