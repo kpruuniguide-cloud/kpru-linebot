@@ -38,7 +38,6 @@ def get_building_data(keyword):
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
-            # 1. ค้นหาแบบกว้างๆ เหมือนเดิม
             sql = "SELECT * FROM locations WHERE building_no = %s OR common_name LIKE %s OR official_name LIKE %s"
             cursor.execute(sql, (keyword, f"%{keyword}%", f"%{keyword}%"))
             results = cursor.fetchall()
@@ -46,19 +45,15 @@ def get_building_data(keyword):
             if not results:
                 return None
                 
-            # 📌 2. ตัวกรองใหม่: ถ้าพิมพ์เลขตัวเดียว (เช่น "1") ต้องหาอันที่ตรงเป๊ะเท่านั้น
             exact_matches = []
             for row in results:
                 b_no = str(row.get('building_no', '')).strip()
                 common_names_str = str(row.get('common_name') or '')
                 aliases = [x.strip() for x in common_names_str.split(',')]
                 
-                # เช็กว่าคำค้นหาตรงกับเลขตึกแบบเป๊ะๆ หรืออยู่ในชื่อเรียกทั่วไปแบบเป๊ะๆ
                 if keyword == b_no or keyword in aliases or keyword == str(row.get('official_name')):
                     exact_matches.append(row)
             
-            # 3. ถ้าเจออันที่ "ตรงเป๊ะ" (เช่น ตึก 1) ให้ส่งแค่อันนั้นอันเดียวไปเลย
-            # ไม่ต้องส่งตึก 11, 12, 14 ที่แค่มีเลข 1 ติดมาด้วย
             if exact_matches:
                 return exact_matches
             
@@ -107,7 +102,7 @@ def create_building_flex(data):
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
             "size": "xs", 
-            "color": "#12284b", 
+            "color": "#A6CCE3", # Sky Dream
             "weight": "bold"
         })
         
@@ -117,7 +112,7 @@ def create_building_flex(data):
         "weight": "bold", 
         "size": "md", 
         "wrap": True, 
-        "color": "#20364F"
+        "color": "#1C2B48"
     })
     
     body_contents.append({
@@ -142,16 +137,13 @@ def create_building_flex(data):
             "type": "box", "layout": "vertical", "spacing": "sm",
             "contents": [
                 {
-                    "type": "button", 
-                    "style": "primary", 
-                    "color": "#1c2b48", 
-                    "height": "sm",
+                    "type": "box", "layout": "vertical", "backgroundColor": "#B9E3DD", "cornerRadius": "md", "paddingAll": "10px",
                     "action": {
                         "type": "uri", 
-                        "label": " 🗺️ นำทางไปที่นี่", 
-                        # 📌 อัปเดตลิงก์เป็น Google Maps วาดเส้นทางเดินเท้า
+                        "label": "นำทางไปที่นี่", 
                         "uri": f"https://www.google.com/maps/dir/?api=1&destination={data.get('latitude', '')},{data.get('longitude', '')}&travelmode=walking"
-                    }
+                    },
+                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
                 }
             ]
         }
@@ -160,7 +152,6 @@ def create_building_flex(data):
 def create_service_flex(service, building):
     img_url = f"{GITHUB_IMAGE_BASE}{building['image_url']}" if building and building.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
-    # 📌 ดึงลิงก์จากคอลัมน์ external_link ในฐานข้อมูล
     link_url = service.get('external_link')
     if not link_url or str(link_url).strip() == "":
         link_url = "https://www.kpru.ac.th"
@@ -183,7 +174,7 @@ def create_service_flex(service, building):
                     "text": service.get('service_name', 'ไม่ทราบชื่อบริการ/หน่วยงาน'), 
                     "weight": "bold", 
                     "size": "md", 
-                    "color": "#20364F", 
+                    "color": "#1C2B48", 
                     "wrap": True
                 },
                 {
@@ -192,14 +183,14 @@ def create_service_flex(service, building):
                         {
                             "type": "box", "layout": "baseline", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "📍 สถานที่:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2},
+                                {"type": "text", "text": "📍 สถานที่:", "color": "#A6CCE3", "size": "xs", "weight": "bold", "flex": 2},
                                 {"type": "text", "text": building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ', "wrap": True, "color": "#4b5563", "size": "xs", "flex": 6}
                             ]
                         },
                         {
                             "type": "box", "layout": "baseline", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "📄 ข้อมูล:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2},
+                                {"type": "text", "text": "📄 ข้อมูล:", "color": "#A6CCE3", "size": "xs", "weight": "bold", "flex": 2},
                                 {"type": "text", "text": service.get('service_details', 'ไม่ระบุ'), "wrap": True, "color": "#708090", "size": "xs", "flex": 6}
                             ]
                         }
@@ -211,31 +202,19 @@ def create_service_flex(service, building):
             "type": "box", "layout": "vertical", "spacing": "sm",
             "contents": [
                 {
-                    "type": "button", 
-                    "style": "primary", 
-                    "color": "#225688", 
-                    "height": "sm",
-                    "action": {
-                        "type": "uri", 
-                        "label": "🌐 ข้อมูลเพิ่มเติม", 
-                        "uri": link_url 
-                    }
+                    "type": "box", "layout": "vertical", "backgroundColor": "#FDEBDD", "cornerRadius": "md", "paddingAll": "10px",
+                    "action": {"type": "uri", "label": "ข้อมูลเพิ่มเติม", "uri": link_url},
+                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
                 },
                 {
-                    "type": "button", 
-                    "style": "primary", 
-                    "color": "#12284b", 
-                    "height": "sm",
-                    "action": {
-                        "type": "uri", 
-                        "label": "🗺️ นำทางไปที่นี่", 
-                        # 📌 อัปเดตลิงก์เป็น Google Maps วาดเส้นทางเดินเท้า
-                        "uri": f"https://www.google.com/maps/dir/?api=1&destination={building.get('latitude', '')},{building.get('longitude', '')}&travelmode=walking" if building else "#"
-                    }
+                    "type": "box", "layout": "vertical", "backgroundColor": "#B9E3DD", "cornerRadius": "md", "paddingAll": "10px",
+                    "action": {"type": "uri", "label": "นำทางไปที่นี่", "uri": f"https://www.google.com/maps/dir/?api=1&destination={building.get('latitude', '')},{building.get('longitude', '')}&travelmode=walking" if building else "#"},
+                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
                 }
             ]
         }
     }
+
 # ================== FLASK ROUTES ==================
 
 @app.route("/")
@@ -274,7 +253,6 @@ def handle_message(event):
         line_bot_api = MessagingApi(api_client)
 
         def send_building_response(buildings_list):
-            # ดึงมาแค่ 10 รายการเพื่อไม่ให้เกินลิมิตของ Carousel LINE
             bubbles = [create_building_flex(b) for b in buildings_list[:10]]
             carousel = {"type": "carousel", "contents": bubbles}
             line_bot_api.reply_message(ReplyMessageRequest(
@@ -282,106 +260,61 @@ def handle_message(event):
                 messages=[FlexMessage(alt_text="ผลการค้นหาสถานที่", contents=FlexContainer.from_dict(carousel))]
             ))
 
-# 1: แผนที่มหาวิทยาลัย (แบบรูปภาพ + ข้อความ + ปุ่มกด)
+# 1: แผนที่มหาวิทยาลัย 
         if user_msg == "Menu > แผนที่มหาวิทยาลัย":
             img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png" 
             
-            # 1. รายชื่ออาคารทั้งหมด (เรียงตามแผนที่ 1-49 และ A-D)
             building_names = [
-                "1. อาคารสถาบันวิจัยและพัฒนา",
-                "2. อาคารคณะครุศาสตร์เก่า",
-                "3. อาคารคณะมนุษยศาสตร์และสังคมศาสตร์เก่า",
-                "4. อาคารคณะพยาบาลศาสตร์",
-                "5. โรงอาหาร",
-                "6. อาคารเรียนศูนย์การแพทย์ทางเลือก",
-                "7. อาคารน้ำเพชร 1",
-                "8. อาคารโปรแกรมดนตรี",
-                "9. อาคารโปรแกรมศิลปะ",
-                "10. กองพัฒนานักศึกษา (หลังเก่า)",
-                "11. อาคารคณะวิทยาการจัดการ",
-                "12. อาคารเรียนรวม",
-                "13. หอประชุมทีปังกรรัศมีโชติ",
-                "14. อาคารเรียนรวมและอำนวยการ",
-                "15. อาคารศูนย์กีฬารวม",
-                "16. อาคารจุฬาภรณ์วลัยลักษณ์",
-                "17. อาคารคณะวิทยาศาสตร์และเทคโนโลยี(เก่า)",
-                "18. อาคารคณะเทคโนโลยีอุตสาหกรรม",
-                "19. อาคารเรียนภาควิชาเกษตรศาสตร์",
-                "20. อาคารเทคโนโลยีไฟฟ้า",
-                "21. อาคารศูนย์ส่งเสริมและตรวจสอบการผลิตฯ",
-                "22. อาคารเรียนภาควิชาคหกรรมศาสตร์",
-                "23. อาคารศูนย์การศึกษาพิเศษ",
-                "24. อาคารศูนย์เด็กปฐมวัย",
-                "25. อาคารศูนย์ภาษาและคอมพิวเตอร์",
-                "26. อาคารบรรณราชนครินทร์",
-                "27. อาคารเอวี",
-                "28. หอประชุมรัตนอาภา (หอประชุมเก่า)",
-                "29. อาคารออกแบบและพัฒนาผลิตภัณฑ์",
-                "30. อาคารเทคโนโลยีก่อสร้าง",
-                "32. ศูนย์กีฬาในร่มเอนกประสงค์ (โรงยิมใหม่)",
-                "38. คณะมนุษยศาสตร์และสังคมศาสตร์",
-                "41. อาคารภูมิภาคพิทยา (ศูนย์ศิลปะและวัฒนธรรม)",
-                "44. สำนักวิทยบริการและเทคโนโลยีสารสนเทศ",
-                "46. คณะครุศาสตร์",
-                "47. อาคารกองพัฒนานักศึกษา (SAC)",
-                "48. อาคารเรียนและปฏิบัติการทางวิทยาศาสตร์",
-                "49. KPRU HOME",
-                "A. ศาลาพระพุทธวิทานปัญญาบดี",
-                "B. ลานกิจกรรมหน้าหอประชุมทีปังกรรัศมีโชติ",
-                "C. สวนพลังงาน KPRU",
-                "D. KPRU Place"
+                "1. อาคารสถาบันวิจัยและพัฒนา", "2. อาคารคณะครุศาสตร์เก่า", "3. อาคารคณะมนุษยศาสตร์และสังคมศาสตร์เก่า",
+                "4. อาคารคณะพยาบาลศาสตร์", "5. โรงอาหาร", "6. อาคารเรียนศูนย์การแพทย์ทางเลือก", "7. อาคารน้ำเพชร 1",
+                "8. อาคารโปรแกรมดนตรี", "9. อาคารโปรแกรมศิลปะ", "10. กองพัฒนานักศึกษา (หลังเก่า)",
+                "11. อาคารคณะวิทยาการจัดการ", "12. อาคารเรียนรวม", "13. หอประชุมทีปังกรรัศมีโชติ",
+                "14. อาคารเรียนรวมและอำนวยการ", "15. อาคารศูนย์กีฬารวม", "16. อาคารจุฬาภรณ์วลัยลักษณ์",
+                "17. อาคารคณะวิทยาศาสตร์และเทคโนโลยี(เก่า)", "18. อาคารคณะเทคโนโลยีอุตสาหกรรม",
+                "19. อาคารเรียนภาควิชาเกษตรศาสตร์", "20. อาคารเทคโนโลยีไฟฟ้า", "21. อาคารศูนย์ส่งเสริมและตรวจสอบการผลิตฯ",
+                "22. อาคารเรียนภาควิชาคหกรรมศาสตร์", "23. อาคารศูนย์การศึกษาพิเศษ", "24. อาคารศูนย์เด็กปฐมวัย",
+                "25. อาคารศูนย์ภาษาและคอมพิวเตอร์", "26. อาคารบรรณราชนครินทร์", "27. อาคารเอวี",
+                "28. หอประชุมรัตนอาภา (หอประชุมเก่า)", "29. อาคารออกแบบและพัฒนาผลิตภัณฑ์", "30. อาคารเทคโนโลยีก่อสร้าง",
+                "32. ศูนย์กีฬาในร่มเอนกประสงค์ (โรงยิมใหม่)", "38. คณะมนุษยศาสตร์และสังคมศาสตร์",
+                "41. อาคารภูมิภาคพิทยา (ศูนย์ศิลปะและวัฒนธรรม)", "44. สำนักวิทยบริการและเทคโนโลยีสารสนเทศ",
+                "46. คณะครุศาสตร์", "47. อาคารกองพัฒนานักศึกษา (SAC)", "48. อาคารเรียนและปฏิบัติการทางวิทยาศาสตร์",
+                "49. KPRU HOME", "A. ศาลาพระพุทธวิทานปัญญาบดี", "B. ลานกิจกรรมหน้าหอประชุมทีปังกรรัศมีโชติ",
+                "C. สวนพลังงาน KPRU", "D. KPRU Place"
             ]
 
-            # 2. แปลงข้อความใน List ให้เป็นรูปแบบ Flex Message แบบอัตโนมัติ
             building_contents = []
             for name in building_names:
                 building_contents.append({
-                    "type": "text", 
-                    "text": name, 
-                    "size": "xs",  
-                    "color": "#4A4A4A", 
-                    "wrap": True, 
-                    "margin": "sm"
+                    "type": "text", "text": name, "size": "xs", "color": "#4A4A4A", "wrap": True, "margin": "sm"
                 })
 
-            # 3. สร้างโครงสร้าง Flex Message
             flex_map = {
                 "type": "bubble",
                 "size": "mega", 
                 "hero": {
-                    "type": "image", 
-                    "url": img_url, 
-                    "size": "full", 
-                    "aspectRatio": "1.5:1", 
-                    "aspectMode": "cover",
+                    "type": "image", "url": img_url, "size": "full", "aspectRatio": "1.5:1", "aspectMode": "cover",
                     "action": {"type": "uri", "label": "ดูแผนที่ความละเอียดสูง", "uri": img_url} 
                 },
                 "body": {
                     "type": "box", "layout": "vertical", "paddingAll": "12px",
                     "contents": [
-                        {
-                            "type": "text", "text": "รายชื่ออาคารทั้งหมด ", 
-                            "weight": "bold", "size": "md", "color": "#20364F"
-                        },
+                        {"type": "text", "text": "รายชื่ออาคารทั้งหมด ", "weight": "bold", "size": "md", "color": "#1C2B48"},
                         {"type": "separator", "margin": "md"},
-                        {
-                            "type": "box", "layout": "vertical", "margin": "md", 
-                            "contents": building_contents 
-                        }
+                        {"type": "box", "layout": "vertical", "margin": "md", "contents": building_contents}
                     ]
                 },
                 "footer": {
                     "type": "box", "layout": "vertical", "spacing": "md",
                     "contents": [
                         {
-                            "type": "button", "style": "primary", "color": "#12284b", "margin": "md", 
-                            "action": {"type": "uri", "label": "🔍 ซูมดูแผนที่ขนาดเต็ม", "uri": img_url}
+                            "type": "box", "layout": "vertical", "backgroundColor": "#A6CCE3", "cornerRadius": "md", "paddingAll": "10px",
+                            "action": {"type": "uri", "label": "ซูมดูแผนที่ขนาดเต็ม", "uri": img_url},
+                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
                         }
                     ]
                 }
             }
             
-            # 📌 4. สร้างปุ่ม Quick Reply 
             quick_reply_buttons = QuickReply(
                 items=[
                     QuickReplyItem(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
@@ -392,32 +325,24 @@ def handle_message(event):
                 ]
             )
             
-            # 📌 5. ส่ง Flex Message (ใส่ quick_reply พ่วงเข้าไปกับ Flex เลย)
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
                 messages=[FlexMessage(
                     alt_text="แผนที่มหาวิทยาลัยและรายชื่ออาคาร", 
                     contents=FlexContainer.from_dict(flex_map),
-                    quick_reply=quick_reply_buttons  # แนบปุ่มด่วนตรงนี้!
+                    quick_reply=quick_reply_buttons
                 )]
             ))
             return
+            
      # ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
             
-            # 📌 ฟังก์ชันสร้างปุ่มแบบกำหนดสีพื้นหลังและสีตัวหนังสือได้เอง
             def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
                 return {
-                    "type": "box", 
-                    "layout": "vertical", 
-                    "backgroundColor": bg_color, 
-                    "cornerRadius": "lg", 
-                    "paddingAll": "12px", 
-                    "margin": margin_val,
+                    "type": "box", "layout": "vertical", "backgroundColor": bg_color, "cornerRadius": "lg", "paddingAll": "12px", "margin": margin_val,
                     "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [
-                        {"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}
-                    ]
+                    "contents": [{"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}]
                 }
 
             flex_menu = {
@@ -428,37 +353,15 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Landmark.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#ffffff80",
+                            "backgroundColor": "#ffffffcc",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#1c2b48", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#A6CCE3", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#1c2b48", "align": "center", "wrap": True, "margin": "xs"},
-                                {"type": "separator", "margin": "xl", "color": "#20364F1a"},
-                                
-                                # 📌 แก้ไขสีปุ่มที่ 1: สถานที่สำคัญ (แก้สีพื้นหลัง กับ สีตัวหนังสือตรงนี้ได้เลย)
-                                create_custom_btn(
-                                    label="🏛️ สถานที่สำคัญ", 
-                                    text_val="ดูสถานที่สำคัญ", 
-                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้.  ##225688 #12284b #12284b
-                                    text_color="#ffffff", # <-- แก้สีตัวหนังสือตรงนี้
-                                    margin_val="lg"
-                                ),
-                                
-                                # 📌 แก้ไขสีปุ่มที่ 2: จุดพักผ่อน 
-                                create_custom_btn(
-                                    label="⛲ จุดพักผ่อน", 
-                                    text_val="ดูจุดพักผ่อน", 
-                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#ffffff"  # <-- แก้สีตัวหนังสือตรงนี้
-                                ),
-                                
-                                # 📌 แก้ไขสีปุ่มที่ 3: ออกกำลังกาย
-                                create_custom_btn(
-                                    label="🏸 ออกกำลังกาย", 
-                                    text_val="ดูที่ออกกำลังกาย", 
-                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#ffffff"  # <-- แก้สีตัวหนังสือตรงนี้
-                                )
+                                {"type": "separator", "margin": "xl", "color": "#e8ecef"},
+                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", "#A6CCE3", "#1C2B48", "lg"), # Sky Dream
+                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", "#B9E3DD", "#1C2B48"), # Mint Breezet
+                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", "#D9CDE4", "#1C2B48") # Lilac Mist
                             ]
                         }
                     ]
@@ -481,35 +384,21 @@ def handle_message(event):
             finally:
                 if 'conn' in locals(): conn.close()
             return
-# ================= 3 SERVICES (เมนูหลัก: หัวข้อกลาง ปุ่มชิดซ้ายแบบแยกสีพื้นและสีฟอนต์) =================
+            
+# ================= 3 SERVICES =================
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
-            # 1. แก้ไขฟังก์ชันให้รับค่า bg_color (สีพื้นหลัง) และ text_color (สีตัวหนังสือ)
             def create_left_align_button(label, text_val, bg_color, text_color):
                 return {
-                    "type": "box", 
-                    "layout": "horizontal", 
-                    "backgroundColor": bg_color, # 📌 ใช้สีพื้นหลังที่ส่งมา
-                    "cornerRadius": "md", 
-                    "paddingAll": "12px", 
-                    "margin": "xs",
+                    "type": "box", "layout": "horizontal", "backgroundColor": bg_color, "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
                     "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [
-                        {
-                            "type": "text", 
-                            "text": label, 
-                            "color": text_color, # 📌 ใช้สีตัวหนังสือที่ส่งมา
-                            "weight": "bold", 
-                            "size": "sm", 
-                            "align": "start"
-                        }
-                    ]
+                    "contents": [{"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "sm", "align": "start"}]
                 }
 
             flex_menu = {
                 "type": "carousel",
                 "contents": [
                     {
-                        "type": "bubble", # --- การ์ดที่ 1: การเงินและทุนการศึกษา ---
+                        "type": "bubble", 
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services1.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
@@ -517,16 +406,15 @@ def handle_message(event):
                                 {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นสว่าง ฟอนต์เข้ม)
-                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#00345d", "#e8ecef"),
-                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#00345d", "#e8ecef")
+                                        create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม", "#FDEBDD", "#1C2B48"), # Vanilla Cream
+                                        create_left_align_button("ทุนการศึกษา / กยศ.", "ดูทุนการศึกษา", "#FDEBDD", "#1C2B48")
                                     ]
                                 }
                             ]
                         }
                     },
                     {
-                        "type": "bubble", # --- การ์ดที่ 2: การเรียนและสถานภาพ ---
+                        "type": "bubble", 
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services2.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
@@ -534,18 +422,17 @@ def handle_message(event):
                                 {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นเข้ม ฟอนต์ขาว)
-                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#00345d", "#e8ecef"),
-                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#00345d", "#e8ecef"),
-                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#00345d", "#e8ecef"),
-                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#00345d", "#e8ecef")
+                                        create_left_align_button("สมัครเรียน", "ดูสมัครเรียน", "#A6CCE3", "#1C2B48"), # Sky Dream
+                                        create_left_align_button("สอบซ้อน", "ดูสอบซ้อน", "#A6CCE3", "#1C2B48"),
+                                        create_left_align_button("รักษาสภาพนักศึกษา", "ดูรักษาสภาพ", "#A6CCE3", "#1C2B48"),
+                                        create_left_align_button("เทียบโอนผลการเรียน", "ดูเทียบโอน", "#A6CCE3", "#1C2B48")
                                     ]
                                 }
                             ]
                         }
                     },
                     {
-                        "type": "bubble", # --- การ์ดที่ 3: สวัสดิการและบริการทั่วไป ---
+                        "type": "bubble",
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services3.jpg", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
@@ -553,11 +440,10 @@ def handle_message(event):
                                 {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#1c2b48", "align": "center", "lineHeight": "22px"},
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
-                                        # 📌 แก้สีพื้นหลัง และ สีตัวหนังสือ ได้ที่นี่ (พื้นเข้มมาก ฟอนต์ขาว)
-                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#00345d", "#e8ecef"), 
-                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#00345d", "#e8ecef"), 
-                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#00345d", "#e8ecef"),
-                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#00345d", "#e8ecef")  
+                                        create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่", "#B9E3DD", "#1C2B48"), # Mint Breezet
+                                        create_left_align_button("ห้องพยาบาล", "ดูห้องพยาบาล", "#B9E3DD", "#1C2B48"), 
+                                        create_left_align_button("ประกันอุบัติเหตุ", "ดูเบิกประกัน", "#B9E3DD", "#1C2B48"),
+                                        create_left_align_button("แจ้งของหาย", "ดูแจ้งของหาย", "#B9E3DD", "#1C2B48")  
                                     ]
                                 }
                             ]
@@ -567,7 +453,7 @@ def handle_message(event):
             }
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูบริการนักศึกษา", contents=FlexContainer.from_dict(flex_menu))]))
             return
-        # ================= ส่วนการค้นหาบริการ (Search Services) =================
+            
         elif user_msg in ["ดูสมัครเรียน", "ดูทุนการศึกษา", "ดูทำบัตรใหม่", "ดูชำระค่าเทอม", "ดูเทียบโอน", "ดูสอบซ้อน", "ดูรักษาสภาพ", "ดูห้องพยาบาล", "ดูเบิกประกัน", "ดูแจ้งของหาย"]:
             keyword_map = {
                 "ดูสมัครเรียน": "สมัครเรียน", "ดูทุนการศึกษา": "กยศ", "ดูทำบัตรใหม่": "บัตรนักศึกษา", 
@@ -579,7 +465,6 @@ def handle_message(event):
                 try:
                     conn = pymysql.connect(**DB_CONFIG)
                     with conn.cursor() as cursor:
-                        # ดึงข้อมูลมาแสดงผล (รวมลิ้งค์ภายนอก external_link)
                         sql = """
                             SELECT s.service_name, s.service_details, s.external_link, 
                                    l.official_name, l.latitude, l.longitude, l.image_url 
@@ -590,7 +475,6 @@ def handle_message(event):
                         cursor.execute(sql, (f"%{search_keyword}%", f"%{search_keyword}%"))
                         results = cursor.fetchall()
                         if results:
-                            # ใช้ฟังก์ชัน create_service_flex ที่เราปรับแก้เรื่องปุ่มชิดซ้ายไว้แล้ว
                             bubbles = [create_service_flex(row, row) for row in results[:10]]
                             line_bot_api.reply_message(ReplyMessageRequest(
                                 reply_token=event.reply_token, 
@@ -605,8 +489,15 @@ def handle_message(event):
                     if 'conn' in locals(): conn.close()
             return
         
-# ================= 4 SHOPS (ร้านค้าและจุดบริการ) =================
+# ================= 4 SHOPS =================
         elif user_msg == "Menu > ร้านค้า/จุดบริการ":
+            def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
+                return {
+                    "type": "box", "layout": "vertical", "backgroundColor": bg_color, "cornerRadius": "lg", "paddingAll": "12px", "margin": margin_val,
+                    "action": {"type": "message", "label": label, "text": text_val},
+                    "contents": [{"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}]
+                }
+                
             flex_menu = {
                 "type": "bubble",
                 "body": {
@@ -615,14 +506,14 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Shop2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#ffffff80",
+                            "backgroundColor": "#ffffffcc",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#1c2b48", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
-                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#1c2b48", "align": "center", "wrap": True, "margin": "xs"},
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#F7C7D9", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#1C2B48", "align": "center", "wrap": True, "margin": "xs"},
                                 {"type": "separator", "margin": "xl", "color": "#e8ecef"},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#00345d", "margin": "lg", "cornerRadius": "lg", "action": {"type": "message", "label": "ร้านกาแฟ", "text": "ดูร้านกาแฟ"}},
-                                {"type": "button", "style": "primary", "height": "md", "color": "#00345d", "margin": "md", "cornerRadius": "lg", "action": {"type": "message", "label": "ร้านถ่ายเอกสาร/บริการ", "text": "ดูร้านบริการ"}}
+                                create_custom_btn("☕ ร้านกาแฟ", "ดูร้านกาแฟ", "#FDEBDD", "#1C2B48", "lg"), # Vanilla Cream
+                                create_custom_btn("🖨️ ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#F7C7D9", "#1C2B48") # Soft Pink
                             ]
                         }
                     ]
@@ -647,22 +538,14 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
              return
 
-       # ================= 5 DORMITORY (หอพัก) =================
+       # ================= 5 DORMITORY =================
         elif user_msg == "Menu > หอพัก":
             
-            # 📌 ฟังก์ชันสร้างปุ่มแบบกำหนดสีพื้นหลังและสีตัวหนังสือได้เอง
             def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
                 return {
-                    "type": "box", 
-                    "layout": "vertical", 
-                    "backgroundColor": bg_color, 
-                    "cornerRadius": "lg", 
-                    "paddingAll": "12px", 
-                    "margin": margin_val,
+                    "type": "box", "layout": "vertical", "backgroundColor": bg_color, "cornerRadius": "lg", "paddingAll": "12px", "margin": margin_val,
                     "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [
-                        {"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}
-                    ]
+                    "contents": [{"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}]
                 }
 
             flex_menu = {
@@ -673,37 +556,15 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Dorm2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#ffffff80",
+                            "backgroundColor": "#ffffffcc",
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#1C2B48", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#D9CDE4", "weight": "bold", "letterSpacing": "0.3em", "align": "center"},
                                 {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#1C2B48", "align": "center", "wrap": True, "margin": "xs"},
-                                {"type": "separator", "margin": "xl", "color": "#1C2B48"},
-                                
-                                # 📌 แก้ไขสีปุ่มที่ 1: หอพักหญิง
-                                create_custom_btn(
-                                    label="หอพักหญิง", 
-                                    text_val="ดูหอพักหญิง", 
-                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#e8ecef", # <-- แก้สีตัวหนังสือตรงนี้
-                                    margin_val="lg"
-                                ),
-                                
-                                # 📌 แก้ไขสีปุ่มที่ 2: หอพักชาย
-                                create_custom_btn(
-                                    label="หอพักชาย", 
-                                    text_val="ดูหอพักชาย", 
-                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#e8ecef"  # <-- แก้สีตัวหนังสือตรงนี้
-                                ),
-                                
-                                # 📌 แก้ไขสีปุ่มที่ 3: หอพักบุคลากร/อาจารย์
-                                create_custom_btn(
-                                    label="หอพักบุคลากร/อาจารย์", 
-                                    text_val="ดูหอพักบุคลากร", 
-                                    bg_color="#00345d",   # <-- แก้สีพื้นหลังตรงนี้
-                                    text_color="#e8ecef"  # <-- แก้สีตัวหนังสือตรงนี้
-                                )
+                                {"type": "separator", "margin": "xl", "color": "#e8ecef"},
+                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", "#F7C7D9", "#1C2B48", "lg"), # Soft Pink
+                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", "#A6CCE3", "#1C2B48"), # Sky Dream
+                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", "#D9CDE4", "#1C2B48") # Lilac Mist
                             ]
                         }
                     ]
@@ -711,6 +572,7 @@ def handle_message(event):
             }
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูหอพัก", contents=FlexContainer.from_dict(flex_menu))]))
             return
+            
         elif user_msg in ["ดูหอพักหญิง", "ดูหอพักชาย", "ดูหอพักบุคลากร"]:
             try:
                 conn = pymysql.connect(**DB_CONFIG)
@@ -725,18 +587,18 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
             return
         
-# ================= 6 CONTACT & EMERGENCY (ติดต่อ) =================
+# ================= 6 CONTACT & EMERGENCY =================
         elif user_msg == "Menu > ติดต่อ/ฉุกเฉิน":
             flex_menu = {
                 "type": "bubble", 
-                "size": "mega", # ปรับขนาดให้ใหญ่ขึ้นเล็กน้อยเพื่อให้กดง่าย
+                "size": "mega", 
                 "styles": {
-                    "header": {"backgroundColor": "#f44336"},
+                    "header": {"backgroundColor": "#F7C7D9"}, # Soft Pink
                     "footer": {"separator": True}
                 },
                 "header": {
                     "type": "box", "layout": "vertical", "paddingAll": "lg",
-                    "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": "#ffffff", "weight": "bold", "size": "md", "align": "center"}]
+                    "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": "#1C2B48", "weight": "bold", "size": "md", "align": "center"}]
                 },
                 "body": {
                     "type": "box", "layout": "vertical", "spacing": "md", "paddingAll": "lg",
@@ -778,10 +640,9 @@ def handle_message(event):
                     "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
                     "contents": [
                         {
-                            "type": "button", "style": "primary", "color": "#12284b", "height": "sm",
-                            "action": {
-                                "type": "uri", "label": "🌐 เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"
-                            }
+                            "type": "box", "layout": "vertical", "backgroundColor": "#B9E3DD", "cornerRadius": "md", "paddingAll": "10px",
+                            "action": {"type": "uri", "label": "เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"},
+                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": "#1C2B48", "weight": "bold", "size": "sm", "align": "center"}]
                         }
                     ]
                 }
@@ -856,21 +717,59 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
             return
         
-        # ================= 8 EVALUATION (ดักคีย์เวิร์ดให้ครบ) =================
+        # ================= 8 EVALUATION =================
         elif user_msg in ["ประเมิน", "ประเมินระบบ", "แบบประเมิน", "เสนอแนะ"]:
-            return # ให้ Python เงียบ เพื่อให้ LINE OA Manager ส่งรูป Rich Message แทน
+            return 
 
+
+# ==========================================
+        # 💬 ทักทายและพูดคุยทั่วไป (Conversational Reply)
+        # ==========================================
+        # ดักจับคำทักทาย
+        greeting_words = ["สวัสดี", "ดีจ้า", "hi", "hello", "ทัก", "ดีครับ", "ดีค่ะ", "สวัสดีครับ", "สวัสดีค่ะ"]
+        if any(word in user_msg.lower() for word in greeting_words):
+            reply_text = "สวัสดีค่ะ! 😊 UniGuide Bot ยินดีให้บริการค่ะ มีสถานที่หรือบริการไหนใน มรภ.กำแพงเพชร ให้ฉันช่วยหาไหมคะ? พิมพ์ชื่อสถานที่มาได้เลยค่ะ"
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[TextMessage(text=reply_text)]
+            ))
+            return
+            
+        # ดักจับคำขอบคุณ
+        thank_words = ["ขอบคุณ", "แต๊งกิ้ว", "thanks", "thank you", "ขอบใจ", "ขอบคุณครับ", "ขอบคุณค่ะ"]
+        if any(word in user_msg.lower() for word in thank_words):
+            reply_text_1 = "ยินดีมากๆ เลยค่ะ! 🥰 ถ้ามีอะไรให้ช่วยหาอีก เรียก UniGuide Bot ได้เสมอนะคะ"
+            
+            # 📌 ข้อความขอให้ทำแบบประเมิน (เปลี่ยนลิงก์ด้านล่างเป็นลิงก์จริงของเบิร์ดได้เลยครับ)
+            reply_text_2 = "เพื่อการพัฒนาบอทให้ดียิ่งขึ้น รบกวนเวลาสัก 2 นาที ช่วยทำแบบประเมินให้หน่อยนะคะ 🙏✨\n\nคลิกทำแบบประเมินที่นี่ได้เลยค่ะ 👇\nhttps://docs.google.com/forms/d/e/1FAIpQLSdkT0CreOwVl7o8a_woCrrZ2oAQLDEvMeYOzsTUNO3idXrbUw/viewform"
+            
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[
+                    TextMessage(text=reply_text_1),
+                    TextMessage(text=reply_text_2) # ส่งข้อความที่ 2 ตามไปติดๆ
+                ]
+            ))
+            return
+            
+        # ดักจับคำด่า/คำหยาบ (ป้องกันบอทตอบกลับแบบไม่เหมาะสม)
+        rude_words = ["ควย", "สัส", "เหี้ย", "ไอ้บ้า", "โง่"]
+        if any(word in user_msg for word in rude_words):
+            reply_text = "UniGuide Bot เป็นบอทผู้ช่วยน่ารักๆ นะคะ 🥺 พิมพ์ชื่อสถานที่หรือบริการที่ต้องการค้นหาดีกว่าค่ะ"
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[TextMessage(text=reply_text)]
+            ))
+            return
        # ==========================================
-        # 📌 แก้ไขลำดับการค้นหาใหม่ (Location First)
+        # 📌 Location First
         # ==========================================
         
-        # 1. ค้นหาสถานที่ก่อน (เช่น พิมพ์ "ตึก 1" ต้องเจอสถานที่ก่อน)
         buildings = get_building_data(user_msg)
         if buildings:
             send_building_response(buildings)
             return
 
-        # 2. ถ้าไม่เจอสถานที่ ค่อยไปค้นหาบริการ (Services)
         service = get_service_data(user_msg)
         if service:
             b = get_building_by_id(service.get('location_id'))
@@ -880,7 +779,6 @@ def handle_message(event):
             ))
             return
 
-        # 3. กรณีหาอะไรไม่เจอเลย
         line_bot_api.reply_message(ReplyMessageRequest(
             reply_token=event.reply_token, 
             messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' ค่ะ 🙏 ลองพิมพ์ชื่อสถานที่ หรือบริการที่ต้องการอีกครั้งนะคะ")]
