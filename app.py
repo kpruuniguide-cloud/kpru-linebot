@@ -215,10 +215,10 @@ def create_service_flex(service, building):
             "contents": [
                 {
                     "type": "box", "layout": "vertical", 
-                    "backgroundColor": "#162660", # 📌 แก้ไขเป็น Royal Blue
+                    "backgroundColor": "#BBDEFB", # 📌 แก้ไขเป็น Royal Blue
                     "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "ข้อมูลเพิ่มเติม", "uri": link_url},
-                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # 📌 แก้ตัวอักษรเป็น White
+                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}] # 📌 แก้ตัวอักษรเป็น White
                 },
                 {
                     "type": "box", "layout": "vertical", 
