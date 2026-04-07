@@ -11,6 +11,7 @@ from linebot.v3.messaging import (
 from linebot.v3.webhooks import (
     MessageEvent, 
     TextMessageContent,
+    LocationMessageContent, # 📌 เพิ่มการ Import LocationMessageContent
     FollowEvent
 )
 
@@ -127,8 +128,8 @@ def create_building_flex(data):
     return {
         "type": "bubble",
         "styles": {
-            "body": {"backgroundColor": "#FFFFFF"},   # 📌 ปรับกลับเป็น White
-            "footer": {"backgroundColor": "#FFFFFF"}  # 📌 ปรับกลับเป็น White
+            "body": {"backgroundColor": "#FFFFFF"},   
+            "footer": {"backgroundColor": "#FFFFFF"}  
         },
         "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
         "body": {
@@ -168,8 +169,8 @@ def create_service_flex(service, building):
     return {
         "type": "bubble",
         "styles": {
-            "body": {"backgroundColor": "#FFFFFF"},   # 📌 ปรับกลับเป็น White
-            "footer": {"backgroundColor": "#FFFFFF"}  # 📌 ปรับกลับเป็น White
+            "body": {"backgroundColor": "#FFFFFF"},   
+            "footer": {"backgroundColor": "#FFFFFF"}  
         },
         "hero": {
             "type": "image", 
@@ -195,14 +196,14 @@ def create_service_flex(service, building):
                         {
                             "type": "box", "layout": "baseline", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "📍 สถานที่:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2}, # Royal Blue
-                                {"type": "text", "text": building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ', "wrap": True, "color": "#162660", "size": "xs", "flex": 6} # Royal Blue
+                                {"type": "text", "text": "📍 สถานที่:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2}, 
+                                {"type": "text", "text": building.get('official_name', 'ไม่ระบุ') if building else 'ไม่ระบุ', "wrap": True, "color": "#162660", "size": "xs", "flex": 6} 
                             ]
                         },
                         {
                             "type": "box", "layout": "baseline", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "📄 ข้อมูล:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2}, # Royal Blue
+                                {"type": "text", "text": "📄 ข้อมูล:", "color": "#162660", "size": "xs", "weight": "bold", "flex": 2}, 
                                 {"type": "text", "text": service.get('service_details', 'ไม่ระบุ'), "wrap": True, "color": "#708090", "size": "xs", "flex": 6}
                             ]
                         }
@@ -215,17 +216,17 @@ def create_service_flex(service, building):
             "contents": [
                 {
                     "type": "box", "layout": "vertical", 
-                    "backgroundColor": "#BBDEFB", # 📌 แก้ไขเป็น Royal Blue
+                    "backgroundColor": "#BBDEFB", 
                     "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "ข้อมูลเพิ่มเติม", "uri": link_url},
-                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}] # 📌 แก้ตัวอักษรเป็น White
+                    "contents": [{"type": "text", "text": "🌐 ข้อมูลเพิ่มเติม", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}] 
                 },
                 {
                     "type": "box", "layout": "vertical", 
                     "backgroundColor": "#162660", # Royal Blue
                     "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "นำทางไปที่นี่", "uri": f"https://www.google.com/maps/dir/?api=1&destination={building.get('latitude', '')},{building.get('longitude', '')}&travelmode=walking" if building else "#"},
-                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # White
+                    "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
                 }
             ]
         }
@@ -248,7 +249,7 @@ def callback():
     return 'OK', 200
 
 # ==========================================
-# 🟢 ระบบตอบกลับข้อความ (Message Handler)
+# 🟢 ระบบตอบกลับข้อความทั่วไป (Text Message Handler)
 # ==========================================
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
@@ -301,15 +302,15 @@ def handle_message(event):
             building_contents = []
             for name in building_names:
                 building_contents.append({
-                    "type": "text", "text": name, "size": "xs", "color": "#162660", "wrap": True, "margin": "sm" # Royal Blue
+                    "type": "text", "text": name, "size": "xs", "color": "#162660", "wrap": True, "margin": "sm" 
                 })
 
             flex_map = {
                 "type": "bubble",
                 "size": "mega", 
                 "styles": {
-                    "body": {"backgroundColor": "#FFFFFF"},   # 📌 ปรับกลับเป็น White
-                    "footer": {"backgroundColor": "#FFFFFF"}  # 📌 ปรับกลับเป็น White
+                    "body": {"backgroundColor": "#FFFFFF"},   
+                    "footer": {"backgroundColor": "#FFFFFF"}  
                 },
                 "hero": {
                     "type": "image", "url": img_url, "size": "full", "aspectRatio": "1.5:1", "aspectMode": "cover",
@@ -318,8 +319,8 @@ def handle_message(event):
                 "body": {
                     "type": "box", "layout": "vertical", "paddingAll": "12px",
                     "contents": [
-                        {"type": "text", "text": "รายชื่ออาคารทั้งหมด ", "weight": "bold", "size": "md", "color": "#162660"}, # Royal Blue
-                        {"type": "separator", "margin": "md", "color": "#162660"}, # 📌 แก้ไขเป็น Royal Blue
+                        {"type": "text", "text": "รายชื่ออาคารทั้งหมด ", "weight": "bold", "size": "md", "color": "#162660"}, 
+                        {"type": "separator", "margin": "md", "color": "#162660"}, 
                         {"type": "box", "layout": "vertical", "margin": "md", "contents": building_contents}
                     ]
                 },
@@ -328,10 +329,21 @@ def handle_message(event):
                     "contents": [
                         {
                             "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#162660", # 📌 แก้ไขเป็น Royal Blue
+                            "backgroundColor": "#162660", 
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "ซูมดูแผนที่ขนาดเต็ม", "uri": img_url},
-                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # 📌 แก้ตัวอักษรเป็น White
+                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
+                        },
+                        # 📌 เพิ่มปุ่ม "ฉันอยู่ตรงไหน" เข้าไปใน Flex Message
+                        {
+                            "type": "box", "layout": "vertical", 
+                            "backgroundColor": "#E3F2FD", 
+                            "cornerRadius": "md", "paddingAll": "10px",
+                            "action": {
+                                "type": "location", 
+                                "label": "ฉันอยู่ตรงไหน"
+                            },
+                            "contents": [{"type": "text", "text": "📍 ฉันอยู่ตรงไหน", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}]
                         }
                     ]
                 }
@@ -375,15 +387,15 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Landmark.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#ffffffcc", # 📌 ปรับกลับเป็น White โปร่งแสง
+                            "backgroundColor": "#ffffffcc", 
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Royal Blue
-                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, # Royal Blue
-                                {"type": "separator", "margin": "xl", "color": "#162660"}, # 📌 แก้ไขเป็น Royal Blue
-                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", "#162660", "#FFFFFF", "lg"), # 📌 แก้ปุ่มเป็น Royal Blue
-                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", "#162660", "#FFFFFF"), # 📌 แก้ปุ่มเป็น Royal Blue
-                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", "#162660", "#FFFFFF") # 📌 แก้ปุ่มเป็น Royal Blue
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, 
+                                {"type": "text", "text": "สถานที่และจุดพักผ่อน", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, 
+                                {"type": "separator", "margin": "xl", "color": "#162660"}, 
+                                create_custom_btn("🏛️ สถานที่สำคัญ", "ดูสถานที่สำคัญ", "#162660", "#FFFFFF", "lg"), 
+                                create_custom_btn("⛲ จุดพักผ่อน", "ดูจุดพักผ่อน", "#162660", "#FFFFFF"), 
+                                create_custom_btn("🏸 ออกกำลังกาย", "ดูที่ออกกำลังกาย", "#162660", "#FFFFFF") 
                             ]
                         }
                     ]
@@ -413,10 +425,10 @@ def handle_message(event):
             def create_left_align_button(label, text_val):
                 return {
                     "type": "box", "layout": "horizontal", 
-                    "backgroundColor": "#162660", # 📌 แก้ไขเป็น Royal Blue
+                    "backgroundColor": "#162660", 
                     "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
                     "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [{"type": "text", "text": label, "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}] # 📌 แก้ตัวอักษรเป็น White
+                    "contents": [{"type": "text", "text": label, "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}] 
                 }
 
             flex_menu = {
@@ -424,12 +436,12 @@ def handle_message(event):
                 "contents": [
                     {
                         "type": "bubble", 
-                        "styles": {"body": {"backgroundColor": "#FFFFFF"}}, # 📌 ปรับกลับเป็น White
+                        "styles": {"body": {"backgroundColor": "#FFFFFF"}}, 
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services1.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#162660", "align": "center", "lineHeight": "22px"}, # Royal Blue
+                                {"type": "text", "text": "การเงินและทุนการศึกษา", "weight": "bold", "size": "md", "color": "#162660", "align": "center", "lineHeight": "22px"}, 
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         create_left_align_button("ชำระค่าเทอม", "ดูชำระค่าเทอม"),
@@ -441,12 +453,12 @@ def handle_message(event):
                     },
                     {
                         "type": "bubble", 
-                        "styles": {"body": {"backgroundColor": "#FFFFFF"}}, # 📌 ปรับกลับเป็น White
+                        "styles": {"body": {"backgroundColor": "#FFFFFF"}}, 
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services2.JPG", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#162660", "align": "center", "lineHeight": "22px"}, # Royal Blue
+                                {"type": "text", "text": "การเรียนและสถานภาพ", "weight": "bold", "size": "md", "color": "#162660", "align": "center", "lineHeight": "22px"}, 
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         create_left_align_button("สมัครเรียน", "ดูสมัครเรียน"), 
@@ -460,12 +472,12 @@ def handle_message(event):
                     },
                     {
                         "type": "bubble",
-                        "styles": {"body": {"backgroundColor": "#FFFFFF"}}, # 📌 ปรับกลับเป็น White
+                        "styles": {"body": {"backgroundColor": "#FFFFFF"}}, 
                         "hero": {"type": "image", "url": f"{GITHUB_IMAGE_BASE}services3.jpg", "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"},
                         "body": {
                             "type": "box", "layout": "vertical", "paddingAll": "xl", "spacing": "sm",
                             "contents": [
-                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#162660", "align": "center", "lineHeight": "22px"}, # Royal Blue
+                                {"type": "text", "text": "สวัสดิการและบริการทั่วไป", "weight": "bold", "size": "md", "color": "#162660", "align": "center", "lineHeight": "22px"}, 
                                 {"type": "box", "layout": "vertical", "spacing": "sm", "margin": "lg",
                                     "contents": [
                                         create_left_align_button("ทำบัตรนักศึกษาใหม่", "ดูทำบัตรใหม่"),
@@ -534,14 +546,14 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Shop2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#ffffffcc", # 📌 ปรับกลับเป็น White โปร่งแสง
+                            "backgroundColor": "#ffffffcc", 
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Royal Blue
-                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, # Royal Blue
-                                {"type": "separator", "margin": "xl", "color": "#162660"}, # 📌 แก้ไขเป็น Royal Blue
-                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", "#162660", "#FFFFFF", "lg"), # 📌 แก้ปุ่มเป็น Royal Blue
-                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#162660", "#FFFFFF") # 📌 แก้ปุ่มเป็น Royal Blue
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, 
+                                {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, 
+                                {"type": "separator", "margin": "xl", "color": "#162660"}, 
+                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", "#162660", "#FFFFFF", "lg"), 
+                                create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#162660", "#FFFFFF") 
                             ]
                         }
                     ]
@@ -584,15 +596,15 @@ def handle_message(event):
                         {"type": "image", "url": f"{GITHUB_IMAGE_BASE}Dorm2.JPG", "size": "full", "aspectRatio": "3:4", "aspectMode": "cover", "gravity": "center"},
                         {
                             "type": "box", "layout": "vertical", "position": "absolute", "offsetTop": "10%", "offsetBottom": "10%", "offsetStart": "8%", "offsetEnd": "8%",
-                            "backgroundColor": "#ffffffcc", # 📌 ปรับกลับเป็น White โปร่งแสง
+                            "backgroundColor": "#ffffffcc", 
                             "cornerRadius": "xl", "paddingAll": "xl",
                             "contents": [
-                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, # Royal Blue
-                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, # Royal Blue
-                                {"type": "separator", "margin": "xl", "color": "#162660"}, # 📌 แก้ไขเป็น Royal Blue
-                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", "#162660", "#FFFFFF", "lg"), # 📌 แก้ปุ่มเป็น Royal Blue
-                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", "#162660", "#FFFFFF"), # 📌 แก้ปุ่มเป็น Royal Blue
-                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", "#162660", "#FFFFFF") # 📌 แก้ปุ่มเป็น Royal Blue
+                                {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, 
+                                {"type": "text", "text": "เลือกประเภทหอพัก", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, 
+                                {"type": "separator", "margin": "xl", "color": "#162660"}, 
+                                create_custom_btn("หอพักหญิง", "ดูหอพักหญิง", "#162660", "#FFFFFF", "lg"), 
+                                create_custom_btn("หอพักชาย", "ดูหอพักชาย", "#162660", "#FFFFFF"), 
+                                create_custom_btn("หอพักบุคลากร/อาจารย์", "ดูหอพักบุคลากร", "#162660", "#FFFFFF") 
                             ]
                         }
                     ]
@@ -621,13 +633,13 @@ def handle_message(event):
                 "type": "bubble", 
                 "size": "mega", 
                 "styles": {
-                    "header": {"backgroundColor": "#162660"}, # Royal Blue
-                    "body": {"backgroundColor": "#FFFFFF"},   # 📌 ปรับกลับเป็น White
-                    "footer": {"backgroundColor": "#FFFFFF", "separator": True} # 📌 ปรับกลับเป็น White
+                    "header": {"backgroundColor": "#162660"}, 
+                    "body": {"backgroundColor": "#FFFFFF"},   
+                    "footer": {"backgroundColor": "#FFFFFF", "separator": True} 
                 },
                 "header": {
                     "type": "box", "layout": "vertical", "paddingAll": "lg",
-                    "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": "#FFFFFF", "weight": "bold", "size": "md", "align": "center"}] # White
+                    "contents": [{"type": "text", "text": "📞 สายด่วนฉุกเฉิน", "color": "#FFFFFF", "weight": "bold", "size": "md", "align": "center"}] 
                 },
                 "body": {
                     "type": "box", "layout": "vertical", "spacing": "md", "paddingAll": "lg",
@@ -635,8 +647,8 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "🚨 หัวหน้ารปภ.", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5}, # Royal Blue
-                                {"type": "text", "text": "093-923-8526", "color": "#162660", "size": "sm", "weight": "bold", "align": "end", "flex": 6} # Royal Blue
+                                {"type": "text", "text": "🚨 หัวหน้ารปภ.", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5}, 
+                                {"type": "text", "text": "093-923-8526", "color": "#162660", "size": "sm", "weight": "bold", "align": "end", "flex": 6} 
                             ]
                         },
                         {"type": "separator"},
@@ -670,10 +682,10 @@ def handle_message(event):
                     "contents": [
                         {
                             "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#162660", # 📌 แก้ไขเป็น Royal Blue
+                            "backgroundColor": "#162660", 
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "เว็บไซต์มหาวิทยาลัย", "uri": "https://www.kpru.ac.th"},
-                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] # 📌 แก้ตัวอักษรเป็น White
+                            "contents": [{"type": "text", "text": "🌐 เว็บไซต์มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
                         }
                     ]
                 }
@@ -813,6 +825,30 @@ def handle_message(event):
         line_bot_api.reply_message(ReplyMessageRequest(
             reply_token=event.reply_token, 
             messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' ค่ะ 🙏 ลองพิมพ์ชื่อสถานที่ หรือบริการที่ต้องการอีกครั้งนะคะ")]
+        ))
+
+# ==========================================
+# 📍 ระบบรับตำแหน่ง (Location Handler)
+# ==========================================
+@handler.add(MessageEvent, message=LocationMessageContent)
+def handle_location_message(event):
+    # ดึงค่าพิกัดที่ผู้ใช้งานส่งมา
+    user_lat = event.message.latitude
+    user_lon = event.message.longitude
+    address = event.message.address or "ไม่ระบุตำแหน่ง"
+
+    reply_text = (
+        f"📍 ระบบได้รับตำแหน่งของคุณแล้ว\n\n"
+        f"สถานที่ใกล้เคียง: {address}\n"
+        f"พิกัด: {user_lat}, {user_lon}\n\n"
+        f"คุณสามารถเลือกดูแผนที่อาคารที่ต้องการได้จากเมนู 'ค้นหาสถานที่' เพื่อให้นำทางจากจุดที่คุณอยู่ได้เลยครับ"
+    )
+
+    with ApiClient(configuration) as api_client:
+        line_bot_api = MessagingApi(api_client)
+        line_bot_api.reply_message(ReplyMessageRequest(
+            reply_token=event.reply_token,
+            messages=[TextMessage(text=reply_text)]
         ))
 
 if __name__ == "__main__":
