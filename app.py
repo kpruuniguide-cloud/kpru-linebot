@@ -340,7 +340,7 @@ def handle_message(event):
             
             quick_reply_buttons = QuickReply(
                 items=[
-                    QuickReplyItem(action=LocationAction(label="📍 ฉันอยู่ตรงไหน")),
+                    QuickReplyItem(action=LocationAction(label="ฉันอยู่ตรงไหน")),
                     QuickReplyItem(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
                     QuickReplyItem(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
                     QuickReplyItem(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
