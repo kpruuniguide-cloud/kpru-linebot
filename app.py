@@ -730,7 +730,7 @@ def handle_message(event):
         # ==========================================
         common_quick_reply = QuickReply(
             items=[
-                QuickReplyItem(action=LocationAction(label="📍 ฉันอยู่ตรงไหน")),
+                QuickReplyItem(action=LocationAction(label="ฉันอยู่ตรงไหน")),
                 QuickReplyItem(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
                 QuickReplyItem(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
                 QuickReplyItem(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
@@ -743,7 +743,7 @@ def handle_message(event):
         greeting_words = ["สวัสดี", "ดีจ้า", "hi", "hello", "ทัก", "ดีครับ", "ดีค่ะ", "สวัสดีครับ", "สวัสดีค่ะ"]
         if any(word in user_msg.lower() for word in greeting_words):
             # ปรับข้อความนิดหน่อยให้เข้ากับการมีปุ่มกดครับ
-            reply_text = "สวัสดีค่ะ! 😊 UniGuide Bot ยินดีให้บริการค่ะ มีสถานที่หรือบริการไหนใน มรภ.กำแพงเพชร ให้ฉันช่วยหาไหมคะ? พิมพ์หรือเลือกจากเมนูด้านล่างได้เลยค่ะ 👇"
+            reply_text = "สวัสดีค่ะ! 😊 UniGuide Bot ยินดีให้บริการค่ะ มีสถานที่หรือบริการไหนใน มรภ.กำแพงเพชร ให้ฉันช่วยหาไหมคะ? พิมพ์หรือเลือกจากเมนูด้านล่างได้เลยค่ะ "
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
                 # 📌 เติมคำสั่งแนบปุ่มตรงนี้ครับ
@@ -771,7 +771,7 @@ def handle_message(event):
         # ดักจับคำด่า/คำหยาบ (ป้องกันบอทตอบกลับแบบไม่เหมาะสม)
         rude_words = ["ควย", "สัส", "เหี้ย", "ไอ้บ้า", "โง่"]
         if any(word in user_msg for word in rude_words):
-            reply_text = "UniGuide Bot เป็นบอทผู้ช่วยน่ารักๆ นะคะ 🥺 พิมพ์แบบนี้ไม่น่ารักนะคะ"
+            reply_text = "UniGuide Bot เป็นบอทผู้ช่วยน่ารักๆ นะคะ 🥺 พิมพ์แบบนี้ไม่น่ารักนะ"
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
                 messages=[TextMessage(text=reply_text)]
@@ -784,7 +784,7 @@ def handle_message(event):
         # 1. รายการคำสร้อยหรือคำกริยาที่ต้องการตัดทิ้ง (สามารถเพิ่มคำใน "" ได้เรื่อยๆ)
         filler_words = [
             "อยากไป", "พาไปหน่อย", "พาไป", "ทางไป", "นำทางไป", "ไป",
-            "อยู่ที่ไหน", "อยู่ไหน", "ที่ไหน", "ตรงไหน", "ชั้นไหน",
+            "อยู่ที่ไหน", "อยู่ไหน", "ที่ไหน", "ตรงไหน", "ชั้นไหน","อยู่ตรงไหน",
             "หน่อย", "ช่วยหา", "ขอ", "ครับ", "ค่ะ", "นะคะ", "นะ", "จ๊ะ"
         ]
         
@@ -823,7 +823,7 @@ def handle_message(event):
             reply_token=event.reply_token, 
             # 📌 เติมคำสั่งแนบปุ่มตรงนี้ครับ
             messages=[TextMessage(
-                text=f"ไม่พบข้อมูลสถานที่/บริการนี้นะคะ🥹 ลองพิมพ์ชื่อสถานที่ หรือเลือกจากเมนูด้านล่างได้เลยค่ะ 😊",
+                text=f"ไม่พบข้อมูลสถานที่/บริการนี้นะคะ🥹 ลองพิมพ์ชื่อสถานที่ หรือเลือกจากเมนูด้านล่างได้เลยค่ะ ",
                 quick_reply=common_quick_reply
             )]
         ))
