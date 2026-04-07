@@ -728,6 +728,16 @@ def handle_message(event):
 # ==========================================
         # 💬 ทักทายและพูดคุยทั่วไป (Conversational Reply)
         # ==========================================
+        common_quick_reply = QuickReply(
+            items=[
+                QuickReplyItem(action=LocationAction(label="📍 ฉันอยู่ตรงไหน")),
+                QuickReplyItem(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
+                QuickReplyItem(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
+                QuickReplyItem(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
+                QuickReplyItem(action=MessageAction(label="ห้องสมุด", text="ห้องสมุด")),
+                QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร"))
+            ]
+        )
         # ดักจับคำทักทาย
         greeting_words = ["สวัสดี", "ดีจ้า", "hi", "hello", "ทัก", "ดีครับ", "ดีค่ะ", "สวัสดีครับ", "สวัสดีค่ะ"]
         if any(word in user_msg.lower() for word in greeting_words):
@@ -766,15 +776,37 @@ def handle_message(event):
             return
 
        # ==========================================
-        # 📌 Location First
+        # 📌 ระบบทำความสะอาดคำ (Keyword Extraction / Stopword Removal)
+        # ==========================================
+        # 1. รายการคำสร้อยหรือคำกริยาที่ต้องการตัดทิ้ง (สามารถเพิ่มคำใน "" ได้เรื่อยๆ)
+        filler_words = [
+            "อยากไป", "พาไปหน่อย", "พาไป", "ทางไป", "นำทางไป", "ไป",
+            "อยู่ที่ไหน", "อยู่ไหน", "ที่ไหน", "ตรงไหน", "ชั้นไหน",
+            "หน่อย", "ช่วยหา", "ขอ", "ครับ", "ค่ะ", "นะคะ", "นะ", "จ๊ะ"
+        ]
+        
+        # 2. ทำการสแกนและตัดคำพวกนั้นออกจากข้อความที่ผู้ใช้พิมพ์มา
+        search_keyword = user_msg
+        for word in filler_words:
+            search_keyword = search_keyword.replace(word, "")
+            
+        # 3. ลบช่องว่างส่วนเกินหน้าและหลังคำออก
+        search_keyword = search_keyword.strip()
+
+        # ถ้าตัดคำแล้วว่างเปล่า (เช่น ผู้ใช้พิมพ์มาแค่ "ไป") ให้ใช้คำเดิม
+        if not search_keyword:
+            search_keyword = user_msg
+
+        # ==========================================
+        # 📌 นำคำที่ทำความสะอาดแล้ว (search_keyword) ไปค้นหา
         # ==========================================
         
-        buildings = get_building_data(user_msg)
+        buildings = get_building_data(search_keyword)
         if buildings:
             send_building_response(buildings)
             return
 
-        service = get_service_data(user_msg)
+        service = get_service_data(search_keyword)
         if service:
             b = get_building_by_id(service.get('location_id'))
             line_bot_api.reply_message(ReplyMessageRequest(
@@ -783,9 +815,10 @@ def handle_message(event):
             ))
             return
 
+        # ถ้าหาไม่เจอจริงๆ ค่อยตอบกลับว่าไม่พบข้อมูล
         line_bot_api.reply_message(ReplyMessageRequest(
             reply_token=event.reply_token, 
-            messages=[TextMessage(text=f"ไม่พบข้อมูล '{user_msg}' ค่ะ 🙏 ลองพิมพ์ชื่อสถานที่ หรือบริการที่ต้องการอีกครั้งนะคะ")]
+            messages=[TextMessage(text=f"ไม่พบข้อมูลสถานที่/บริการนี้นะคะ 🙏 ลองพิมพ์เฉพาะชื่อสถานที่ หรือบริการที่ต้องการอีกครั้งนะคะ 😊")]
         ))
 
 # ==========================================
