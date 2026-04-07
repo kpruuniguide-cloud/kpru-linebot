@@ -769,9 +769,9 @@ def handle_message(event):
             return
             
         # ดักจับคำด่า/คำหยาบ (ป้องกันบอทตอบกลับแบบไม่เหมาะสม)
-        rude_words = ["ควย", "สัส", "เหี้ย", "ไอ้บ้า", "โง่"]
+        rude_words = ["ควย", "สัส","ไอ้สัส", "เหี้ย", "ไอ้เหี้ย" , "ไอ้บ้า", "โง่" , "ไอ้ควาย" , "ไอ้โง่"]
         if any(word in user_msg for word in rude_words):
-            reply_text = "UniGuide Bot เป็นบอทผู้ช่วยน่ารักๆ นะคะ 🥺 พิมพ์แบบนี้ไม่น่ารักนะ"
+            reply_text = "UniGuide Bot เป็นบอทผู้ช่วยน่ารักๆ นะคะ 🥺 พิมพ์แบบนี้ไม่น่ารักเลยนะ"
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
                 messages=[TextMessage(text=reply_text)]
