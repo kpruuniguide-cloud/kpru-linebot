@@ -739,12 +739,15 @@ def handle_message(event):
             ]
         )
         # ดักจับคำทักทาย
+        # ดักจับคำทักทาย
         greeting_words = ["สวัสดี", "ดีจ้า", "hi", "hello", "ทัก", "ดีครับ", "ดีค่ะ", "สวัสดีครับ", "สวัสดีค่ะ"]
         if any(word in user_msg.lower() for word in greeting_words):
-            reply_text = "สวัสดีค่ะ! 😊 UniGuide Bot ยินดีให้บริการค่ะ มีสถานที่หรือบริการไหนใน มรภ.กำแพงเพชร ให้ฉันช่วยหาไหมคะ? พิมพ์ชื่อสถานที่มาได้เลยค่ะ"
+            # ปรับข้อความนิดหน่อยให้เข้ากับการมีปุ่มกดครับ
+            reply_text = "สวัสดีค่ะ! 😊 UniGuide Bot ยินดีให้บริการค่ะ มีสถานที่หรือบริการไหนใน มรภ.กำแพงเพชร ให้ฉันช่วยหาไหมคะ? พิมพ์หรือเลือกจากเมนูด้านล่างได้เลยค่ะ 👇"
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
-                messages=[TextMessage(text=reply_text)]
+                # 📌 เติมคำสั่งแนบปุ่มตรงนี้ครับ
+                messages=[TextMessage(text=reply_text, quick_reply=common_quick_reply)] 
             ))
             return
             
@@ -818,7 +821,11 @@ def handle_message(event):
         # ถ้าหาไม่เจอจริงๆ ค่อยตอบกลับว่าไม่พบข้อมูล
         line_bot_api.reply_message(ReplyMessageRequest(
             reply_token=event.reply_token, 
-            messages=[TextMessage(text=f"ไม่พบข้อมูลสถานที่/บริการนี้นะคะ 🙏 ลองพิมพ์เฉพาะชื่อสถานที่ หรือบริการที่ต้องการอีกครั้งนะคะ 😊")]
+            # 📌 เติมคำสั่งแนบปุ่มตรงนี้ครับ
+            messages=[TextMessage(
+                text=f"ไม่พบข้อมูลสถานที่/บริการนี้นะคะ🥹 ลองพิมพ์ชื่อสถานที่ หรือเลือกจากเมนูด้านล่างได้เลยค่ะ 😊",
+                quick_reply=common_quick_reply
+            )]
         ))
 
 # ==========================================
