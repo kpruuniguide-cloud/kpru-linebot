@@ -6,7 +6,7 @@ from linebot.v3.exceptions import InvalidSignatureError
 from linebot.v3.messaging import (
     Configuration, ApiClient, MessagingApi, ReplyMessageRequest,
     TextMessage, FlexMessage, FlexContainer,
-    QuickReply, QuickReplyItem, MessageAction
+    QuickReply, QuickReplyItem, MessageAction, LocationAction
 )
 from linebot.v3.webhooks import (
     MessageEvent, 
@@ -333,17 +333,6 @@ def handle_message(event):
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "ซูมดูแผนที่ขนาดเต็ม", "uri": img_url},
                             "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
-                        },
-                        # 📌 เพิ่มปุ่ม "ฉันอยู่ตรงไหน" เข้าไปใน Flex Message
-                        {
-                            "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#E3F2FD", 
-                            "cornerRadius": "md", "paddingAll": "10px",
-                            "action": {
-                                "type": "location", 
-                                "label": "ฉันอยู่ตรงไหน"
-                            },
-                            "contents": [{"type": "text", "text": "📍 ฉันอยู่ตรงไหน", "color": "#162660", "weight": "bold", "size": "sm", "align": "center"}]
                         }
                     ]
                 }
@@ -351,6 +340,7 @@ def handle_message(event):
             
             quick_reply_buttons = QuickReply(
                 items=[
+                    QuickReplyItem(action=LocationAction(label="📍 ฉันอยู่ตรงไหน")),
                     QuickReplyItem(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
                     QuickReplyItem(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
                     QuickReplyItem(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
