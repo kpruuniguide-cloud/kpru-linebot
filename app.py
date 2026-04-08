@@ -757,7 +757,7 @@ def handle_message(event):
             reply_text_1 = "ยินดีมากๆ เลยค่ะ! 🥰 ถ้ามีอะไรให้ช่วยหาอีก เรียก UniGuide Bot ได้เสมอนะคะ"
             
             # 📌 ข้อความขอให้ทำแบบประเมิน
-            reply_text_2 = "เพื่อการพัฒนาบอทให้ดียิ่งขึ้น รบกวนเวลาสักนิด ช่วยทำแบบประเมินให้หน่อยนะคะ 🙏✨\n\nคลิกทำแบบประเมินที่นี่ได้เลยค่ะ 👇\nhttps://docs.google.com/forms/d/e/1FAIpQLSdkT0CreOwVl7o8a_woCrrZ2oAQLDEvMeYOzsTUNO3idXrbUw/viewform"
+            reply_text_2 = "เพื่อการพัฒนาบอทให้ดียิ่งขึ้น รบกวนเวลาสักนิด ช่วยทำแบบประเมินให้หน่อยนะคะ 🙏✨\n\nคลิกทำแบบประเมินที่นี่ได้เลยค่ะ \nhttps://docs.google.com/forms/d/e/1FAIpQLSdkT0CreOwVl7o8a_woCrrZ2oAQLDEvMeYOzsTUNO3idXrbUw/viewform"
             
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
