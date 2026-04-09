@@ -280,19 +280,19 @@ def create_map_menu_flex():
 
         return {
             "type": "box", "layout": "horizontal", 
-            "backgroundColor": "#D0E6FD", # ✅ สีฟ้าอ่อน Powder Blue
+            "backgroundColor": "#D0E6FD", 
             "cornerRadius": "md", "paddingAll": "10px", "margin": "xs",
             "action": {"type": "message", "label": btn_label[:40], "text": search_text},
             "contents": [
                 {
                     "type": "text", "text": btn_label, "size": "xs", 
-                    "color": "#162660", # ✅ ตัวหนังสือสีน้ำเงิน Royal Blue
+                    "color": "#162660", 
                     "weight": "bold", "align": "start", "wrap": True 
                 }
             ]
         }
 
-    # === ลำดับ ID กลุ่มหลัก 1-38 ต่อด้วย A-D (ตัด 43 ออก) ===
+    # === ลำดับ ID กลุ่มหลัก 1-38 ต่อด้วย A-D ===
     main_flow_ids = [
         1, 2, 3, 4, 5, 6, 7, 8,                             # การ์ด 2 (8 ปุ่ม)
         9, 10, 11, 12, 13, 14, 15, 16, 17,                  # การ์ด 3 (9 ปุ่ม)
@@ -307,24 +307,23 @@ def create_map_menu_flex():
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
 
-    # 🟢 --- การ์ด 1: แผนที่พื้นหลังเต็มใบ + ปุ่ม Overlay (สไตล์ Big C) ---
+    # 🟢 --- การ์ด 1: แผนที่พื้นหลังเต็มใบ (แก้ aspectRatio เป็น 9:16 ให้สูงคลุมขอบขาว) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "body": {
             "type": "box", "layout": "vertical", "paddingAll": "0px",
             "contents": [
-                # 1. รูปแผนที่เป็น Background (ปรับ aspectRatio ให้สูงพอดีกับการ์ดใบอื่น)
                 {
                     "type": "image", "url": img_url, "size": "full", 
-                    "aspectRatio": "3:4", "aspectMode": "cover" 
+                    "aspectRatio": "9:16", # ✅ ดึงภาพให้สูงปรี๊ดเพื่อกลบพื้นที่ว่าง
+                    "aspectMode": "cover"  # ✅ ให้ภาพครอปตัวเองให้พอดีโดยไม่เบี้ยว
                 },
-                # 2. กล่องปุ่มที่ลอยทับอยู่ด้านล่าง (Overlay)
                 {
                     "type": "box", "layout": "vertical", 
-                    "position": "absolute", # สั่งให้ลอยทับรูป
-                    "offsetBottom": "20px", # ยกขึ้นจากขอบล่าง 20px
+                    "position": "absolute", 
+                    "offsetBottom": "20px", 
                     "width": "100%", 
-                    "paddingAll": "20px", # เว้นระยะซ้ายขวาไม่ให้ปุ่มติดขอบ
+                    "paddingAll": "20px", 
                     "contents": [
                         {
                             "type": "button", "style": "primary", 
