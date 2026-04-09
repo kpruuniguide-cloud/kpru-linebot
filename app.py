@@ -280,19 +280,19 @@ def create_map_menu_flex():
 
         return {
             "type": "box", "layout": "horizontal", 
-            "backgroundColor": "#162660", # ✅ เปลี่ยนเป็นสีน้ำเงินเข้ม (Royal Blue)
+            "backgroundColor": "#D0E6FD", # ✅ กลับมาใช้สี Powder Blue ตามที่อาจารย์ชอบครับ
             "cornerRadius": "md", "paddingAll": "10px", "margin": "xs",
             "action": {"type": "message", "label": btn_label[:40], "text": search_text},
             "contents": [
                 {
                     "type": "text", "text": btn_label, "size": "xs", 
-                    "color": "#FFFFFF", # ✅ เปลี่ยนฟอนต์เป็นสีขาวเพื่อให้ตัดกับพื้นหลัง
+                    "color": "#162660", # ✅ ฟอนต์สี Royal Blue
                     "weight": "bold", "align": "start", "wrap": True 
                 }
             ]
         }
 
-    # === ลำดับ ID กลุ่มหลัก: 1-38 และ A-D (42 IDs) ===
+    # === ลำดับ ID กลุ่มหลัก: 1-38 และ A-D (ตัด 43 ออกแล้วครับ) ===
     main_flow_ids = [
         1, 2, 3, 4, 5, 6, 7, 8,                             # การ์ด 2 (8 ปุ่ม)
         9, 10, 11, 12, 13, 14, 15, 16, 17,                  # การ์ด 3 (9 ปุ่ม)
@@ -300,19 +300,20 @@ def create_map_menu_flex():
         27, 28, 29, 30, 31, 32, 33, 34, 35,                 # การ์ด 5 (9 ปุ่ม)
         36, 37, 38, 39, 40, 41, 42                          # การ์ด 6 (7 ปุ่ม)
     ]
-    # === กลุ่มเสริม: 74-79 (6 IDs) ===
+    # === กลุ่มเสริม: 74-79 (ใบสุดท้าย) ===
     extra_ids = [74, 75, 76, 77, 78, 79]   
 
     db_data = get_data_by_ids(main_flow_ids + extra_ids)
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
 
-    # --- การ์ด 1: โปสเตอร์แผนที่ (Hero Only + Footer Button) ---
+    # --- การ์ด 1: แผนที่สไตล์ Poster (ขยาย Ratio เพื่อลดพื้นที่ว่าง) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "hero": {
             "type": "image", "url": img_url, "size": "full", 
-            "aspectRatio": "1.5:1", "aspectMode": "cover"
+            "aspectRatio": "1:1.1", # ✅ ปรับให้สูงขึ้นเพื่อให้สมดุลกับความสูงของใบอื่นๆ
+            "aspectMode": "cover"
         },
         "footer": {
             "type": "box", "layout": "vertical", 
@@ -320,17 +321,17 @@ def create_map_menu_flex():
         }
     })
 
-    # --- การ์ด 2: อาคาร 1-8 (Header Royal Blue) ---
+    # --- การ์ด 2: อาคาร 1-8 (Header น้ำเงิน) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "header": {
             "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
-            "contents": [{"type": "text", "text": "🏢 รายชื่ออาคารและสถานที่หลัก", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
+            "contents": [{"type": "text", "text": "🏢 อาคารและสถานที่หลัก", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
         },
         "body": {"type": "box", "layout": "vertical", "spacing": "xs", "contents": [make_list_btn(db_data.get(id)) for id in main_flow_ids[0:8] if db_data.get(id)]}
     })
 
-    # --- การ์ด 3 - 6: อาคาร 9 ถึง D (ไหลต่อเนื่องใบละ 9 ปุ่ม) ---
+    # --- การ์ด 3 - 6: อาคาร 9 ถึง D (รันต่อเนื่องใบละ 9 ปุ่ม) ---
     for start_idx in [8, 17, 26, 35]:
         end_idx = start_idx + 9
         current_group = main_flow_ids[start_idx:end_idx]
@@ -340,7 +341,7 @@ def create_map_menu_flex():
             "body": {"type": "box", "layout": "vertical", "spacing": "xs", "paddingTop": "25px", "contents": [make_list_btn(db_data.get(id)) for id in current_group if db_data.get(id)]}
         })
 
-    # --- การ์ด 7: อาคารและสถานที่เสริม (แยกหมวดหมู่ชัดเจน) ---ห
+    # --- การ์ด 7: อาคารและสถานที่เสริม ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "header": {
