@@ -282,8 +282,8 @@ def create_map_menu_flex():
             "type": "box", "layout": "horizontal", 
             "backgroundColor": "#D0E6FD", 
             "cornerRadius": "md", 
-            "paddingAll": "10px", # ✅ ปรับกลับเป็น 10px ปุ่มจะได้ไม่อ้วนเกินไป
-            "margin": "sm",       # ✅ เพิ่ม Margin เป็น sm เพื่อให้ปุ่มถอยห่างจากกัน
+            "paddingAll": "10px", 
+            "margin": "sm", # ปุ่มเว้นระยะสวยงามเหมือนเดิมครับ
             "action": {"type": "message", "label": btn_label[:40], "text": search_text},
             "contents": [
                 {
@@ -309,7 +309,7 @@ def create_map_menu_flex():
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
 
-    # 🟢 --- การ์ด 1: แผนที่พื้นหลังเต็มใบ (สัดส่วน 2:3 เหมือนเดิมที่อาจารย์ชอบ) ---
+    # 🟢 --- การ์ด 1: แผนที่พื้นหลังเต็มใบ (แก้แค่ aspectRatio เป็น 5:8) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "body": {
@@ -317,7 +317,7 @@ def create_map_menu_flex():
             "contents": [
                 {
                     "type": "image", "url": img_url, "size": "full", 
-                    "aspectRatio": "2:3", 
+                    "aspectRatio": "5:8", # ✅ ปรับสัดส่วนให้ยืดลงมาอีกนิดเพื่อปิดขอบขาว 100%
                     "aspectMode": "cover"
                 },
                 {
@@ -345,7 +345,7 @@ def create_map_menu_flex():
             "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
             "contents": [{"type": "text", "text": "🏢 รายชื่ออาคารและสถานที่หลัก", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
         },
-        "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in main_flow_ids[0:8] if db_data.get(id)]} # ✅ เพิ่ม Spacing
+        "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in main_flow_ids[0:8] if db_data.get(id)]}
     })
 
     # --- การ์ด 3 - 6: อาคาร 9 ถึง D ---
@@ -355,7 +355,7 @@ def create_map_menu_flex():
         if not current_group: continue
         bubbles.append({
             "type": "bubble", "size": "kilo",
-            "body": {"type": "box", "layout": "vertical", "spacing": "sm", "paddingTop": "25px", "contents": [make_list_btn(db_data.get(id)) for id in current_group if db_data.get(id)]} # ✅ เพิ่ม Spacing
+            "body": {"type": "box", "layout": "vertical", "spacing": "sm", "paddingTop": "25px", "contents": [make_list_btn(db_data.get(id)) for id in current_group if db_data.get(id)]}
         })
 
     # --- การ์ด 7: อาคารและสถานที่เสริม ---
@@ -365,7 +365,7 @@ def create_map_menu_flex():
             "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
             "contents": [{"type": "text", "text": "✨ อาคารและสถานที่เสริม", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
         },
-        "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in extra_ids if db_data.get(id)]} # ✅ เพิ่ม Spacing
+        "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in extra_ids if db_data.get(id)]}
     })
 
     return {"type": "carousel", "contents": bubbles}
