@@ -267,7 +267,7 @@ def create_map_menu_flex():
             if 'conn' in locals(): conn.close()
 
     def make_list_btn(item_data, is_main_building=True):
-        """สร้างปุ่มรายชื่ออาคาร: สี Powder Blue (#D0E6FD) ฟอนต์ Royal Blue (#162660) ชิดซ้าย"""
+        """สร้างปุ่มรายชื่อ: สี Powder Blue (#D0E6FD) ฟอนต์ Royal Blue (#162660) ชิดซ้าย (start)"""
         if not item_data: return None
         
         b_no = str(item_data.get('building_no', '')).strip()
@@ -283,23 +283,23 @@ def create_map_menu_flex():
         return {
             "type": "box", "layout": "vertical", "cornerRadius": "md", "spacing": "sm", 
             "paddingAll": "10px", "margin": "sm",
-            "backgroundColor": "#D0E6FD", # ✅ พื้นหลังสี Powder Blue
+            "backgroundColor": "#D0E6FD", # พื้นหลังสี Powder Blue
             "action": {"type": "message", "label": btn_label, "text": search_text},
             "contents": [
                 {
                     "type": "text", 
                     "text": btn_label, 
                     "size": "sm", 
-                    "color": "#162660", # ✅ ฟอนต์สี Royal Blue
-                    "align": "left",    # ✅ ชิดซ้าย
+                    "color": "#162660", 
+                    "align": "start",    # ✅ แก้ไขจาก 'left' เป็น 'start' เพื่อแก้ Error
                     "weight": "bold",
                     "wrap": True
                 }
             ]
         }
 
-    # === จัดหมวดหมู่ ID อาคาร ===
-    card1_extra_ids = [39, 40, 41, 42] # ย้ายมาใส่ใบแรก
+    # จัดกลุ่ม ID อาคารตามที่คุณต้องการ (ย้าย 39-42 มาใบแรก)
+    card1_extra_ids = [39, 40, 41, 42]
     main_building_cards_ids = [
         [1, 2, 3, 4, 5, 6, 7, 8],          # ใบที่ 2
         [9, 10, 11, 12, 13, 14, 15, 16],   # ใบที่ 3
@@ -315,7 +315,7 @@ def create_map_menu_flex():
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
 
-    # --- ใบที่ 1: แผนที่ + อาคาร 39-42 (Balance พื้นที่) ---
+    # --- ใบที่ 1: แผนที่ + อาคาร 39-42 (Balanced Card) ---
     card1_extra_btns = [make_list_btn(db_data.get(id), True) for id in card1_extra_ids if db_data.get(id)]
     bubbles.append({
         "type": "bubble", "size": "kilo",
@@ -331,13 +331,12 @@ def create_map_menu_flex():
         }
     })
 
-    # สไตล์หัวข้อไล่ระดับสี (Gradient)
     header_gradient = {
         "type": "linearGradient", "angle": "90deg",
-        "startColor": "#162660", "endColor": "#D0E6FD" # ✅ ไล่จาก Royal Blue ไป Powder Blue
+        "startColor": "#162660", "endColor": "#D0E6FD"
     }
 
-    # --- ใบที่ 2: สถานที่และอาคารหลัก (มีหัวข้อ) ---
+    # --- ใบที่ 2: สถานที่และอาคารหลัก (มี Header) ---
     btns_card2 = [make_list_btn(db_data.get(id), True) for id in main_building_cards_ids[0] if db_data.get(id)]
     bubbles.append({
         "type": "bubble", "size": "kilo",
@@ -348,15 +347,17 @@ def create_map_menu_flex():
         "body": {"type": "box", "layout": "vertical", "spacing": "xs", "contents": btns_card2}
     })
 
-    # --- ใบที่ 3 - 7: อาคารหลักที่เหลือ (ไม่มีหัวข้อ) ---
+    # --- ใบที่ 3 - 7: อาคารหลักที่เหลือ (ไม่มี Header) ---
     for i in range(1, len(main_building_cards_ids)):
         btns = [make_list_btn(db_data.get(id), True) for id in main_building_cards_ids[i] if db_data.get(id)]
         bubbles.append({
             "type": "bubble", "size": "kilo",
-            "body": {"type": "box", "layout": "vertical", "spacing": "xs", "paddingTop": "25px", "contents": btns}
+            "body": {
+                "type": "box", "layout": "vertical", "spacing": "xs", "paddingTop": "25px", "contents": btns
+            }
         })
 
-    # --- ใบที่ 8: สถานที่และอาคารเสริม (มีหัวข้อ) ---
+    # --- ใบที่ 8: สถานที่และอาคารเสริม (มี Header) ---
     extra_btns = [make_list_btn(db_data.get(id), False) for id in extra_building_ids if db_data.get(id)]
     bubbles.append({
         "type": "bubble", "size": "kilo",
@@ -368,7 +369,6 @@ def create_map_menu_flex():
     })
 
     return {"type": "carousel", "contents": bubbles}
-
 # ================== FLASK ROUTES ==================
 
 @app.route("/")
