@@ -267,9 +267,8 @@ def create_map_menu_flex():
             if 'conn' in locals(): conn.close()
 
     def make_list_btn(item_data, is_main_building=True):
-        """สร้างปุ่มรายชื่อ: สี Powder Blue (#D0E6FD) ฟอนต์ Royal Blue (#162660) ชิดซ้าย (start)"""
+        """ถอดแบบจาก create_left_align_button ที่อาจารย์ใช้งานได้จริง"""
         if not item_data: return None
-        
         b_no = str(item_data.get('building_no', '')).strip()
         name = item_data.get('official_name', '')
         
@@ -280,95 +279,100 @@ def create_map_menu_flex():
 
         search_text = f"อาคาร {b_no}" if is_main_building and b_no not in ["", "-", "None"] else name
 
+        # โครงสร้างเดียวกับปุ่มในเมนู SERVICES ของอาจารย์ครับ
         return {
-            "type": "box", "layout": "vertical", "cornerRadius": "md", "spacing": "sm", 
-            "paddingAll": "10px", "margin": "sm",
-            "backgroundColor": "#D0E6FD", # พื้นหลังสี Powder Blue
+            "type": "box", "layout": "horizontal", 
+            "backgroundColor": "#D0E6FD", # Powder Blue
+            "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
             "action": {"type": "message", "label": btn_label, "text": search_text},
             "contents": [
                 {
-                    "type": "text", 
-                    "text": btn_label, 
-                    "size": "sm", 
-                    "color": "#162660", 
-                    "align": "start",    # ✅ แก้ไขจาก 'left' เป็น 'start' เพื่อแก้ Error
-                    "weight": "bold",
-                    "wrap": True
+                    "type": "text", "text": btn_label, 
+                    "color": "#162660", "weight": "bold", "size": "sm", 
+                    "align": "start", "wrap": True # ใช้ start ตามที่อาจารย์แนะนำครับ
                 }
             ]
         }
 
-    # จัดกลุ่ม ID อาคารตามที่คุณต้องการ (ย้าย 39-42 มาใบแรก)
-    card1_extra_ids = [39, 40, 41, 42]
-    main_building_cards_ids = [
+    # จัดกลุ่ม ID (ย้าย 39-42 มาไว้ที่การ์ดใบที่ 1)
+    card1_ids = [39, 40, 41, 42]
+    main_groups = [
         [1, 2, 3, 4, 5, 6, 7, 8],          # ใบที่ 2
         [9, 10, 11, 12, 13, 14, 15, 16],   # ใบที่ 3
         [17, 18, 19, 20, 21, 22, 23, 24],  # ใบที่ 4
         [25, 26, 27, 28, 29, 30, 31, 32],  # ใบที่ 5
-        [33, 34, 35, 36, 37, 38],          # ใบที่ 6
-        [43]                               # ใบที่ 7
+        [33, 34, 35, 36, 37, 38, 43],      # ใบที่ 6 (รวม 43 เข้ามาด้วยครับ)
     ]
-    extra_building_ids = [74, 75, 76, 77, 78, 79] # ใบที่ 8
+    extra_ids = [74, 75, 76, 77, 78, 79]   # ใบที่ 7
 
-    all_ids_to_fetch = card1_extra_ids + [i for sublist in main_building_cards_ids for i in sublist] + extra_building_ids
-    db_data = get_data_by_ids(all_ids_to_fetch)
+    all_ids = card1_ids + [i for sub in main_groups for i in sub] + extra_ids
+    db_data = get_data_by_ids(all_ids)
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
 
-    # --- ใบที่ 1: แผนที่ + อาคาร 39-42 (Balanced Card) ---
-    card1_extra_btns = [make_list_btn(db_data.get(id), True) for id in card1_extra_ids if db_data.get(id)]
+    # --- ใบที่ 1: แผนที่ + อาคาร 39-42 (Balanced) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "1.5:1", "aspectMode": "cover"},
         "body": {
-            "type": "box", "layout": "vertical", "spacing": "sm", "paddingBottom": "10px",
-            "contents": card1_extra_btns
+            "type": "box", "layout": "vertical", "spacing": "xs",
+            "contents": [make_list_btn(db_data.get(id)) for id in card1_ids if db_data.get(id)]
         },
         "footer": {
-            "type": "box", "layout": "vertical", "contents": [
-                {"type": "button", "style": "primary", "color": "#162660", "height": "sm", "action": {"type": "uri", "label": "🔍 ดูภาพขนาดเต็ม", "uri": img_url}}
+            "type": "box", "layout": "vertical", 
+            "contents": [
+                {
+                    "type": "button", "style": "primary", "color": "#162660", "height": "sm",
+                    "action": {"type": "uri", "label": "🔍 ดูภาพขนาดเต็ม", "uri": img_url}
+                }
             ]
         }
     })
 
+    # สไตล์หัวข้อไล่ระดับสี Royal Blue -> Powder Blue
     header_gradient = {
         "type": "linearGradient", "angle": "90deg",
         "startColor": "#162660", "endColor": "#D0E6FD"
     }
 
-    # --- ใบที่ 2: สถานที่และอาคารหลัก (มี Header) ---
-    btns_card2 = [make_list_btn(db_data.get(id), True) for id in main_building_cards_ids[0] if db_data.get(id)]
+    # --- ใบที่ 2: สถานที่และอาคารหลัก ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "header": {
             "type": "box", "layout": "vertical", "background": header_gradient, "paddingAll": "15px",
             "contents": [{"type": "text", "text": "🏢 สถานที่และอาคารหลัก", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
         },
-        "body": {"type": "box", "layout": "vertical", "spacing": "xs", "contents": btns_card2}
+        "body": {
+            "type": "box", "layout": "vertical", "spacing": "xs",
+            "contents": [make_list_btn(db_data.get(id)) for id in main_groups[0] if db_data.get(id)]
+        }
     })
 
-    # --- ใบที่ 3 - 7: อาคารหลักที่เหลือ (ไม่มี Header) ---
-    for i in range(1, len(main_building_cards_ids)):
-        btns = [make_list_btn(db_data.get(id), True) for id in main_building_cards_ids[i] if db_data.get(id)]
+    # --- ใบที่ 3 - 6: รายชื่ออาคารหลัก (ไม่มี Header) ---
+    for i in range(1, len(main_groups)):
         bubbles.append({
             "type": "bubble", "size": "kilo",
             "body": {
-                "type": "box", "layout": "vertical", "spacing": "xs", "paddingTop": "25px", "contents": btns
+                "type": "box", "layout": "vertical", "spacing": "xs", "paddingTop": "20px",
+                "contents": [make_list_btn(db_data.get(id)) for id in main_groups[i] if db_data.get(id)]
             }
         })
 
-    # --- ใบที่ 8: สถานที่และอาคารเสริม (มี Header) ---
-    extra_btns = [make_list_btn(db_data.get(id), False) for id in extra_building_ids if db_data.get(id)]
+    # --- ใบที่ 7: สถานที่และอาคารเสริม ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "header": {
             "type": "box", "layout": "vertical", "background": header_gradient, "paddingAll": "15px",
             "contents": [{"type": "text", "text": "✨ สถานที่และอาคารเสริม", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
         },
-        "body": {"type": "box", "layout": "vertical", "spacing": "xs", "contents": extra_btns}
+        "body": {
+            "type": "box", "layout": "vertical", "spacing": "xs",
+            "contents": [make_list_btn(db_data.get(id), False) for id in extra_ids if db_data.get(id)]
+        }
     })
 
     return {"type": "carousel", "contents": bubbles}
+
 # ================== FLASK ROUTES ==================
 
 @app.route("/")
