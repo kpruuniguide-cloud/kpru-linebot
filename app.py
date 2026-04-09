@@ -251,6 +251,7 @@ def create_service_flex(service, building):
 
 def create_map_menu_flex():
     def get_data_by_ids(id_list):
+        """ดึงข้อมูลจาก DB ตามรายการ location_id"""
         try:
             conn = pymysql.connect(**DB_CONFIG)
             with conn.cursor() as cursor:
@@ -266,6 +267,7 @@ def create_map_menu_flex():
             if 'conn' in locals(): conn.close()
 
     def make_btn(item_data, is_main_building=True):
+        """สร้างปุ่ม: อาคารหลัก (เลข. ชื่อ) / อาคารเสริม (ชื่ออย่างเดียว)"""
         if not item_data: return None
         b_no = str(item_data.get('building_no', '')).strip()
         name = item_data.get('official_name', '')
@@ -286,15 +288,15 @@ def create_map_menu_flex():
             }
         }
 
-    # 1. กำหนดรายการ ID ตามโครงสร้างที่คุณต้องการ
+    # 1. กำหนดรายการ ID ตามที่คุณเรียงใหม่
     card_ids = [
-        [1, 2, 3, 4, 5, 6, 7],             # ใบที่ 2
-        [8, 9, 10, 11, 12, 13, 14, 15],    # ใบที่ 3
-        [16, 17, 18, 19, 20, 21, 22, 23],  # ใบที่ 4
-        [24, 25, 26, 27, 28, 29, 30, 31],  # ใบที่ 5
-        [32, 33, 34, 35, 36, 37, 38, 39],  # ใบที่ 6
-        [41, 42, 43],                      # ใบที่ 7
-        [74, 75, 76, 77, 78, 79]           # ใบที่ 8
+        [1, 2, 3, 4, 5, 6, 7, 8],          # ใบที่ 2 (หัวข้อหลัก + 8 ปุ่ม)
+        [9, 10, 11, 12, 13, 14, 15, 16],   # ใบที่ 3 (8 ปุ่ม)
+        [17, 18, 19, 20, 21, 22, 23, 24],  # ใบที่ 4 (8 ปุ่ม)
+        [25, 26, 27, 28, 29, 30, 31, 32],  # ใบที่ 5 (8 ปุ่ม)
+        [33, 34, 35, 36, 37, 38],          # ใบที่ 6 (6 ปุ่ม - อาคารหลัก 33-38)
+        [40, 41, 42, 43],                  # ใบที่ 7 (4 ปุ่ม)
+        [74, 75, 76, 77, 78, 79]           # ใบที่ 8 (หัวข้อเสริม + 6 ปุ่ม)
     ]
 
     all_ids = [i for sublist in card_ids for i in sublist]
@@ -302,14 +304,23 @@ def create_map_menu_flex():
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
 
-    # --- ใบที่ 1: แผนที่ ---
+    # --- ใบที่ 1: แผนที่ (ต้องเป็น size kilo เพื่อให้เท่าใบอื่น) ---
     bubbles.append({
         "type": "bubble",
+        "size": "kilo",
         "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "1.5:1", "aspectMode": "cover"},
-        "footer": {"type": "box", "layout": "vertical", "contents": [{"type": "button", "style": "primary", "color": "#162660", "action": {"type": "uri", "label": "🔍 ดูภาพขนาดเต็ม", "uri": img_url}}] }
+        "footer": {
+            "type": "box", "layout": "vertical", 
+            "contents": [
+                {
+                    "type": "button", "style": "primary", "color": "#162660", 
+                    "action": {"type": "uri", "label": "🔍 ดูภาพขนาดเต็ม", "uri": img_url}
+                }
+            ]
+        }
     })
 
-    # --- ใบที่ 2: สถานที่และอาคารหลัก (มีหัวข้อ) ---
+    # --- ใบที่ 2: สถานที่และอาคารหลัก (หัวข้อหลัก + 8 ปุ่ม) ---
     btns_card2 = [make_btn(db_data.get(id), True) for id in card_ids[0] if db_data.get(id)]
     bubbles.append({
         "type": "bubble", "size": "kilo",
@@ -320,12 +331,16 @@ def create_map_menu_flex():
         "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": btns_card2}
     })
 
-    # --- ใบที่ 3 - 7: อาคารหลักที่เหลือ (ไม่มีหัวข้อ + 8 ปุ่ม) ---
-    for i in range(1, 6): 
+    # --- ใบที่ 3 - 7: อาคารหลักที่เหลือ (ไม่มีหัวข้อ) ---
+    for i in range(1, 6): # index 1 ถึง 5
         btns = [make_btn(db_data.get(id), True) for id in card_ids[i] if db_data.get(id)]
         bubbles.append({
             "type": "bubble", "size": "kilo",
-            "body": {"type": "box", "layout": "vertical", "spacing": "sm", "paddingTop": "25px", "contents": btns}
+            "body": {
+                "type": "box", "layout": "vertical", "spacing": "sm", 
+                "paddingTop": "25px", 
+                "contents": btns
+            }
         })
 
     # --- ใบที่ 8: สถานที่และอาคารเสริม (มีหัวข้อ) ---
@@ -340,6 +355,7 @@ def create_map_menu_flex():
     })
 
     return {"type": "carousel", "contents": bubbles}
+
 # ================== FLASK ROUTES ==================
 
 @app.route("/")
