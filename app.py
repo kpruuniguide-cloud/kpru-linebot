@@ -11,7 +11,7 @@ from linebot.v3.messaging import (
 from linebot.v3.webhooks import (
     MessageEvent, 
     TextMessageContent,
-    LocationMessageContent, # 📌 เพิ่มการ Import LocationMessageContent
+    LocationMessageContent,
     FollowEvent
 )
 
@@ -91,9 +91,23 @@ def get_building_by_id(building_id):
     finally:
         if 'conn' in locals(): conn.close()
 
+def save_search_log(keyword, is_found):
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            # ใช้โค้ดนี้เพื่อบันทึกคำค้นหา และสถานะ (1=เจอ, 0=ไม่เจอ)
+            sql = "INSERT INTO search_logs (keyword, is_found) VALUES (%s, %s)"
+            cursor.execute(sql, (keyword, is_found))
+            conn.commit()
+    except Exception as e:
+        print("Error saving log:", e)
+    finally:
+        if 'conn' in locals(): conn.close()
+
 # ================== FLEX MESSAGE BUILDERS ==================
 def create_building_flex(data):
-    img_url = f"{GITHUB_IMAGE_BASE}{data['image_url']}" if data and data.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
+    # 🟢 เปลี่ยนจาก image_url เป็น image_name ให้ตรงกับฐานข้อมูลใหม่
+    img_url = f"{GITHUB_IMAGE_BASE}{data['image_name']}" if data and data.get("image_name") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
     body_contents = []
     
@@ -160,7 +174,8 @@ def create_building_flex(data):
     }
 
 def create_service_flex(service, building):
-    img_url = f"{GITHUB_IMAGE_BASE}{building['image_url']}" if building and building.get("image_url") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
+    # 🟢 เปลี่ยนจาก image_url เป็น image_name ให้ตรงกับฐานข้อมูลใหม่
+    img_url = f"{GITHUB_IMAGE_BASE}{building['image_name']}" if building and building.get("image_name") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
     link_url = service.get('external_link')
     if not link_url or str(link_url).strip() == "":
@@ -232,6 +247,99 @@ def create_service_flex(service, building):
         }
     }
 
+# 🟢 ฟังก์ชันสร้างการ์ดทั้งหมด
+
+def create_map_menu_flex():
+    def get_data_by_ids(id_list):
+        try:
+            conn = pymysql.connect(**DB_CONFIG)
+            with conn.cursor() as cursor:
+                format_strings = ','.join(['%s'] * len(id_list))
+                sql = f"SELECT location_id, building_no, official_name FROM locations WHERE location_id IN ({format_strings})"
+                cursor.execute(sql, tuple(id_list))
+                results = cursor.fetchall()
+                return {row['location_id']: row for row in results}
+        except Exception as e:
+            print(f"Error fetching IDs for Menu: {e}")
+            return {}
+        finally:
+            if 'conn' in locals(): conn.close()
+
+    def make_btn(item_data, is_main_building=True):
+        if not item_data: return None
+        b_no = str(item_data.get('building_no', '')).strip()
+        name = item_data.get('official_name', '')
+        
+        if is_main_building and b_no not in ["", "-", "None"]:
+            label = f"{b_no}. {name}"
+        else:
+            label = name
+
+        if len(label) > 40: label = label[:37] + "..."
+
+        return {
+            "type": "button", "style": "secondary", "height": "sm", "margin": "sm", "color": "#F0F0F0",
+            "action": {
+                "type": "message", 
+                "label": label, 
+                "text": f"อาคาร {b_no}" if is_main_building and b_no not in ["", "-", "None"] else name
+            }
+        }
+
+    # 1. กำหนดรายการ ID ตามโครงสร้างที่คุณต้องการ
+    card_ids = [
+        [1, 2, 3, 4, 5, 6, 7],             # ใบที่ 2
+        [8, 9, 10, 11, 12, 13, 14, 15],    # ใบที่ 3
+        [16, 17, 18, 19, 20, 21, 22, 23],  # ใบที่ 4
+        [24, 25, 26, 27, 28, 29, 30, 31],  # ใบที่ 5
+        [32, 33, 34, 35, 36, 37, 38, 39],  # ใบที่ 6
+        [41, 42, 43],                      # ใบที่ 7
+        [74, 75, 76, 77, 78, 79]           # ใบที่ 8
+    ]
+
+    all_ids = [i for sublist in card_ids for i in sublist]
+    db_data = get_data_by_ids(all_ids)
+    img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
+    bubbles = []
+
+    # --- ใบที่ 1: แผนที่ ---
+    bubbles.append({
+        "type": "bubble",
+        "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "1.5:1", "aspectMode": "cover"},
+        "footer": {"type": "box", "layout": "vertical", "contents": [{"type": "button", "style": "primary", "color": "#162660", "action": {"type": "uri", "label": "🔍 ดูภาพขนาดเต็ม", "uri": img_url}}] }
+    })
+
+    # --- ใบที่ 2: สถานที่และอาคารหลัก (มีหัวข้อ) ---
+    btns_card2 = [make_btn(db_data.get(id), True) for id in card_ids[0] if db_data.get(id)]
+    bubbles.append({
+        "type": "bubble", "size": "kilo",
+        "header": {
+            "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
+            "contents": [{"type": "text", "text": "🏢 สถานที่และอาคารหลัก", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
+        },
+        "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": btns_card2}
+    })
+
+    # --- ใบที่ 3 - 7: อาคารหลักที่เหลือ (ไม่มีหัวข้อ + 8 ปุ่ม) ---
+    for i in range(1, 6): 
+        btns = [make_btn(db_data.get(id), True) for id in card_ids[i] if db_data.get(id)]
+        bubbles.append({
+            "type": "bubble", "size": "kilo",
+            "body": {"type": "box", "layout": "vertical", "spacing": "sm", "paddingTop": "25px", "contents": btns}
+        })
+
+    # --- ใบที่ 8: สถานที่และอาคารเสริม (มีหัวข้อ) ---
+    extra_btns = [make_btn(db_data.get(id), False) for id in card_ids[6] if db_data.get(id)]
+    bubbles.append({
+        "type": "bubble", "size": "kilo",
+        "header": {
+            "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
+            "contents": [{"type": "text", "text": "✨ สถานที่และอาคารเสริม", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
+        },
+        "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": extra_btns}
+    })
+
+    return {"type": "carousel", "contents": bubbles}
 # ================== FLASK ROUTES ==================
 
 @app.route("/")
@@ -254,17 +362,6 @@ def callback():
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
     user_msg = event.message.text.strip()
-
-    if not user_msg.startswith("Menu >") and not user_msg.startswith("Admin>"):
-        try:
-            conn = pymysql.connect(**DB_CONFIG)
-            with conn.cursor() as cursor:
-                cursor.execute("INSERT INTO search_logs (keyword) VALUES (%s)", (user_msg,))
-                conn.commit()
-        except Exception as e:
-            print("Error saving log:", e)
-        finally:
-            if 'conn' in locals(): conn.close()
     
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
@@ -277,58 +374,19 @@ def handle_message(event):
                 messages=[FlexMessage(alt_text="ผลการค้นหาสถานที่", contents=FlexContainer.from_dict(carousel))]
             ))
 
-# 1: แผนที่มหาวิทยาลัย 
+# 1: แผนที่มหาวิทยาลัย (อัปเดตใหม่: Carousel 8 ใบ ไม่มี Quick Reply)
         if user_msg == "Menu > แผนที่มหาวิทยาลัย":
-            img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png" 
-
-            flex_map = {
-                "type": "bubble",
-                "size": "mega", 
-                "styles": {
-                    "footer": {"backgroundColor": "#FFFFFF"}  
-                },
-                "hero": {
-                    "type": "image", 
-                    "url": img_url, 
-                    "size": "full", 
-                    "aspectRatio": "1.5:1", 
-                    "aspectMode": "cover",
-                    "action": {"type": "uri", "label": "ดูแผนที่ความละเอียดสูง", "uri": img_url} 
-                },
-                "footer": {
-                    "type": "box", "layout": "vertical", "spacing": "md",
-                    "contents": [
-                        {
-                            "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#162660", 
-                            "cornerRadius": "md", "paddingAll": "10px",
-                            "action": {"type": "uri", "label": "ซูมดูแผนที่ขนาดเต็ม", "uri": img_url},
-                            "contents": [{"type": "text", "text": "🔍 ซูมดูแผนที่ขนาดเต็ม", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
-                        }
-                    ]
-                }
-            }
-            
-            quick_reply_buttons = QuickReply(
-                items=[
-                    QuickReplyItem(action=LocationAction(label="ฉันอยู่ตรงไหน")),
-                    QuickReplyItem(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
-                    QuickReplyItem(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
-                    QuickReplyItem(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
-                    QuickReplyItem(action=MessageAction(label="ห้องสมุด", text="ห้องสมุด")),
-                    QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร"))
-                ]
-            )
+            map_carousel = create_map_menu_flex()
             
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
                 messages=[FlexMessage(
-                    alt_text="แผนที่มหาวิทยาลัยและรายชื่ออาคาร", 
-                    contents=FlexContainer.from_dict(flex_map),
-                    quick_reply=quick_reply_buttons
+                    alt_text="แผนที่และรายชื่ออาคารทั้งหมด", 
+                    contents=FlexContainer.from_dict(map_carousel)
+                    # ตัดบรรทัด quick_reply ออกเรียบร้อยครับ
                 )]
             ))
-            return       
+            return   
 
 # ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
@@ -466,9 +524,10 @@ def handle_message(event):
                 try:
                     conn = pymysql.connect(**DB_CONFIG)
                     with conn.cursor() as cursor:
+                        # 🟢 เปลี่ยน image_url เป็น image_name ตรงนี้ด้วยครับ
                         sql = """
                             SELECT s.service_name, s.service_details, s.external_link, 
-                                   l.official_name, l.latitude, l.longitude, l.image_url 
+                                   l.official_name, l.latitude, l.longitude, l.image_name 
                             FROM services s 
                             LEFT JOIN locations l ON s.location_id = l.location_id 
                             WHERE s.keywords LIKE %s OR s.service_name LIKE %s
@@ -658,36 +717,47 @@ def handle_message(event):
             return
 
 # ================= 7 ADMIN (คำสั่งลับดูสถิติ) =================
-        elif user_msg == "Admin>ดูสถิติ":
+        if user_msg == "Admin>ดูสถิติ":
             try:
-                conn = pymysql.connect(**DB_CONFIG)
-                with conn.cursor() as cursor:
+                connection = pymysql.connect(**DB_CONFIG)
+                with connection.cursor() as cursor:
                     sql = """
-                        SELECT keyword, COUNT(*) as search_count 
+                        SELECT keyword, COUNT(*) as search_count, MAX(is_found) as found_status
                         FROM search_logs 
                         GROUP BY keyword 
                         ORDER BY search_count DESC 
-                        LIMIT 5
+                        LIMIT 10
                     """
                     cursor.execute(sql)
-                    top_searches = cursor.fetchall()
+                    top_keywords = cursor.fetchall()
+                
+                connection.close()
 
-                    if top_searches:
-                        reply_text = "📊 สถิติคำค้นหายอดฮิต 5 อันดับแรก:\n\n"
-                        for i, row in enumerate(top_searches):
-                            reply_text += f"{i+1}. {row['keyword']} ({row['search_count']} ครั้ง)\n"
-                    else:
-                        reply_text = "ยังไม่มีข้อมูลสถิติการค้นหาในระบบค่ะ"
+                if top_keywords:
+                    reply_text = "📊 สถิติ 10 อันดับคำค้นหาสูงสุด\n\n"
+                    for index, row in enumerate(top_keywords, start=1):
+                        status_icon = "✅ เจอ" if row['found_status'] == 1 else "❌ ไม่เจอ"
+                        reply_text += f"{index}. {row['keyword']} ({row['search_count']} ครั้ง) [{status_icon}]\n"
+                else:
+                    reply_text = "📊 ยังไม่มีข้อมูลประวัติการค้นหาในระบบค่ะ"
 
+                with ApiClient(configuration) as api_client:
+                    line_bot_api = MessagingApi(api_client)
                     line_bot_api.reply_message(ReplyMessageRequest(
-                        reply_token=event.reply_token, 
+                        reply_token=event.reply_token,
                         messages=[TextMessage(text=reply_text)]
                     ))
+                return
+
             except Exception as e:
-                print("Error fetching stats:", e)
-            finally:
-                if 'conn' in locals(): conn.close()
-            return
+                print(f"Database Error (Admin Stats): {e}")
+                with ApiClient(configuration) as api_client:
+                    line_bot_api = MessagingApi(api_client)
+                    line_bot_api.reply_message(ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[TextMessage(text="❌ ไม่สามารถเชื่อมต่อฐานข้อมูลเพื่อดึงสถิติได้")]
+                    ))
+                return
 
         elif user_msg == "Admin>เวลาฮิต":
             try:
@@ -698,7 +768,7 @@ def handle_message(event):
                         FROM search_logs 
                         GROUP BY hour_of_day 
                         ORDER BY total_searches DESC 
-                        LIMIT 5
+                        LIMIT 10
                     """
                     cursor.execute(sql)
                     peak_times = cursor.fetchall()
@@ -725,7 +795,7 @@ def handle_message(event):
         elif user_msg in ["ประเมิน", "ประเมินระบบ", "แบบประเมิน", "เสนอแนะ"]:
             return 
 
-# ==========================================
+        # ==========================================
         # 💬 ทักทายและพูดคุยทั่วไป (Conversational Reply)
         # ==========================================
         common_quick_reply = QuickReply(
@@ -735,18 +805,20 @@ def handle_message(event):
                 QuickReplyItem(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
                 QuickReplyItem(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
                 QuickReplyItem(action=MessageAction(label="ห้องสมุด", text="ห้องสมุด")),
-                QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร"))
+                QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร")),
+                QuickReplyItem(action=MessageAction(label="ตึก sac", text="ตึก sac")),
+                QuickReplyItem(action=MessageAction(label="กยศ.", text="กยศ.")),
+                QuickReplyItem(action=MessageAction(label="คณะวิทย์", text="คณะวิทย์")),
+                QuickReplyItem(action=MessageAction(label="ทีปังกร", text="ทีปังกร"))
             ]
         )
-        # ดักจับคำทักทาย
+
         # ดักจับคำทักทาย
         greeting_words = ["สวัสดี", "ดีจ้า", "hi", "hello", "ทัก", "ดีครับ", "ดีค่ะ", "สวัสดีครับ", "สวัสดีค่ะ"]
         if any(word in user_msg.lower() for word in greeting_words):
-            # ปรับข้อความนิดหน่อยให้เข้ากับการมีปุ่มกดครับ
             reply_text = "สวัสดีค่ะ! 😊 UniGuide Bot ยินดีให้บริการค่ะ มีสถานที่หรือบริการไหนใน มรภ.กำแพงเพชร ให้ฉันช่วยหาไหมคะ? พิมพ์หรือเลือกจากเมนูด้านล่างได้เลยค่ะ "
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
-                # 📌 เติมคำสั่งแนบปุ่มตรงนี้ครับ
                 messages=[TextMessage(text=reply_text, quick_reply=common_quick_reply)] 
             ))
             return
@@ -755,8 +827,6 @@ def handle_message(event):
         thank_words = ["ขอบคุณ", "แต๊งกิ้ว", "thanks", "thank you", "ขอบใจ", "ขอบคุณครับ", "ขอบคุณค่ะ"]
         if any(word in user_msg.lower() for word in thank_words):
             reply_text_1 = "ยินดีมากๆ เลยค่ะ! 🥰 ถ้ามีอะไรให้ช่วยหาอีก เรียก UniGuide Bot ได้เสมอนะคะ"
-            
-            # 📌 ข้อความขอให้ทำแบบประเมิน
             reply_text_2 = "เพื่อการพัฒนาบอทให้ดียิ่งขึ้น รบกวนเวลาสักนิด ช่วยทำแบบประเมินให้หน่อยนะคะ 🙏✨\n\nคลิกทำแบบประเมินที่นี่ได้เลยค่ะ \nhttps://docs.google.com/forms/d/e/1FAIpQLSdkT0CreOwVl7o8a_woCrrZ2oAQLDEvMeYOzsTUNO3idXrbUw/viewform"
             
             line_bot_api.reply_message(ReplyMessageRequest(
@@ -768,7 +838,7 @@ def handle_message(event):
             ))
             return
             
-        # ดักจับคำด่า/คำหยาบ (ป้องกันบอทตอบกลับแบบไม่เหมาะสม)
+        # ดักจับคำด่า/คำหยาบ
         rude_words = ["ควย", "สัส","ไอ้สัส", "เหี้ย", "ไอ้เหี้ย" , "ไอ้บ้า", "โง่" , "ไอ้ควาย" , "ไอ้โง่"]
         if any(word in user_msg for word in rude_words):
             reply_text = "UniGuide Bot เป็นบอทผู้ช่วยน่ารักๆ นะคะ 🥺 พิมพ์แบบนี้ไม่น่ารักเลยนะ"
@@ -778,25 +848,19 @@ def handle_message(event):
             ))
             return
 
-       # ==========================================
-        # 📌 ระบบทำความสะอาดคำ (Keyword Extraction / Stopword Removal)
-        # ==========================================
-        # 1. รายการคำสร้อยหรือคำกริยาที่ต้องการตัดทิ้ง (สามารถเพิ่มคำใน "" ได้เรื่อยๆ)
+        # 🟢 เติมคอมมา (Comma) หลังคำว่า "ค้าบ", ให้เรียบร้อยแล้วครับ
         filler_words = [
-            "อยากไป", "พาไปหน่อย", "พาไป", "ทางไป", "นำทางไป", "ไป","อยู่ตรงไหนครับ","อยู่ตรงไหนคะ","ค้าบ"
+            "อยากไป", "พาไปหน่อย", "พาไป", "ทางไป", "นำทางไป", "ไป","อยู่ตรงไหนครับ","อยู่ตรงไหนคะ","ค้าบ",
             "อยู่ที่ไหน", "อยู่ไหน", "ที่ไหน", "ตรงไหน", "ชั้นไหน","อยู่ตรงไหน","อยู่ไหนคะ","อยู่ไหนครับ",
-            "หน่อย", "ช่วยหา", "ขอ", "ครับ", "ค่ะ", "นะคะ", "นะ", "จ๊ะ","พาฉันไปที่"
+            "หน่อย", "ช่วยหา", "ขอ", "ครับ", "ค่ะ", "นะคะ", "นะ", "จ๊ะ","พาฉันไปที่",
         ]
         
-        # 2. ทำการสแกนและตัดคำพวกนั้นออกจากข้อความที่ผู้ใช้พิมพ์มา
         search_keyword = user_msg
         for word in filler_words:
             search_keyword = search_keyword.replace(word, "")
             
-        # 3. ลบช่องว่างส่วนเกินหน้าและหลังคำออก
         search_keyword = search_keyword.strip()
 
-        # ถ้าตัดคำแล้วว่างเปล่า (เช่น ผู้ใช้พิมพ์มาแค่ "ไป") ให้ใช้คำเดิม
         if not search_keyword:
             search_keyword = user_msg
 
@@ -806,11 +870,13 @@ def handle_message(event):
         
         buildings = get_building_data(search_keyword)
         if buildings:
+            save_search_log(search_keyword, True)
             send_building_response(buildings)
             return
 
         service = get_service_data(search_keyword)
         if service:
+            save_search_log(search_keyword, True)
             b = get_building_by_id(service.get('location_id'))
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
@@ -818,10 +884,9 @@ def handle_message(event):
             ))
             return
 
-        # ถ้าหาไม่เจอจริงๆ ค่อยตอบกลับว่าไม่พบข้อมูล
+        save_search_log(search_keyword, False)
         line_bot_api.reply_message(ReplyMessageRequest(
             reply_token=event.reply_token, 
-            # 📌 เติมคำสั่งแนบปุ่มตรงนี้ครับ
             messages=[TextMessage(
                 text=f"ไม่พบข้อมูลสถานที่/บริการนี้นะคะ🥹 ลองพิมพ์ชื่อสถานที่ หรือเลือกจากเมนูด้านล่างได้เลยค่ะ ",
                 quick_reply=common_quick_reply
@@ -833,10 +898,11 @@ def handle_message(event):
 # ==========================================
 @handler.add(MessageEvent, message=LocationMessageContent)
 def handle_location_message(event):
-    # ดึงค่าพิกัดที่ผู้ใช้งานส่งมา
     user_lat = event.message.latitude
     user_lon = event.message.longitude
     address = event.message.address or "ไม่ระบุตำแหน่ง"
+
+    save_search_log(address, True)
 
     reply_text = (
         f"📍 ระบบได้รับตำแหน่งของคุณแล้ว\n\n"
