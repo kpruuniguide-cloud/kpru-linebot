@@ -256,26 +256,21 @@ def create_map_menu_flex():
             conn = pymysql.connect(**DB_CONFIG)
             with conn.cursor() as cursor:
                 format_strings = ','.join(['%s'] * len(id_list))
-                # 🟢 ดึง display_name เพิ่มเข้ามาด้วยครับ
                 sql = f"SELECT location_id, building_no, display_name, official_name FROM locations WHERE location_id IN ({format_strings})"
                 cursor.execute(sql, tuple(id_list))
                 results = cursor.fetchall()
                 return {row['location_id']: row for row in results}
         except Exception as e:
-            print(f"Error fetching IDs for Menu: {e}")
+            print(f"Error fetching IDs: {e}")
             return {}
         finally:
             if 'conn' in locals(): conn.close()
 
-    def make_list_btn(item_data, is_main_building=True):
+    def make_list_btn(item_data):
         if not item_data: return None
-        
-        # 🟢 ดึงข้อมูลมาประกอบกันแบบไดนามิก
         b_no = str(item_data.get('building_no', '')).strip()
-        # ใช้ชื่อจาก display_name ถ้าว่างให้ถอยไปใช้ official_name
         d_name = item_data.get('display_name') or item_data.get('official_name', '')
         
-        # ประกอบเลขนำหน้า (เช่น 1., 14., A., B.) 
         if b_no not in ["", "-", "None"]:
             btn_label = f"{b_no}. {d_name}"
         else:
@@ -284,75 +279,68 @@ def create_map_menu_flex():
         search_text = f"อาคาร {b_no}" if b_no not in ["", "-", "None"] else d_name
 
         return {
-            "type": "box", "layout": "horizontal", 
-            "backgroundColor": "#D0E6FD", # Powder Blue
-            "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
-            "action": {
-                "type": "message", 
-                "label": btn_label if len(btn_label) <= 40 else btn_label[:37] + "...",
-                "text": search_text
-            },
-            "contents": [
-                {
-                    "type": "text", 
-                    "text": btn_label, 
-                    "size": "xs",     # 🟢 ขนาดเล็กคลีนๆ ตามที่คุยกันครับ
-                    "color": "#162660", # Royal Blue
-                    "weight": "bold", 
-                    "align": "start",  # ชิดซ้ายเสถียรที่สุด
-                    "wrap": True 
-                }
-            ]
+            "type": "box", "layout": "horizontal", "backgroundColor": "#D0E6FD", 
+            "cornerRadius": "md", "paddingAll": "10px", "margin": "xs",
+            "action": {"type": "message", "label": btn_label[:40], "text": search_text},
+            "contents": [{"type": "text", "text": btn_label, "size": "xs", "color": "#162660", "weight": "bold", "align": "start", "wrap": True}]
         }
 
-    # จัดกลุ่ม ID ตามโครงสร้างที่อาจารย์ออกแบบไว้ (ย้าย 39-42 มาใบแรก) [cite: 336-430]
-    card1_ids = [39, 40, 41, 42]
-    main_groups = [
-        [1, 2, 3, 4, 5, 6, 7, 8],          # ใบที่ 2
-        [9, 10, 11, 12, 13, 14, 15, 16],   # ใบที่ 3
-        [17, 18, 19, 20, 21, 22, 23, 24],  # ใบที่ 4
-        [25, 26, 27, 28, 29, 30, 31, 32],  # ใบที่ 5
-        [33, 34, 35, 36, 37, 38, 43],      # ใบที่ 6 (รวม 43: หอพักพุทธรักษา) 
+    # === ลำดับ ID กลุ่มหลัก (1-38 ต่อด้วย A-D)  ===
+    main_flow_ids = [
+        1, 2, 3, 4, 5, 6, 7, 8,                             # การ์ด 2 (8 ตัว)
+        9, 10, 11, 12, 13, 14, 15, 16, 17,                  # การ์ด 3 (9 ตัว)
+        18, 19, 20, 21, 22, 23, 24, 25, 26,                 # การ์ด 4 (9 ตัว)
+        27, 28, 29, 30, 31, 32, 33, 34, 35,                 # การ์ด 5 (9 ตัว)
+        36, 37, 38, 39, 40, 41, 42                          # การ์ด 6 (7 ตัว)
     ]
-    extra_ids = [74, 75, 76, 77, 78, 79]   # ใบที่ 7 [cite: 727-783]
+    # === ลำดับ ID กลุ่มเสริม (74-79)  ===
+    extra_ids = [74, 75, 76, 77, 78, 79]   
 
-    all_ids = card1_ids + [i for sub in main_groups for i in sub] + extra_ids
-    db_data = get_data_by_ids(all_ids)
+    db_data = get_data_by_ids(main_flow_ids + extra_ids)
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
 
-    # ใบที่ 1: แผนที่ + อาคาร 39-42
+    # --- การ์ด 1: แผนที่คลุม Body เต็มพื้นที่ ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
-        "hero": {"type": "image", "url": img_url, "size": "full", "aspectRatio": "1.5:1", "aspectMode": "cover"},
         "body": {
-            "type": "box", "layout": "vertical", "spacing": "xs",
-            "contents": [make_list_btn(db_data.get(id)) for id in card1_ids if db_data.get(id)]
+            "type": "box", "layout": "vertical", "paddingAll": "0px",
+            "contents": [{"type": "image", "url": img_url, "size": "full", "aspectRatio": "1.5:1", "aspectMode": "cover"}]
         },
-        "footer": {"type": "box", "layout": "vertical", "contents": [{"type": "button", "style": "primary", "color": "#162660", "height": "sm", "action": {"type": "uri", "label": "🔍 ดูภาพขนาดเต็ม", "uri": img_url}}]}
+        "footer": {
+            "type": "box", "layout": "vertical", 
+            "contents": [{"type": "button", "style": "primary", "color": "#162660", "height": "sm", "action": {"type": "uri", "label": "🔍 ดูภาพขนาดเต็ม", "uri": img_url}}]
+        }
     })
 
-    header_gradient = {"type": "linearGradient", "angle": "90deg", "startColor": "#162660", "endColor": "#D0E6FD"}
-
-    # ใบที่ 2: หมวดหลัก
+    # --- การ์ด 2: อาคาร 1-8 (Header Royal Blue) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
-        "header": {"type": "box", "layout": "vertical", "background": header_gradient, "paddingAll": "15px", "contents": [{"type": "text", "text": "🏢 สถานที่และอาคารหลัก", "color": "#FFFFFF", "weight": "bold", "align": "center"}]},
-        "body": {"type": "box", "layout": "vertical", "spacing": "xs", "contents": [make_list_btn(db_data.get(id)) for id in main_groups[0] if db_data.get(id)]}
+        "header": {
+            "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
+            "contents": [{"type": "text", "text": "🏢 รายชื่ออาคารและสถานที่หลัก", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
+        },
+        "body": {"type": "box", "layout": "vertical", "spacing": "xs", "contents": [make_list_btn(db_data.get(id)) for id in main_flow_ids[0:8] if db_data.get(id)]}
     })
 
-    # ใบที่ 3 - 6: อาคารที่เหลือ
-    for i in range(1, len(main_groups)):
+    # --- การ์ด 3 - 6: อาคาร 9 ถึง D (ไหลต่อเนื่องใบละ 9 ปุ่ม) ---
+    for start_idx in [8, 17, 26, 35]:
+        end_idx = start_idx + 9
+        current_group = main_flow_ids[start_idx:end_idx]
+        if not current_group: continue
         bubbles.append({
             "type": "bubble", "size": "kilo",
-            "body": {"type": "box", "layout": "vertical", "spacing": "xs", "paddingTop": "20px", "contents": [make_list_btn(db_data.get(id)) for id in main_groups[i] if db_data.get(id)]}
+            "body": {"type": "box", "layout": "vertical", "spacing": "xs", "paddingTop": "25px", "contents": [make_list_btn(db_data.get(id)) for id in current_group if db_data.get(id)]}
         })
 
-    # ใบที่ 7: หมวดเสริม
+    # --- การ์ด 7 (ใบสุดท้าย): อาคารและสถานที่เสริม (Header Royal Blue) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
-        "header": {"type": "box", "layout": "vertical", "background": header_gradient, "paddingAll": "15px", "contents": [{"type": "text", "text": "✨ สถานที่และอาคารเสริม", "color": "#FFFFFF", "weight": "bold", "align": "center"}]},
-        "body": {"type": "box", "layout": "vertical", "spacing": "xs", "contents": [make_list_btn(db_data.get(id), False) for id in extra_ids if db_data.get(id)]}
+        "header": {
+            "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
+            "contents": [{"type": "text", "text": "✨ อาคารและสถานที่เสริม", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
+        },
+        "body": {"type": "box", "layout": "vertical", "spacing": "xs", "contents": [make_list_btn(db_data.get(id)) for id in extra_ids if db_data.get(id)]}
     })
 
     return {"type": "carousel", "contents": bubbles}
