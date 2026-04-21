@@ -17,7 +17,6 @@ from linebot.v3.webhooks import (
 
 app = Flask(__name__)
 
-# ================== CONFIGURATION ==================
 DB_CONFIG = {
     "host": os.environ.get('DB_HOST'),
     "port": int(os.environ.get('DB_PORT', 18524)),
@@ -303,7 +302,7 @@ def create_map_menu_flex():
         36, 37, 38, 39, 40, 41, 42                          # การ์ด 6 (7 ปุ่ม)
     ]
     # === ลำดับ ID กลุ่มเสริม 74-79 ===
-    extra_ids = [74, 75, 76, 77, 78, 79]   
+    extra_ids = [74, 75, 76, 77, 78, 79, 80, 81]   
 
     db_data = get_data_by_ids(main_flow_ids + extra_ids)
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
@@ -725,6 +724,23 @@ def handle_message(event):
                                 {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5},
                                 {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#162660", "size": "xs", "align": "end", "flex": 7}
                             ]
+                        },
+                        # --- ส่วนข้อมูลผู้พัฒนาที่เพิ่มใหม่ ---
+                        {"type": "separator", "margin": "xl"},
+                        {
+                            "type": "box", "layout": "vertical", "margin": "lg", "spacing": "xs",
+                            "contents": [
+                                {"type": "text", "text": "ผู้พัฒนาระบบ", "weight": "bold", "color": "#162660", "size": "sm"},
+                                {"type": "text", "text": "ศรัณย์รักษ์ กัญจน์ไพสิฐ", "color": "#555555", "size": "xs"},
+                                {
+                                    "type": "text", 
+                                    "text": "✉️ sarunrukkan@gmail.com", 
+                                    "color": "#162660", 
+                                    "size": "xs", 
+                                    "decoration": "underline",
+                                    "action": {"type": "uri", "label": "email", "uri": "mailto:sarunrukkan@gmail.com"}
+                                }
+                            ]
                         }
                     ]
                 },
@@ -844,7 +860,6 @@ def handle_message(event):
             ]
         )
 
-        # ดักจับคำทักทาย
         greeting_words = ["สวัสดี", "ดีจ้า", "hi", "hello", "ทัก", "ดีครับ", "ดีค่ะ", "สวัสดีครับ", "สวัสดีค่ะ"]
         if any(word in user_msg.lower() for word in greeting_words):
             reply_text = "สวัสดีค่ะ! 😊 UniGuide Bot ยินดีให้บริการค่ะ มีสถานที่หรือบริการไหนใน มรภ.กำแพงเพชร ให้ฉันช่วยหาไหมคะ? พิมพ์หรือเลือกจากเมนูด้านล่างได้เลยค่ะ "
@@ -853,8 +868,7 @@ def handle_message(event):
                 messages=[TextMessage(text=reply_text, quick_reply=common_quick_reply)] 
             ))
             return
-            
-        # ดักจับคำขอบคุณ
+    
         thank_words = ["ขอบคุณ", "แต๊งกิ้ว", "thanks", "thank you", "ขอบใจ", "ขอบคุณครับ", "ขอบคุณค่ะ"]
         if any(word in user_msg.lower() for word in thank_words):
             reply_text_1 = "ยินดีมากๆ เลยค่ะ! 🥰 ถ้ามีอะไรให้ช่วยหาอีก เรียก UniGuide Bot ได้เสมอนะคะ"
@@ -863,13 +877,11 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
                 messages=[
-                    TextMessage(text=reply_text_1),
-                    TextMessage(text=reply_text_2) 
+                    TextMessage(text=reply_text_1),TextMessage(text=reply_text_2) 
                 ]
             ))
             return
-            
-        # ดักจับคำด่า/คำหยาบ
+
         rude_words = ["ควย", "สัส","ไอ้สัส", "เหี้ย", "ไอ้เหี้ย" , "ไอ้บ้า", "โง่" , "ไอ้ควาย" , "ไอ้โง่"]
         if any(word in user_msg for word in rude_words):
             reply_text = "UniGuide Bot เป็นบอทผู้ช่วยน่ารักๆ นะคะ 🥺 พิมพ์แบบนี้ไม่น่ารักเลยนะ"
@@ -879,7 +891,6 @@ def handle_message(event):
             ))
             return
 
-        # 🟢 เติมคอมมา (Comma) หลังคำว่า "ค้าบ", ให้เรียบร้อยแล้วครับ
         filler_words = [
             "อยากไป", "พาไปหน่อย", "พาไป", "ทางไป", "นำทางไป", "ไป","อยู่ตรงไหนครับ","อยู่ตรงไหนคะ","ค้าบ",
             "อยู่ที่ไหน", "อยู่ไหน", "ที่ไหน", "ตรงไหน", "ชั้นไหน","อยู่ตรงไหน","อยู่ไหนคะ","อยู่ไหนครับ",
