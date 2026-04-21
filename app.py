@@ -373,7 +373,7 @@ def create_map_menu_flex():
         "type": "bubble", "size": "kilo",
         "header": {
             "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
-            "contents": [{"type": "text", "text": "หน่วยงานเครือข่าย", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
+            "contents": [{"type": "text", "text": "🏢 หน่วยงานเครือข่าย", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
         },
         "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in network_ids if db_data.get(id)]}
     })
@@ -758,7 +758,7 @@ def handle_message(event):
                                 # ข้อมูลติดต่อ (เอาไว้หลังสุดและเว้นระยะขึ้นมานิดนึง)
                                 {
                                     "type": "text", 
-                                    "text": "💬 Email: sarunrukkan@gmail.com", 
+                                    "text": "Email: sarunrukkan@gmail.com", 
                                     "color": "#162660", 
                                     "size": "xs",
                                     "margin": "md",
@@ -784,7 +784,7 @@ def handle_message(event):
                             "backgroundColor": "#DD9663", 
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "Instagram", "uri": "http://instagram.com/KpruOfficial"},
-                            "contents": [{"type": "text", "text": "📷 Instagram มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
+                            "contents": [{"type": "text", "text": "🅸 Instagram มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
                         },
                         {
                             "type": "box", "layout": "vertical", 
@@ -969,7 +969,7 @@ def handle_message(event):
         line_bot_api.reply_message(ReplyMessageRequest(
             reply_token=event.reply_token, 
             messages=[TextMessage(
-                text=f"ไม่พบข้อมูลสถานที่/บริการนี้นะคะ🥹 ลองพิมพ์ชื่อสถานที่ หรือเลือกจากเมนูด้านล่างได้เลยค่ะ ",
+                text=f"ไม่พบข้อมูลนี้นะคะ🥹 ลองพิมพ์ชื่อสถานที่ หรือเลือกจากเมนูด้านล่างได้เลยค่ะ ",
                 quick_reply=common_quick_reply
             )]
         ))
