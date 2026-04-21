@@ -282,7 +282,7 @@ def create_map_menu_flex():
             "backgroundColor": "#D0E6FD", 
             "cornerRadius": "md", 
             "paddingAll": "10px", 
-            "margin": "sm", # ปุ่มเว้นระยะสวยงามเหมือนเดิมครับ
+            "margin": "sm", 
             "action": {"type": "message", "label": btn_label[:40], "text": search_text},
             "contents": [
                 {
@@ -293,22 +293,23 @@ def create_map_menu_flex():
             ]
         }
 
-    # === ลำดับ ID กลุ่มหลัก 1-38 ต่อด้วย A-D ===
+    # === ลำดับ ID กลุ่มต่างๆ ===
     main_flow_ids = [
-        1, 2, 3, 4, 5, 6, 7, 8,                             # การ์ด 2 (8 ปุ่ม)
-        9, 10, 11, 12, 13, 14, 15, 16, 17,                  # การ์ด 3 (9 ปุ่ม)
-        18, 19, 20, 21, 22, 23, 24, 25, 26,                 # การ์ด 4 (9 ปุ่ม)
-        27, 28, 29, 30, 31, 32, 33, 34, 35,                 # การ์ด 5 (9 ปุ่ม)
-        36, 37, 38, 39, 40, 41, 42                          # การ์ด 6 (7 ปุ่ม)
+        1, 2, 3, 4, 5, 6, 7, 8,                             # การ์ด 2
+        9, 10, 11, 12, 13, 14, 15, 16, 17,                  # การ์ด 3
+        18, 19, 20, 21, 22, 23, 24, 25, 26,                 # การ์ด 4
+        27, 28, 29, 30, 31, 32, 33, 34, 35,                 # การ์ด 5
+        36, 37, 38, 39, 40, 41, 42                          # การ์ด 6
     ]
-    # === ลำดับ ID กลุ่มเสริม 74-79 ===
-    extra_ids = [74, 75, 76, 77, 78, 79, 80, 81]   
+    extra_ids = [74, 75, 76, 77, 78, 79]                    # การ์ด 7
+    network_ids = [80, 81]                                  # การ์ด 8 (หน่วยงานเครือข่าย)
 
-    db_data = get_data_by_ids(main_flow_ids + extra_ids)
+    # ดึงข้อมูลจาก DB โดยรวม ID ชุดใหม่เข้าไปด้วย
+    db_data = get_data_by_ids(main_flow_ids + extra_ids + network_ids)
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
 
-    # 🟢 --- การ์ด 1: แผนที่พื้นหลังเต็มใบ (แก้แค่ aspectRatio เป็น 5:8) ---
+    # --- การ์ด 1: แผนที่ ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "body": {
@@ -316,7 +317,7 @@ def create_map_menu_flex():
             "contents": [
                 {
                     "type": "image", "url": img_url, "size": "full", 
-                    "aspectRatio": "5:8", # ✅ ปรับสัดส่วนให้ยืดลงมาอีกนิดเพื่อปิดขอบขาว 100%
+                    "aspectRatio": "5:8", 
                     "aspectMode": "cover"
                 },
                 {
@@ -347,7 +348,7 @@ def create_map_menu_flex():
         "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in main_flow_ids[0:8] if db_data.get(id)]}
     })
 
-    # --- การ์ด 3 - 6: อาคาร 9 ถึง D ---
+    # --- การ์ด 3 - 6: อาคาร 9 ถึง 42 ---
     for start_idx in [8, 17, 26, 35]:
         end_idx = start_idx + 9
         current_group = main_flow_ids[start_idx:end_idx]
@@ -357,7 +358,7 @@ def create_map_menu_flex():
             "body": {"type": "box", "layout": "vertical", "spacing": "sm", "paddingTop": "25px", "contents": [make_list_btn(db_data.get(id)) for id in current_group if db_data.get(id)]}
         })
 
-    # --- การ์ด 7: อาคารและสถานที่เสริม ---
+    # --- การ์ด 7: อาคารและสถานที่เสริม (74-79) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "header": {
@@ -367,8 +368,17 @@ def create_map_menu_flex():
         "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in extra_ids if db_data.get(id)]}
     })
 
-    return {"type": "carousel", "contents": bubbles}
+    # --- การ์ด 8: หน่วยงานเครือข่าย (80-81) ---
+    bubbles.append({
+        "type": "bubble", "size": "kilo",
+        "header": {
+            "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
+            "contents": [{"type": "text", "text": "🤝 หน่วยงานเครือข่าย", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
+        },
+        "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in network_ids if db_data.get(id)]}
+    })
 
+    return {"type": "carousel", "contents": bubbles}
 
 # ================== FLASK ROUTES ==================
 
@@ -730,11 +740,12 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "vertical", "margin": "lg", "spacing": "xs",
                             "contents": [
-                                {"type": "text", "text": "ผู้พัฒนาระบบ", "weight": "bold", "color": "#162660", "size": "sm"},
+                                {"type": "text", "text": "👨‍💻 ผู้พัฒนาระบบ", "weight": "bold", "color": "#162660", "size": "sm"},
                                 {"type": "text", "text": "ศรัณย์รักษ์ กัญจน์ไพสิฐ", "color": "#555555", "size": "xs"},
+                                {"type": "text", "text": "สาขาเทคโนโลยีสารสนเทศ", "color": "#555555", "size": "xs"},
                                 {
                                     "type": "text", 
-                                    "text": "✉️ sarunrukkan@gmail.com", 
+                                    "text": "Email: sarunrukkan@gmail.com", 
                                     "color": "#162660", 
                                     "size": "xs", 
                                     "decoration": "underline",
@@ -747,6 +758,20 @@ def handle_message(event):
                 "footer": {
                     "type": "box", "layout": "vertical", "spacing": "sm", "paddingAll": "lg",
                     "contents": [
+                        {
+                            "type": "box", "layout": "vertical", 
+                            "backgroundColor": "#1877F2", 
+                            "cornerRadius": "md", "paddingAll": "10px",
+                            "action": {"type": "uri", "label": "Facebook", "uri": "https://www.facebook.com/share/1CbnrTmLvY/?mibextid=wwXIfr"},
+                            "contents": [{"type": "text", "text": "📘 Facebook มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
+                        },
+                        {
+                            "type": "box", "layout": "vertical", 
+                            "backgroundColor": "#EF6B4A", 
+                            "cornerRadius": "md", "paddingAll": "10px",
+                            "action": {"type": "uri", "label": "Instagram", "uri": "http://instagram.com/KpruOfficial"},
+                            "contents": [{"type": "text", "text": "📸 Instagram มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
+                        },
                         {
                             "type": "box", "layout": "vertical", 
                             "backgroundColor": "#162660", 
