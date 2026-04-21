@@ -373,7 +373,7 @@ def create_map_menu_flex():
         "type": "bubble", "size": "kilo",
         "header": {
             "type": "box", "layout": "vertical", "backgroundColor": "#162660", "paddingAll": "15px",
-            "contents": [{"type": "text", "text": "🤝 หน่วยงานเครือข่าย", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
+            "contents": [{"type": "text", "text": "หน่วยงานเครือข่าย", "color": "#FFFFFF", "weight": "bold", "align": "center"}]
         },
         "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in network_ids if db_data.get(id)]}
     })
@@ -723,7 +723,7 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "👮 ป้อมยาม(หลัง)", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "👮🏻‍♂️ ป้อมยาม(หลัง)", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5},
                                 {"type": "text", "text": "055-706555 ต่อ 7909", "color": "#162660", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
@@ -731,23 +731,37 @@ def handle_message(event):
                         {
                             "type": "box", "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "👮 ป้อมยาม(หน้า)", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5},
+                                {"type": "text", "text": "👮🏻‍♀️ ป้อมยาม(หน้า)", "weight": "bold", "color": "#162660", "size": "sm", "flex": 5},
                                 {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#162660", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
                         # --- ส่วนข้อมูลผู้พัฒนาที่เพิ่มใหม่ ---
+                        # --- ส่วนข้อมูลผู้พัฒนาระบบและอาจารย์ที่ปรึกษา ---
                         {"type": "separator", "margin": "xl"},
                         {
                             "type": "box", "layout": "vertical", "margin": "lg", "spacing": "xs",
                             "contents": [
-                                {"type": "text", "text": "👨‍💻 ผู้พัฒนาระบบ", "weight": "bold", "color": "#162660", "size": "sm"},
-                                {"type": "text", "text": "ศรัณย์รักษ์ กัญจน์ไพสิฐ", "color": "#555555", "size": "xs"},
+                                {"type": "text", "text": "📄 ข้อมูลผู้จัดทำ", "weight": "bold", "color": "#162660", "size": "sm"},
+                                
+                                # 1. ผู้พัฒนา
+                                {"type": "text", "text": "ผู้พัฒนา: ศรัณย์รักษ์ กัญจน์ไพสิฐ", "color": "#555555", "size": "xs"},
+                                
+                                # 2. อาจารย์ที่ปรึกษา
+                                {"type": "text", "text": "ที่ปรึกษา: อ.พรนรินทร์ สายกลิ่น", "color": "#555555", "size": "xs"},
+                                
+                                # 3. สาขา
                                 {"type": "text", "text": "สาขาเทคโนโลยีสารสนเทศ", "color": "#555555", "size": "xs"},
+                                
+                                # 4. คณะ
+                                {"type": "text", "text": "คณะวิทยาศาสตร์และเทคโนโลยี", "color": "#555555", "size": "xs"},
+                                
+                                # ข้อมูลติดต่อ (เอาไว้หลังสุดและเว้นระยะขึ้นมานิดนึง)
                                 {
                                     "type": "text", 
-                                    "text": "Email: sarunrukkan@gmail.com", 
+                                    "text": "💬 Email: sarunrukkan@gmail.com", 
                                     "color": "#162660", 
-                                    "size": "xs", 
+                                    "size": "xs",
+                                    "margin": "md",
                                     "decoration": "underline",
                                     "action": {"type": "uri", "label": "email", "uri": "mailto:sarunrukkan@gmail.com"}
                                 }
@@ -760,17 +774,17 @@ def handle_message(event):
                     "contents": [
                         {
                             "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#1877F2", 
+                            "backgroundColor": "#6FA3E7", 
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "Facebook", "uri": "https://www.facebook.com/share/1CbnrTmLvY/?mibextid=wwXIfr"},
-                            "contents": [{"type": "text", "text": "📘 Facebook มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
+                            "contents": [{"type": "text", "text": "🅵 Facebook มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
                         },
                         {
                             "type": "box", "layout": "vertical", 
-                            "backgroundColor": "#EF6B4A", 
+                            "backgroundColor": "#DD9663", 
                             "cornerRadius": "md", "paddingAll": "10px",
                             "action": {"type": "uri", "label": "Instagram", "uri": "http://instagram.com/KpruOfficial"},
-                            "contents": [{"type": "text", "text": "📸 Instagram มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
+                            "contents": [{"type": "text", "text": "📷 Instagram มหาวิทยาลัย", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
                         },
                         {
                             "type": "box", "layout": "vertical", 
