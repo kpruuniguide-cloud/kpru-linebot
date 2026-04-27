@@ -564,7 +564,6 @@ def handle_message(event):
                 try:
                     conn = pymysql.connect(**DB_CONFIG)
                     with conn.cursor() as cursor:
-                        # 🟢 เปลี่ยน image_url เป็น image_name ตรงนี้ด้วยครับ
                         sql = """
                             SELECT s.service_name, s.service_details, s.external_link, 
                                    l.official_name, l.latitude, l.longitude, l.image_name 
@@ -887,15 +886,15 @@ def handle_message(event):
         common_quick_reply = QuickReply(
             items=[
                 QuickReplyItem(action=LocationAction(label="ฉันอยู่ตรงไหน")),
-                QuickReplyItem(action=MessageAction(label="อาคาร 1", text="อาคาร 1")),
-                QuickReplyItem(action=MessageAction(label="อาคาร 14", text="อาคาร 14")),
-                QuickReplyItem(action=MessageAction(label="ตึกกระป๋องแป้ง", text="ตึกกระป๋องแป้ง")),
-                QuickReplyItem(action=MessageAction(label="ห้องสมุด", text="ห้องสมุด")),
-                QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร")),
-                QuickReplyItem(action=MessageAction(label="ตึก sac", text="ตึก sac")),
-                QuickReplyItem(action=MessageAction(label="กยศ.", text="กยศ.")),
-                QuickReplyItem(action=MessageAction(label="คณะวิทย์", text="คณะวิทย์")),
-                QuickReplyItem(action=MessageAction(label="ทีปังกร", text="ทีปังกร"))
+                QuickReplyItem(action=MessageAction(label="หอประชุมทีปังกร", text="อาคาร 13")),
+                QuickReplyItem(action=MessageAction(label="ตึกอธิการบดี", text="อาคาร 14")),
+                QuickReplyItem(action=MessageAction(label="รัตนอาภา", text="อาคาร 28")),
+                QuickReplyItem(action=MessageAction(label="ห้องสมุด", text="อาคาร 26")),
+                QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="อาคาร 5")),
+                QuickReplyItem(action=MessageAction(label="คณะครุศาสตร์", text="อาคาร 46")),
+                QuickReplyItem(action=MessageAction(label="กยศ.", text="อาคาร 47")),
+                QuickReplyItem(action=MessageAction(label="คณะวิทย์", text="อาคาร 48")),
+                QuickReplyItem(action=MessageAction(label="ศูนย์ภาษา", text="อาคาร 25"))
             ]
         )
 
