@@ -32,7 +32,7 @@ GITHUB_IMAGE_BASE = "https://raw.githubusercontent.com/kpruuniguide-cloud/kpru-l
 handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
 configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'))
 
-# ================== DATABASE LOGIC ==================
+
 
 def get_building_data(keyword):
     try:
@@ -90,22 +90,24 @@ def get_building_by_id(building_id):
     finally:
         if 'conn' in locals(): conn.close()
 
-def save_search_log(keyword, is_found):
+def save_search_log(keyword, is_found, location_id=None, service_id=None):
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
-            # ใช้โค้ดนี้เพื่อบันทึกคำค้นหา และสถานะ (1=เจอ, 0=ไม่เจอ)
-            sql = "INSERT INTO search_logs (keyword, is_found) VALUES (%s, %s)"
-            cursor.execute(sql, (keyword, is_found))
+            sql = """
+                INSERT INTO search_logs (keyword, is_found, location_id, service_id)
+                VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(sql, (keyword, is_found, location_id, service_id))
             conn.commit()
     except Exception as e:
         print("Error saving log:", e)
     finally:
-        if 'conn' in locals(): conn.close()
+        if 'conn' in locals():
+            conn.close()
 
-# ================== FLEX MESSAGE BUILDERS ==================
+
 def create_building_flex(data):
-    # 🟢 เปลี่ยนจาก image_url เป็น image_name ให้ตรงกับฐานข้อมูลใหม่
     img_url = f"{GITHUB_IMAGE_BASE}{data['image_name']}" if data and data.get("image_name") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
     body_contents = []
@@ -116,7 +118,7 @@ def create_building_flex(data):
             "type": "text", 
             "text": f"หมายเลขอาคาร {building_no}", 
             "size": "xs", 
-            "color": "#162660", # Royal Blue
+            "color": "#162660", 
             "weight": "bold"
         })
         
@@ -126,7 +128,7 @@ def create_building_flex(data):
         "weight": "bold", 
         "size": "md", 
         "wrap": True, 
-        "color": "#162660" # Royal Blue
+        "color": "#162660" 
     })
     
     body_contents.append({
@@ -155,7 +157,7 @@ def create_building_flex(data):
             "contents": [
                 {
                     "type": "box", "layout": "vertical", 
-                    "backgroundColor": "#162660", # Royal Blue
+                    "backgroundColor": "#162660", 
                     "cornerRadius": "md", "paddingAll": "10px",
                     "action": {
                         "type": "uri", 
@@ -164,7 +166,7 @@ def create_building_flex(data):
                     },
                     "contents": [{
                         "type": "text", "text": "🗺️ นำทางไปที่นี่", 
-                        "color": "#FFFFFF", # White
+                        "color": "#FFFFFF", 
                         "weight": "bold", "size": "sm", "align": "center"
                     }]
                 }
@@ -173,7 +175,6 @@ def create_building_flex(data):
     }
 
 def create_service_flex(service, building):
-    # 🟢 เปลี่ยนจาก image_url เป็น image_name ให้ตรงกับฐานข้อมูลใหม่
     img_url = f"{GITHUB_IMAGE_BASE}{building['image_name']}" if building and building.get("image_name") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
     
     link_url = service.get('external_link')
@@ -201,7 +202,7 @@ def create_service_flex(service, building):
                     "text": service.get('service_name', 'ไม่ทราบชื่อบริการ/หน่วยงาน'), 
                     "weight": "bold", 
                     "size": "md", 
-                    "color": "#162660", # Royal Blue
+                    "color": "#162660", 
                     "wrap": True
                 },
                 {
@@ -237,7 +238,7 @@ def create_service_flex(service, building):
                 },
                 {
                     "type": "box", "layout": "vertical", 
-                    "backgroundColor": "#162660", # Royal Blue
+                    "backgroundColor": "#162660", 
                     "cornerRadius": "md", "paddingAll": "10px",
                     "action": {"type": "uri", "label": "นำทางไปที่นี่", "uri": f"https://www.google.com/maps/dir/?api=1&destination={building.get('latitude', '')},{building.get('longitude', '')}&travelmode=walking" if building else "#"},
                     "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
@@ -246,7 +247,7 @@ def create_service_flex(service, building):
         }
     }
 
-# 🟢 ฟังก์ชันสร้างการ์ดทั้งหมด
+
 
 def create_map_menu_flex():
     def get_data_by_ids(id_list):
@@ -293,18 +294,18 @@ def create_map_menu_flex():
             ]
         }
 
-    # === ลำดับ ID กลุ่มต่างๆ ===
+  
     main_flow_ids = [
-        1, 2, 3, 4, 5, 6, 7, 8,                             # การ์ด 2
-        9, 10, 11, 12, 13, 14, 15, 16, 17,                  # การ์ด 3
-        18, 19, 20, 21, 22, 23, 24, 25, 26,                 # การ์ด 4
-        27, 28, 29, 30, 31, 32, 33, 34, 35,                 # การ์ด 5
-        36, 37, 38, 39, 40, 41, 42                          # การ์ด 6
+        1, 2, 3, 4, 5, 6, 7, 8,                             
+        9, 10, 11, 12, 13, 14, 15, 16, 17,                  
+        18, 19, 20, 21, 22, 23, 24, 25, 26,               
+        27, 28, 29, 30, 31, 32, 33, 34, 35,                 
+        36, 37, 38, 39, 40, 41, 42                      
     ]
-    extra_ids = [74, 75, 76, 77, 78, 79]                    # การ์ด 7
-    network_ids = [80, 81]                                  # การ์ด 8 (หน่วยงานเครือข่าย)
+    extra_ids = [74, 75, 76, 77, 78, 79]                   
+    network_ids = [80, 81]                                 
 
-    # ดึงข้อมูลจาก DB โดยรวม ID ชุดใหม่เข้าไปด้วย
+    
     db_data = get_data_by_ids(main_flow_ids + extra_ids + network_ids)
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
@@ -380,7 +381,6 @@ def create_map_menu_flex():
 
     return {"type": "carousel", "contents": bubbles}
 
-# ================== FLASK ROUTES ==================
 
 @app.route("/")
 def home():
@@ -396,9 +396,7 @@ def callback():
         abort(400)
     return 'OK', 200
 
-# ==========================================
-# 🟢 ระบบตอบกลับข้อความทั่วไป (Text Message Handler)
-# ==========================================
+
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
     user_msg = event.message.text.strip()
@@ -414,7 +412,7 @@ def handle_message(event):
                 messages=[FlexMessage(alt_text="ผลการค้นหาสถานที่", contents=FlexContainer.from_dict(carousel))]
             ))
 
-# 1: แผนที่มหาวิทยาลัย (อัปเดตใหม่: Carousel 8 ใบ ไม่มี Quick Reply)
+
         if user_msg == "Menu > แผนที่มหาวิทยาลัย":
             map_carousel = create_map_menu_flex()
             
@@ -423,7 +421,6 @@ def handle_message(event):
                 messages=[FlexMessage(
                     alt_text="แผนที่และรายชื่ออาคารทั้งหมด", 
                     contents=FlexContainer.from_dict(map_carousel)
-                    # ตัดบรรทัด quick_reply ออกเรียบร้อยครับ
                 )]
             ))
             return   
@@ -734,27 +731,21 @@ def handle_message(event):
                                 {"type": "text", "text": "055-706555 ต่อ 7910", "color": "#162660", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
-                        # --- ส่วนข้อมูลผู้พัฒนาที่เพิ่มใหม่ ---
-                        # --- ส่วนข้อมูลผู้พัฒนาระบบและอาจารย์ที่ปรึกษา ---
+
                         {"type": "separator", "margin": "xl"},
                         {
                             "type": "box", "layout": "vertical", "margin": "lg", "spacing": "xs",
                             "contents": [
                                 {"type": "text", "text": "📄 ข้อมูลผู้จัดทำ", "weight": "bold", "color": "#162660", "size": "sm"},
-                                
-                                # 1. ผู้พัฒนา
+
                                 {"type": "text", "text": "ผู้พัฒนา: ศรัณย์รักษ์ กัญจน์ไพสิฐ", "color": "#555555", "size": "xs"},
-                                
-                                # 2. อาจารย์ที่ปรึกษา
+
                                 {"type": "text", "text": "ที่ปรึกษา: อ.พรนรินทร์ สายกลิ่น", "color": "#555555", "size": "xs"},
-                                
-                                # 3. สาขา
+
                                 {"type": "text", "text": "สาขาเทคโนโลยีสารสนเทศ", "color": "#555555", "size": "xs"},
-                                
-                                # 4. คณะ
+
                                 {"type": "text", "text": "คณะวิทยาศาสตร์และเทคโนโลยี", "color": "#555555", "size": "xs"},
-                                
-                                # ข้อมูลติดต่อ (เอาไว้หลังสุดและเว้นระยะขึ้นมานิดนึง)
+
                                 {
                                     "type": "text", 
                                     "text": "Email: sarunrukkan@gmail.com", 
@@ -880,9 +871,6 @@ def handle_message(event):
         elif user_msg in ["ประเมิน", "ประเมินระบบ", "แบบประเมิน", "เสนอแนะ"]:
             return 
 
-        # ==========================================
-        # 💬 ทักทายและพูดคุยทั่วไป (Conversational Reply)
-        # ==========================================
         common_quick_reply = QuickReply(
             items=[
                 QuickReplyItem(action=LocationAction(label="ฉันอยู่ตรงไหน")),
@@ -944,20 +932,26 @@ def handle_message(event):
         if not search_keyword:
             search_keyword = user_msg
 
-        # ==========================================
-        # 📌 นำคำที่ทำความสะอาดแล้ว (search_keyword) ไปค้นหา
-        # ==========================================
-        
+
         buildings = get_building_data(search_keyword)
         if buildings:
-            save_search_log(search_keyword, True)
+            save_search_log(
+                search_keyword,
+                True,
+                location_id=buildings[0].get("location_id")
+            )
             send_building_response(buildings)
             return
 
         service = get_service_data(search_keyword)
         if service:
-            save_search_log(search_keyword, True)
-            b = get_building_by_id(service.get('location_id'))
+            save_search_log(
+                search_keyword,
+                True,
+                location_id=service.get("location_id"),
+                service_id=service.get("service_id")
+            )
+            b = get_building_by_id(service.get("location_id"))
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
                 messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict(create_service_flex(service, b)))]
@@ -973,9 +967,7 @@ def handle_message(event):
             )]
         ))
 
-# ==========================================
-# 📍 ระบบรับตำแหน่ง (Location Handler)
-# ==========================================
+
 @handler.add(MessageEvent, message=LocationMessageContent)
 def handle_location_message(event):
     user_lat = event.message.latitude
