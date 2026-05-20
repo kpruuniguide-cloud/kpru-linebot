@@ -33,6 +33,68 @@ handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
 configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'))
 
 
+def get_data_by_ids(id_list):
+    if not id_list: return {}
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            format_strings = ','.join(['%s'] * len(id_list))
+            sql = f"SELECT location_id, building_no, display_name, official_name FROM locations WHERE location_id IN ({format_strings})"
+            cursor.execute(sql, tuple(id_list))
+            results = cursor.fetchall()
+            return {row['location_id']: row for row in results}
+    except Exception as e:
+        print(f"Error fetching IDs: {e}")
+        return {}
+    finally:
+        if 'conn' in locals(): conn.close()
+
+def make_list_btn(item_data):
+    if not item_data: return None
+    b_no = str(item_data.get('building_no', '')).strip()
+    d_name = item_data.get('display_name') or item_data.get('official_name', '')
+    
+    if b_no not in ["", "-", "None"]:
+        btn_label = f"{b_no}. {d_name}"
+    else:
+        btn_label = d_name
+
+    search_text = f"อาคาร {b_no}" if b_no not in ["", "-", "None"] else d_name
+
+    return {
+        "type": "box", "layout": "horizontal", 
+        "backgroundColor": "#D0E6FD", 
+        "cornerRadius": "md", 
+        "paddingAll": "10px", 
+        "margin": "sm", 
+        "action": {"type": "message", "label": btn_label[:40], "text": search_text},
+        "contents": [
+            {
+                "type": "text", "text": btn_label, "size": "xs", 
+                "color": "#162660", 
+                "weight": "bold", "align": "start", "wrap": True 
+            }
+        ]
+    }
+
+def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
+    return {
+        "type": "box", "layout": "vertical", "backgroundColor": bg_color, "cornerRadius": "lg", "paddingAll": "12px", "margin": margin_val,
+        "action": {"type": "message", "label": label, "text": text_val},
+        "contents": [{"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}]
+    }
+
+def create_left_align_button(label, text_val):
+    return {
+        "type": "box", "layout": "horizontal", 
+        "backgroundColor": "#162660", 
+        "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
+        "action": {"type": "message", "label": label, "text": text_val},
+        "contents": [{"type": "text", "text": label, "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}] 
+    }
+
+
+
 
 def get_building_data(keyword):
     try:
@@ -250,51 +312,6 @@ def create_service_flex(service, building):
 
 
 def create_map_menu_flex():
-    def get_data_by_ids(id_list):
-        if not id_list: return {}
-        try:
-            conn = pymysql.connect(**DB_CONFIG)
-            with conn.cursor() as cursor:
-                format_strings = ','.join(['%s'] * len(id_list))
-                sql = f"SELECT location_id, building_no, display_name, official_name FROM locations WHERE location_id IN ({format_strings})"
-                cursor.execute(sql, tuple(id_list))
-                results = cursor.fetchall()
-                return {row['location_id']: row for row in results}
-        except Exception as e:
-            print(f"Error fetching IDs: {e}")
-            return {}
-        finally:
-            if 'conn' in locals(): conn.close()
-
-    def make_list_btn(item_data):
-        if not item_data: return None
-        b_no = str(item_data.get('building_no', '')).strip()
-        d_name = item_data.get('display_name') or item_data.get('official_name', '')
-        
-        if b_no not in ["", "-", "None"]:
-            btn_label = f"{b_no}. {d_name}"
-        else:
-            btn_label = d_name
-
-        search_text = f"อาคาร {b_no}" if b_no not in ["", "-", "None"] else d_name
-
-        return {
-            "type": "box", "layout": "horizontal", 
-            "backgroundColor": "#D0E6FD", 
-            "cornerRadius": "md", 
-            "paddingAll": "10px", 
-            "margin": "sm", 
-            "action": {"type": "message", "label": btn_label[:40], "text": search_text},
-            "contents": [
-                {
-                    "type": "text", "text": btn_label, "size": "xs", 
-                    "color": "#162660", 
-                    "weight": "bold", "align": "start", "wrap": True 
-                }
-            ]
-        }
-
-  
     main_flow_ids = [
         1, 2, 3, 4, 5, 6, 7, 8,                             
         9, 10, 11, 12, 13, 14, 15, 16, 17,                  
@@ -427,13 +444,6 @@ def handle_message(event):
 
 # ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
-            
-            def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
-                return {
-                    "type": "box", "layout": "vertical", "backgroundColor": bg_color, "cornerRadius": "lg", "paddingAll": "12px", "margin": margin_val,
-                    "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [{"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}]
-                }
 
             flex_menu = {
                 "type": "bubble",
@@ -477,15 +487,6 @@ def handle_message(event):
              
 # ================= 3 SERVICES =================
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
-            
-            def create_left_align_button(label, text_val):
-                return {
-                    "type": "box", "layout": "horizontal", 
-                    "backgroundColor": "#162660", 
-                    "cornerRadius": "md", "paddingAll": "12px", "margin": "xs",
-                    "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [{"type": "text", "text": label, "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}] 
-                }
 
             flex_menu = {
                 "type": "carousel",
@@ -587,13 +588,6 @@ def handle_message(event):
 
 # ================= 4 SHOPS =================
         elif user_msg == "Menu > ร้านค้า/จุดบริการ":
-            def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
-                return {
-                    "type": "box", "layout": "vertical", "backgroundColor": bg_color, "cornerRadius": "lg", "paddingAll": "12px", "margin": margin_val,
-                    "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [{"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}]
-                }
-                
             flex_menu = {
                 "type": "bubble",
                 "body": {
@@ -636,13 +630,6 @@ def handle_message(event):
 
 # ================= 5 DORMITORY =================
         elif user_msg == "Menu > หอพัก":
-            
-            def create_custom_btn(label, text_val, bg_color, text_color, margin_val="md"):
-                return {
-                    "type": "box", "layout": "vertical", "backgroundColor": bg_color, "cornerRadius": "lg", "paddingAll": "12px", "margin": margin_val,
-                    "action": {"type": "message", "label": label, "text": text_val},
-                    "contents": [{"type": "text", "text": label, "color": text_color, "weight": "bold", "size": "md", "align": "center"}]
-                }
 
             flex_menu = {
                 "type": "bubble",
@@ -794,6 +781,7 @@ def handle_message(event):
 
 # ================= 7 ADMIN (คำสั่งลับดูสถิติ) =================
         if user_msg == "Admin>ดูสถิติ":
+            connection = None
             try:
                 connection = pymysql.connect(**DB_CONFIG)
                 with connection.cursor() as cursor:
@@ -807,8 +795,6 @@ def handle_message(event):
                     cursor.execute(sql)
                     top_keywords = cursor.fetchall()
                 
-                connection.close()
-
                 if top_keywords:
                     reply_text = "📊 สถิติ 10 อันดับคำค้นหาสูงสุด\n\n"
                     for index, row in enumerate(top_keywords, start=1):
@@ -817,23 +803,22 @@ def handle_message(event):
                 else:
                     reply_text = "📊 ยังไม่มีข้อมูลประวัติการค้นหาในระบบค่ะ"
 
-                with ApiClient(configuration) as api_client:
-                    line_bot_api = MessagingApi(api_client)
-                    line_bot_api.reply_message(ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[TextMessage(text=reply_text)]
-                    ))
+                line_bot_api.reply_message(ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=reply_text)]
+                ))
                 return
 
             except Exception as e:
                 print(f"Database Error (Admin Stats): {e}")
-                with ApiClient(configuration) as api_client:
-                    line_bot_api = MessagingApi(api_client)
-                    line_bot_api.reply_message(ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[TextMessage(text="❌ ไม่สามารถเชื่อมต่อฐานข้อมูลเพื่อดึงสถิติได้")]
-                    ))
+                line_bot_api.reply_message(ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text="❌ ไม่สามารถเชื่อมต่อฐานข้อมูลเพื่อดึงสถิติได้")]
+                ))
                 return
+            finally:
+                if connection:
+                    connection.close()
 
         elif user_msg == "Admin>เวลาฮิต":
             try:
