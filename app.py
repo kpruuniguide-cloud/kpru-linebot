@@ -905,7 +905,7 @@ def handle_message(event):
         filler_words = [
             "อยากไป", "พาไปหน่อย", "พาไป", "ทางไป", "นำทางไป", "ไป","อยู่ตรงไหนครับ","อยู่ตรงไหนคะ","ค้าบ",
             "อยู่ที่ไหน", "อยู่ไหน", "ที่ไหน", "ตรงไหน", "ชั้นไหน","อยู่ตรงไหน","อยู่ไหนคะ","อยู่ไหนครับ",
-            "หน่อย", "ช่วยหา", "ขอ", "ครับ", "ค่ะ", "นะคะ", "นะ", "จ๊ะ","พาฉันไปที่",
+            "หน่อย", "ช่วยหา", "ครับ", "ค่ะ", "นะคะ", "นะ", "จ๊ะ","พาฉันไปที่",
         ]
         
         search_keyword = user_msg
@@ -918,16 +918,7 @@ def handle_message(event):
             search_keyword = user_msg
 
 
-        buildings = get_building_data(search_keyword)
-        if buildings:
-            save_search_log(
-                search_keyword,
-                True,
-                location_id=buildings[0].get("location_id")
-            )
-            send_building_response(buildings)
-            return
-
+       # เปลี่ยนมาเช็คตาราง Services ก่อน 
         service = get_service_data(search_keyword)
         if service:
             save_search_log(
@@ -941,6 +932,17 @@ def handle_message(event):
                 reply_token=event.reply_token, 
                 messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict(create_service_flex(service, b)))]
             ))
+            return
+
+        # ถ้าในตาราง Services ไม่เจอ ค่อยลงมาเช็คตารางอาคาร Locations
+        buildings = get_building_data(search_keyword)
+        if buildings:
+            save_search_log(
+                search_keyword,
+                True,
+                location_id=buildings[0].get("location_id")
+            )
+            send_building_response(buildings)
             return
 
         save_search_log(search_keyword, False)
