@@ -8,6 +8,7 @@ from linebot.v3.messaging import (
     TextMessage, FlexMessage, FlexContainer,
     QuickReply, QuickReplyItem, MessageAction, LocationAction
 )
+
 from linebot.v3.webhooks import (
     MessageEvent, 
     TextMessageContent,
@@ -15,6 +16,8 @@ from linebot.v3.webhooks import (
     FollowEvent
 )
 
+# เปลี่ยนเป็น List เพื่อรองรับการค้นหาแบบครอบคลุม (LIKE)
+location_cache = []
 app = Flask(__name__)
 
 DB_CONFIG = {
@@ -32,6 +35,20 @@ GITHUB_IMAGE_BASE = "https://raw.githubusercontent.com/kpruuniguide-cloud/kpru-l
 handler = WebhookHandler(os.environ.get('CHANNEL_SECRET'))
 configuration = Configuration(access_token=os.environ.get('CHANNEL_ACCESS_TOKEN'))
 
+# ================= ฟังก์ชันโหลดข้อมูลขึ้น Cache =================
+def load_locations_to_cache():
+    global location_cache
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM locations")
+            location_cache = cursor.fetchall()
+            print(f"✅ โหลดข้อมูลตึกเข้า Cache สำเร็จ จำนวน {len(location_cache)} รายการ")
+    except Exception as e:
+        print(f"❌ เกิดข้อผิดพลาดในการโหลด Cache: {e}")
+    finally:
+        if 'conn' in locals(): conn.close()
+# =========================================================
 
 def get_data_by_ids(id_list):
     if not id_list: return {}
@@ -93,39 +110,35 @@ def create_left_align_button(label, text_val):
         "contents": [{"type": "text", "text": label, "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "start"}] 
     }
 
-
-
-
+# ================= ฟังก์ชันค้นหาจาก Cache =================
 def get_building_data(keyword):
-    try:
-        conn = pymysql.connect(**DB_CONFIG)
-        with conn.cursor() as cursor:
-            sql = "SELECT * FROM locations WHERE building_no = %s OR common_name LIKE %s OR official_name LIKE %s"
-            cursor.execute(sql, (keyword, f"%{keyword}%", f"%{keyword}%"))
-            results = cursor.fetchall()
+    # ถ้าจู่ๆ Cache หาย ให้โหลดใหม่เผื่อเหนียว
+    if not location_cache:
+        load_locations_to_cache()
+        
+    exact_matches = []
+    partial_matches = []
+    
+    for row in location_cache:
+        b_no = str(row.get('building_no', '')).strip()
+        official_name = str(row.get('official_name', ''))
+        common_names_str = str(row.get('common_name') or '')
+        aliases = [x.strip() for x in common_names_str.split(',')]
+        
+        # ค้นหาแบบตรงตัวเป๊ะๆ
+        if keyword == b_no or keyword in aliases or keyword == official_name:
+            exact_matches.append(row)
+        # ค้นหาแบบมีคำนั้นผสมอยู่ (จำลอง LIKE ใน SQL)
+        elif keyword in b_no or any(keyword in alias for alias in aliases) or keyword in official_name:
+            partial_matches.append(row)
             
-            if not results:
-                return None
-                
-            exact_matches = []
-            for row in results:
-                b_no = str(row.get('building_no', '')).strip()
-                common_names_str = str(row.get('common_name') or '')
-                aliases = [x.strip() for x in common_names_str.split(',')]
-                
-                if keyword == b_no or keyword in aliases or keyword == str(row.get('official_name')):
-                    exact_matches.append(row)
-            
-            if exact_matches:
-                return exact_matches
-            
-            return results
-
-    except Exception as e:
-        print(f"DB Error: {e}")
-        return None
-    finally:
-        if 'conn' in locals(): conn.close()
+    if exact_matches:
+        return exact_matches
+    if partial_matches:
+        return partial_matches
+        
+    return None
+# =========================================================
 
 def get_service_data(keyword):
     try:
@@ -141,6 +154,12 @@ def get_service_data(keyword):
         if 'conn' in locals(): conn.close()
 
 def get_building_by_id(building_id):
+    # เปลี่ยนมาหาจาก Cache ด้วยเหมือนกัน
+    for row in location_cache:
+        if row.get('location_id') == building_id:
+            return row
+            
+    # ถ้าไม่เจอใน Cache ค่อยไปหาใน DB
     try:
         conn = pymysql.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
@@ -167,7 +186,6 @@ def save_search_log(keyword, is_found, location_id=None, service_id=None):
     finally:
         if 'conn' in locals():
             conn.close()
-
 
 def create_building_flex(data):
     img_url = f"{GITHUB_IMAGE_BASE}{data['image_name']}" if data and data.get("image_name") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
@@ -309,8 +327,6 @@ def create_service_flex(service, building):
         }
     }
 
-
-
 def create_map_menu_flex():
     main_flow_ids = [
         1, 2, 3, 4, 5, 6, 7, 8,                             
@@ -321,13 +337,11 @@ def create_map_menu_flex():
     ]
     extra_ids = [74, 75, 76, 77, 78, 79]                   
     network_ids = [80, 81]                                 
-
     
     db_data = get_data_by_ids(main_flow_ids + extra_ids + network_ids)
     img_url = f"{GITHUB_IMAGE_BASE}map_kpru.png"
     bubbles = []
 
-    # --- การ์ด 1: แผนที่ ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "body": {
@@ -356,7 +370,6 @@ def create_map_menu_flex():
         }
     })
 
-    # --- การ์ด 2: อาคาร 1-8 ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "header": {
@@ -366,7 +379,6 @@ def create_map_menu_flex():
         "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in main_flow_ids[0:8] if db_data.get(id)]}
     })
 
-    # --- การ์ด 3 - 6: อาคาร 9 ถึง 42 ---
     for start_idx in [8, 17, 26, 35]:
         end_idx = start_idx + 9
         current_group = main_flow_ids[start_idx:end_idx]
@@ -376,7 +388,6 @@ def create_map_menu_flex():
             "body": {"type": "box", "layout": "vertical", "spacing": "sm", "paddingTop": "25px", "contents": [make_list_btn(db_data.get(id)) for id in current_group if db_data.get(id)]}
         })
 
-    # --- การ์ด 7: อาคารและสถานที่เสริม (74-79) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "header": {
@@ -386,7 +397,6 @@ def create_map_menu_flex():
         "body": {"type": "box", "layout": "vertical", "spacing": "sm", "contents": [make_list_btn(db_data.get(id)) for id in extra_ids if db_data.get(id)]}
     })
 
-    # --- การ์ด 8: หน่วยงานเครือข่าย (80-81) ---
     bubbles.append({
         "type": "bubble", "size": "kilo",
         "header": {
@@ -397,7 +407,6 @@ def create_map_menu_flex():
     })
 
     return {"type": "carousel", "contents": bubbles}
-
 
 @app.route("/")
 def home():
@@ -412,7 +421,6 @@ def callback():
     except InvalidSignatureError:
         abort(400)
     return 'OK', 200
-
 
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
@@ -429,7 +437,6 @@ def handle_message(event):
                 messages=[FlexMessage(alt_text="ผลการค้นหาสถานที่", contents=FlexContainer.from_dict(carousel))]
             ))
 
-
         if user_msg == "Menu > แผนที่มหาวิทยาลัย":
             map_carousel = create_map_menu_flex()
             
@@ -442,9 +449,7 @@ def handle_message(event):
             ))
             return   
 
-# ================= 2 PLACE (สถานที่สำคัญ/จุดพักผ่อน) =================
         elif user_msg == "Menu > สถานที่สำคัญ/จุดพักผ่อน":
-
             flex_menu = {
                 "type": "bubble",
                 "body": {
@@ -485,9 +490,7 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
             return       
              
-# ================= 3 SERVICES =================
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
-
             flex_menu = {
                 "type": "carousel",
                 "contents": [
@@ -586,7 +589,6 @@ def handle_message(event):
                     if 'conn' in locals(): conn.close()
             return
 
-# ================= 4 SHOPS =================
         elif user_msg == "Menu > ร้านค้า/จุดบริการ":
             flex_menu = {
                 "type": "bubble",
@@ -628,9 +630,7 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
              return
 
-# ================= 5 DORMITORY =================
         elif user_msg == "Menu > หอพัก":
-
             flex_menu = {
                 "type": "bubble",
                 "body": {
@@ -670,7 +670,6 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
             return
         
-# ================= 6 CONTACT & EMERGENCY =================
         elif user_msg == "Menu > ติดต่อ/ฉุกเฉิน":
             flex_menu = {
                 "type": "bubble", 
@@ -779,7 +778,6 @@ def handle_message(event):
             ))
             return
 
-# ================= 7 ADMIN (คำสั่งลับดูสถิติ) =================
         if user_msg == "Admin>ดูสถิติ":
             connection = None
             try:
@@ -852,7 +850,6 @@ def handle_message(event):
                 if 'conn' in locals(): conn.close()
             return
         
-        # ================= 8 EVALUATION =================
         elif user_msg in ["ประเมิน", "ประเมินระบบ", "แบบประเมิน", "เสนอแนะ"]:
             return 
 
@@ -918,7 +915,6 @@ def handle_message(event):
             search_keyword = user_msg
 
 
-       # เปลี่ยนมาเช็คตาราง Services ก่อน 
         service = get_service_data(search_keyword)
         if service:
             save_search_log(
@@ -934,7 +930,6 @@ def handle_message(event):
             ))
             return
 
-        # ถ้าในตาราง Services ไม่เจอ ค่อยลงมาเช็คตารางอาคาร Locations
         buildings = get_building_data(search_keyword)
         if buildings:
             save_search_log(
@@ -977,5 +972,8 @@ def handle_location_message(event):
             messages=[TextMessage(text=reply_text)]
         ))
 
+# ================= คำสั่งรันแอป =================
 if __name__ == "__main__":
+    # สั่งให้โหลดข้อมูลทั้งหมดเข้า RAM ก่อนที่เซิร์ฟเวอร์จะเปิดรับคน
+    load_locations_to_cache()
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
