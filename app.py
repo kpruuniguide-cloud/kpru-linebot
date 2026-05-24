@@ -980,11 +980,36 @@ def handle_message(event):
             return 
             
         # ================= 9 CLASSROOM GUIDE =================
-        elif user_msg in ["หาห้องเรียน", "วิธีหาห้องเรียน", "ดูรหัสห้อง", "ห้องเรียน", "รหัสห้อง"]:
+        # คลีนข้อความ ลบคำว่า "ห้อง" และช่องว่างออก เพื่อเช็คว่าเป็นเลข 5 หลักหรือไม่
+        check_msg = user_msg.replace("ห้อง", "").replace(" ", "").strip()
+        
+        if user_msg in ["หาห้องเรียน", "วิธีหาห้องเรียน", "ดูรหัสห้อง", "ห้องเรียน", "รหัสห้อง"] or (check_msg.isdigit() and len(check_msg) == 5):
+            
+            # 1. สร้างการ์ดฮาวทูวิธีอ่านรหัสห้องเรียนเตรียมไว้เป็นข้อความที่ 1
             classroom_flex = create_classroom_guide_flex()
+            messages_to_send = [FlexMessage(alt_text="วิธีหารหัสห้องเรียน", contents=FlexContainer.from_dict(classroom_flex))]
+            
+            # 2. ฟีเจอร์ลับ: ถ้าเป็นเลข 5 หลัก ให้ดึง 2 ตัวแรกไปค้นหาตึกเลย!
+            if check_msg.isdigit() and len(check_msg) == 5:
+                target_building = check_msg[:2]  # ดึงตัวอักษร 2 ตัวแรก (เช่น 48)
+                
+                # โหลดความจำมาเตรียมไว้เผื่อ Cache หาย
+                if not location_cache:
+                    load_locations_to_cache()
+                    
+                # ส่งเลข 2 ตัวแรกไปค้นหาในฐานข้อมูลสถานที่
+                found_buildings = get_building_data(target_building)
+                
+                # ถ้าเจออาคาร ให้สร้างการ์ดตึกต่อท้ายเป็นข้อความที่ 2 ทันที
+                if found_buildings:
+                    bubbles = [create_building_flex(b) for b in found_buildings[:10]]
+                    carousel = {"type": "carousel", "contents": bubbles}
+                    messages_to_send.append(FlexMessage(alt_text="แผนที่อาคาร", contents=FlexContainer.from_dict(carousel)))
+            
+            # ส่งข้อความทั้งหมดกลับไปหาผู้ใช้พร้อมกัน
             line_bot_api.reply_message(ReplyMessageRequest(
                 reply_token=event.reply_token, 
-                messages=[FlexMessage(alt_text="วิธีหารหัสห้องเรียน", contents=FlexContainer.from_dict(classroom_flex))]
+                messages=messages_to_send
             ))
             return
 
