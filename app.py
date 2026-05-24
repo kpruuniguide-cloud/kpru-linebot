@@ -135,17 +135,20 @@ def get_building_data(keyword):
     exact_matches = []
     partial_matches = []
     
+    # แปลงคำค้นหาเป็นตัวเล็กและตัดช่องว่างออกเพื่อความยืดหยุ่น (Case-insensitive)
+    kw_lower = keyword.strip().lower()
+    
     for row in location_cache:
-        b_no = str(row.get('building_no', '')).strip()
-        official_name = str(row.get('official_name', ''))
-        common_names_str = str(row.get('common_name') or '')
-        aliases = [x.strip() for x in common_names_str.split(',')]
+        b_no = str(row.get('building_no') or '').strip().lower()
+        official_name = str(row.get('official_name') or '').strip().lower()
+        common_names_str = str(row.get('common_name') or '').lower()
+        aliases = [x.strip() for x in common_names_str.split(',') if x.strip()]
         
         # ค้นหาแบบตรงตัวเป๊ะๆ
-        if keyword == b_no or keyword in aliases or keyword == official_name:
+        if kw_lower == b_no or kw_lower in aliases or kw_lower == official_name:
             exact_matches.append(row)
         # ค้นหาแบบมีคำนั้นผสมอยู่ (จำลอง LIKE ใน SQL)
-        elif keyword in b_no or any(keyword in alias for alias in aliases) or keyword in official_name:
+        elif kw_lower in b_no or any(kw_lower in alias for alias in aliases) or kw_lower in official_name:
             partial_matches.append(row)
             
     if exact_matches:
@@ -903,6 +906,21 @@ def handle_message(event):
                 reply_token=event.reply_token, 
                 messages=[FlexMessage(alt_text="เมนูติดต่อ", contents=FlexContainer.from_dict(flex_menu))]
             ))
+            return
+
+        if user_msg == "Admin>รีโหลดแคช":
+            try:
+                load_locations_to_cache()
+                load_services_to_cache()
+                line_bot_api.reply_message(ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text="🔄 รีโหลดข้อมูล Cache อาคารและบริการทั้งหมดเรียบร้อยแล้วค่ะ!")]
+                ))
+            except Exception as e:
+                line_bot_api.reply_message(ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=f"❌ เกิดข้อผิดพลาดในการรีโหลดแคช: {e}")]
+                ))
             return
 
         if user_msg == "Admin>ดูสถิติ":
