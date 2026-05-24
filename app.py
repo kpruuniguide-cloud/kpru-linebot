@@ -699,7 +699,7 @@ def handle_message(event):
                             "type": "box", "layout": "horizontal",
                             "contents": [
                                 {"type": "text", "text": "🏥 ห้องพยาบาล", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
-                                {"type": "text", "text": "055-706555 ต่อ 1360", "color": "#162660", "size": "xs", "align": "end", "flex": 7}
+                                {"type": "text", "text": "055-706555 ต่อ 1811", "color": "#162660", "size": "xs", "align": "end", "flex": 7}
                             ]
                         },
                         {"type": "separator"},
