@@ -1,6 +1,7 @@
 import os
 import pymysql
 import threading
+import re
 from flask import Flask, request, abort
 from linebot.v3.webhook import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
@@ -461,7 +462,7 @@ def create_classroom_guide_flex():
                             "type": "box",
                             "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": " 2 ตัวแรก:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": " เลข 2 ตัวแรก:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
                                 {"type": "text", "text": "หมายเลขอาคาร", "size": "sm", "color": "#555555", "flex": 6}
                             ]
                         },
@@ -469,7 +470,7 @@ def create_classroom_guide_flex():
                             "type": "box",
                             "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": " ตัวที่ 3:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": " เลขตัวที่ 3:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
                                 {"type": "text", "text": "ชั้นของอาคาร", "size": "sm", "color": "#555555", "flex": 6}
                             ]
                         },
@@ -477,7 +478,7 @@ def create_classroom_guide_flex():
                             "type": "box",
                             "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": " 2 ตัวท้าย:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": " เลข 2 ตัวท้าย:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
                                 {"type": "text", "text": "ลำดับห้อง", "size": "sm", "color": "#555555", "flex": 6}
                             ]
                         }
@@ -979,19 +980,21 @@ def handle_message(event):
         elif user_msg in ["ประเมิน", "ประเมินระบบ", "แบบประเมิน", "เสนอแนะ"]:
             return 
             
-        # ================= 9 CLASSROOM GUIDE =================
-        # คลีนข้อความ ลบคำว่า "ห้อง" และช่องว่างออก เพื่อเช็คว่าเป็นเลข 5 หลักหรือไม่
-        check_msg = user_msg.replace("ห้อง", "").replace(" ", "").strip()
+        # ================= 9 CLASSROOM GUIDE & SMART SEARCH =================
+        # ใช้ Regex สแกนหา "ตัวเลข 5 ตัวติดกัน" ในข้อความ
+        room_match = re.search(r'(?<!\d)\d{5}(?!\d)', user_msg)
         
-        if user_msg in ["หาห้องเรียน", "วิธีหาห้องเรียน", "ดูรหัสห้อง", "ห้องเรียน", "รหัสห้อง"] or (check_msg.isdigit() and len(check_msg) == 5):
+        # ดักคำค้นหาทั่วไป หรือ กรณีที่เครื่องสแกน Regex เจอเลข 5 หลัก
+        if user_msg in ["หาห้อง", "หาห้องเรียน", "วิธีหาห้องเรียน", "ดูรหัสห้อง", "ห้องเรียน", "รหัสห้อง"] or room_match:
             
-            # 1. สร้างการ์ดฮาวทูวิธีอ่านรหัสห้องเรียนเตรียมไว้เป็นข้อความที่ 1
+            # 1. เตรียมการ์ดฮาวทูวิธีอ่านรหัสห้องเรียน
             classroom_flex = create_classroom_guide_flex()
             messages_to_send = [FlexMessage(alt_text="วิธีหารหัสห้องเรียน", contents=FlexContainer.from_dict(classroom_flex))]
             
-            # 2. ฟีเจอร์ลับ: ถ้าเป็นเลข 5 หลัก ให้ดึง 2 ตัวแรกไปค้นหาตึกเลย!
-            if check_msg.isdigit() and len(check_msg) == 5:
-                target_building = check_msg[:2]  # ดึงตัวอักษร 2 ตัวแรก (เช่น 48)
+            # 2. ถ้าเจอเลข 5 หลักซ่อนอยู่ ให้ทำงานส่วนนี้
+            if room_match:
+                found_room_number = room_match.group(0) # ดึงตัวเลข 5 หลักออกมา (เช่น '14501')
+                target_building = found_room_number[:2] # ตัดเอาแค่ 2 ตัวแรก (เช่น '14')
                 
                 # โหลดความจำมาเตรียมไว้เผื่อ Cache หาย
                 if not location_cache:
@@ -1004,7 +1007,7 @@ def handle_message(event):
                 if found_buildings:
                     bubbles = [create_building_flex(b) for b in found_buildings[:10]]
                     carousel = {"type": "carousel", "contents": bubbles}
-                    messages_to_send.append(FlexMessage(alt_text="แผนที่อาคาร", contents=FlexContainer.from_dict(carousel)))
+                    messages_to_send.append(FlexMessage(alt_text=f"แผนที่มหาวิทยาลัย{target_building}", contents=FlexContainer.from_dict(carousel)))
             
             # ส่งข้อความทั้งหมดกลับไปหาผู้ใช้พร้อมกัน
             line_bot_api.reply_message(ReplyMessageRequest(
