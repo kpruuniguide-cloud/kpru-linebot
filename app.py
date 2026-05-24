@@ -859,15 +859,15 @@ def handle_message(event):
         common_quick_reply = QuickReply(
             items=[
                 QuickReplyItem(action=LocationAction(label="ฉันอยู่ตรงไหน")),
-                QuickReplyItem(action=MessageAction(label="หอประชุมทีปังกร", text="อาคาร 13")),
-                QuickReplyItem(action=MessageAction(label="ตึกอธิการบดี", text="อาคาร 14")),
-                QuickReplyItem(action=MessageAction(label="รัตนอาภา", text="อาคาร 28")),
-                QuickReplyItem(action=MessageAction(label="ห้องสมุด", text="อาคาร 26")),
-                QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="อาคาร 5")),
+                QuickReplyItem(action=MessageAction(label="หอประชุมทีปังกร", text="หอประชุมทีปังกร")),
+                QuickReplyItem(action=MessageAction(label="ตึกอธิการบดี", text="ตึกอธิการบดี")),
+                QuickReplyItem(action=MessageAction(label="รัตนอาภา", text="รัตนอาภา")),
+                QuickReplyItem(action=MessageAction(label="ห้องสมุด", text="ห้องสมุด")),
+                QuickReplyItem(action=MessageAction(label="โรงอาหาร", text="โรงอาหาร")),
                 QuickReplyItem(action=MessageAction(label="คณะครุศาสตร์", text="อาคาร 46")),
-                QuickReplyItem(action=MessageAction(label="กยศ.", text="อาคาร 47")),
-                QuickReplyItem(action=MessageAction(label="คณะวิทย์", text="อาคาร 48")),
-                QuickReplyItem(action=MessageAction(label="ศูนย์ภาษา", text="อาคาร 25"))
+                QuickReplyItem(action=MessageAction(label="กยศ.", text="กยศ.")),
+                QuickReplyItem(action=MessageAction(label="คณะวิทย์", text="คณะวิทย์")),
+                QuickReplyItem(action=MessageAction(label="ศูนย์ภาษา", text="ศูนย์ภาษา"))
             ]
         )
 
