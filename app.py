@@ -461,7 +461,7 @@ def create_classroom_guide_flex():
                             "type": "box",
                             "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "🏢 2 ตัวแรก:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": " 2 ตัวแรก:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
                                 {"type": "text", "text": "หมายเลขอาคาร", "size": "sm", "color": "#555555", "flex": 6}
                             ]
                         },
@@ -469,7 +469,7 @@ def create_classroom_guide_flex():
                             "type": "box",
                             "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "📶 ตัวที่ 3:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": " ตัวที่ 3:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
                                 {"type": "text", "text": "ชั้นของอาคาร", "size": "sm", "color": "#555555", "flex": 6}
                             ]
                         },
@@ -477,7 +477,7 @@ def create_classroom_guide_flex():
                             "type": "box",
                             "layout": "horizontal",
                             "contents": [
-                                {"type": "text", "text": "🚪 2 ตัวท้าย:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": " 2 ตัวท้าย:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
                                 {"type": "text", "text": "ลำดับห้อง", "size": "sm", "color": "#555555", "flex": 6}
                             ]
                         }
@@ -508,7 +508,7 @@ def create_classroom_guide_flex():
                     "color": "#162660",
                     "action": {
                         "type": "message",
-                        "label": "🗺️ ค้นหาแผนที่อาคาร",
+                        "label": "🗺️ แผนที่มหาวิทยาลัย",
                         "text": "Menu > แผนที่มหาวิทยาลัย"
                     }
                 }
