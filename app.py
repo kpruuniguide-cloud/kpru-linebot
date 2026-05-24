@@ -421,6 +421,102 @@ def create_map_menu_flex():
 
     return {"type": "carousel", "contents": bubbles}
 
+# ================= ฟังก์ชันสร้าง Flex การหาห้องเรียน =================
+def create_classroom_guide_flex():
+    return {
+        "type": "bubble",
+        "hero": {
+            "type": "image",
+            "url": f"{GITHUB_IMAGE_BASE}classroom_guide.jpg", 
+            "size": "full",
+            "aspectRatio": "20:13",
+            "aspectMode": "cover"
+        },
+        "body": {
+            "type": "box",
+            "layout": "vertical",
+            "spacing": "md",
+            "contents": [
+                {
+                    "type": "text",
+                    "text": "📖 วิธีอ่านรหัสห้องเรียน",
+                    "weight": "bold",
+                    "size": "xl",
+                    "color": "#162660"
+                },
+                {
+                    "type": "text",
+                    "text": "รหัสห้องของมหาวิทยาลัยจะมี 5 หลัก ประกอบไปด้วย:",
+                    "wrap": True,
+                    "color": "#708090",
+                    "size": "sm"
+                },
+                {
+                    "type": "box",
+                    "layout": "vertical",
+                    "margin": "lg",
+                    "spacing": "sm",
+                    "contents": [
+                        {
+                            "type": "box",
+                            "layout": "horizontal",
+                            "contents": [
+                                {"type": "text", "text": "🏢 2 ตัวแรก:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": "หมายเลขอาคาร", "size": "sm", "color": "#555555", "flex": 6}
+                            ]
+                        },
+                        {
+                            "type": "box",
+                            "layout": "horizontal",
+                            "contents": [
+                                {"type": "text", "text": "📶 ตัวที่ 3:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": "ชั้นของอาคาร", "size": "sm", "color": "#555555", "flex": 6}
+                            ]
+                        },
+                        {
+                            "type": "box",
+                            "layout": "horizontal",
+                            "contents": [
+                                {"type": "text", "text": "🚪 2 ตัวท้าย:", "weight": "bold", "color": "#162660", "size": "sm", "flex": 4},
+                                {"type": "text", "text": "ลำดับห้อง", "size": "sm", "color": "#555555", "flex": 6}
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "box",
+                    "layout": "vertical",
+                    "backgroundColor": "#F3F4F6",
+                    "cornerRadius": "md",
+                    "paddingAll": "10px",
+                    "margin": "lg",
+                    "contents": [
+                        {"type": "text", "text": "💡 ตัวอย่าง: รหัส 14501", "weight": "bold", "size": "sm", "color": "#162660"},
+                        {"type": "text", "text": "หมายถึง อาคาร 14 ชั้น 5 ห้องที่ 01", "size": "sm", "color": "#555555", "wrap": True}
+                    ]
+                }
+            ]
+        },
+        "footer": {
+            "type": "box",
+            "layout": "vertical",
+            "spacing": "sm",
+            "contents": [
+                {
+                    "type": "button",
+                    "style": "primary",
+                    "color": "#162660",
+                    "action": {
+                        "type": "message",
+                        "label": "🗺️ ค้นหาแผนที่อาคาร",
+                        "text": "Menu > แผนที่มหาวิทยาลัย"
+                    }
+                }
+            ]
+        }
+    }
+# ================================================================
+
 @app.route("/")
 def home():
     return "KPRU Line Bot is running!", 200
@@ -882,10 +978,20 @@ def handle_message(event):
         
         elif user_msg in ["ประเมิน", "ประเมินระบบ", "แบบประเมิน", "เสนอแนะ"]:
             return 
+            
+        # ================= 9 CLASSROOM GUIDE =================
+        elif user_msg in ["หาห้องเรียน", "วิธีหาห้องเรียน", "ดูรหัสห้อง", "ห้องเรียน", "รหัสห้อง"]:
+            classroom_flex = create_classroom_guide_flex()
+            line_bot_api.reply_message(ReplyMessageRequest(
+                reply_token=event.reply_token, 
+                messages=[FlexMessage(alt_text="วิธีหารหัสห้องเรียน", contents=FlexContainer.from_dict(classroom_flex))]
+            ))
+            return
 
         common_quick_reply = QuickReply(
             items=[
                 QuickReplyItem(action=LocationAction(label="ฉันอยู่ตรงไหน")),
+                QuickReplyItem(action=MessageAction(label="หาห้องเรียน", text="หาห้องเรียน")),
                 QuickReplyItem(action=MessageAction(label="หอประชุมทีปังกร", text="หอประชุมทีปังกร")),
                 QuickReplyItem(action=MessageAction(label="ตึกอธิการบดี", text="ตึกอธิการบดี")),
                 QuickReplyItem(action=MessageAction(label="รัตนอาภา", text="รัตนอาภา")),
