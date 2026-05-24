@@ -1,5 +1,6 @@
 import os
 import pymysql
+import threading
 from flask import Flask, request, abort
 from linebot.v3.webhook import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
@@ -18,6 +19,7 @@ from linebot.v3.webhooks import (
 
 # เปลี่ยนเป็น List เพื่อรองรับการค้นหาแบบครอบคลุม (LIKE)
 location_cache = []
+service_cache = []  # เก็บข้อมูลตาราง services ในหน่วยความจำ
 app = Flask(__name__)
 
 DB_CONFIG = {
@@ -48,23 +50,36 @@ def load_locations_to_cache():
         print(f"❌ เกิดข้อผิดพลาดในการโหลด Cache: {e}")
     finally:
         if 'conn' in locals(): conn.close()
+
+def load_services_to_cache():
+    global service_cache
+    try:
+        conn = pymysql.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM services")
+            service_cache = cursor.fetchall()
+            print(f"✅ โหลดข้อมูลบริการเข้า Cache สำเร็จ จำนวน {len(service_cache)} รายการ")
+    except Exception as e:
+        print(f"❌ เกิดข้อผิดพลาดในการโหลด Service Cache: {e}")
+    finally:
+        if 'conn' in locals(): conn.close()
 # =========================================================
 
 def get_data_by_ids(id_list):
     if not id_list: return {}
-    try:
-        conn = pymysql.connect(**DB_CONFIG)
-        with conn.cursor() as cursor:
-            format_strings = ','.join(['%s'] * len(id_list))
-            sql = f"SELECT location_id, building_no, display_name, official_name FROM locations WHERE location_id IN ({format_strings})"
-            cursor.execute(sql, tuple(id_list))
-            results = cursor.fetchall()
-            return {row['location_id']: row for row in results}
-    except Exception as e:
-        print(f"Error fetching IDs: {e}")
-        return {}
-    finally:
-        if 'conn' in locals(): conn.close()
+    if not location_cache:
+        load_locations_to_cache()
+    results = {}
+    for row in location_cache:
+        loc_id = row.get('location_id')
+        if loc_id in id_list:
+            results[loc_id] = {
+                'location_id': loc_id,
+                'building_no': row.get('building_no'),
+                'display_name': row.get('display_name'),
+                'official_name': row.get('official_name')
+            }
+    return results
 
 def make_list_btn(item_data):
     if not item_data: return None
@@ -141,17 +156,16 @@ def get_building_data(keyword):
 # =========================================================
 
 def get_service_data(keyword):
-    try:
-        conn = pymysql.connect(**DB_CONFIG)
-        with conn.cursor() as cursor:
-            sql = "SELECT * FROM services WHERE keywords LIKE %s OR service_name LIKE %s"
-            cursor.execute(sql, (f"%{keyword}%", f"%{keyword}%"))
-            return cursor.fetchone()
-    except Exception as e:
-        print(f"DB Error: {e}")
-        return None
-    finally:
-        if 'conn' in locals(): conn.close()
+    global service_cache
+    if not service_cache:
+        load_services_to_cache()
+    kw_lower = keyword.lower()
+    for row in service_cache:
+        keywords_str = str(row.get('keywords') or '').lower()
+        service_name = str(row.get('service_name') or '').lower()
+        if kw_lower in keywords_str or kw_lower in service_name:
+            return row
+    return None
 
 def get_building_by_id(building_id):
     # เปลี่ยนมาหาจาก Cache ด้วยเหมือนกัน
@@ -160,32 +174,31 @@ def get_building_by_id(building_id):
             return row
             
     # ถ้าไม่เจอใน Cache ค่อยไปหาใน DB
-    try:
-        conn = pymysql.connect(**DB_CONFIG)
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM locations WHERE location_id = %s", (building_id,))
-            return cursor.fetchone()
-    except Exception as e:
-        print(f"DB Error: {e}")
-        return None
-    finally:
-        if 'conn' in locals(): conn.close()
+    if not location_cache:
+        load_locations_to_cache()
+        for row in location_cache:
+            if row.get('location_id') == building_id:
+                return row
+    return None
 
 def save_search_log(keyword, is_found, location_id=None, service_id=None):
-    try:
-        conn = pymysql.connect(**DB_CONFIG)
-        with conn.cursor() as cursor:
-            sql = """
-                INSERT INTO search_logs (keyword, is_found, location_id, service_id)
-                VALUES (%s, %s, %s, %s)
-            """
-            cursor.execute(sql, (keyword, is_found, location_id, service_id))
-            conn.commit()
-    except Exception as e:
-        print("Error saving log:", e)
-    finally:
-        if 'conn' in locals():
-            conn.close()
+    def run():
+        try:
+            conn = pymysql.connect(**DB_CONFIG)
+            with conn.cursor() as cursor:
+                sql = """
+                    INSERT INTO search_logs (keyword, is_found, location_id, service_id)
+                    VALUES (%s, %s, %s, %s)
+                """
+                cursor.execute(sql, (keyword, is_found, location_id, service_id))
+                conn.commit()
+        except Exception as e:
+            print("Error saving log in background:", e)
+        finally:
+            if 'conn' in locals():
+                conn.close()
+                
+    threading.Thread(target=run, daemon=True).start()
 
 def create_building_flex(data):
     img_url = f"{GITHUB_IMAGE_BASE}{data['image_name']}" if data and data.get("image_name") else "https://www.kpru.ac.th/th/images/logo-kpru.png"
@@ -476,18 +489,26 @@ def handle_message(event):
             return
 
         elif user_msg in ["ดูสถานที่สำคัญ", "ดูจุดพักผ่อน", "ดูที่ออกกำลังกาย"]:
-            try:
-                conn = pymysql.connect(**DB_CONFIG)
-                with conn.cursor() as cursor:
-                    if "สถานที่สำคัญ" in user_msg: sql = "SELECT * FROM locations WHERE location_id IN (13, 14, 26, 36, 5)"
-                    elif "จุดพักผ่อน" in user_msg: sql = "SELECT * FROM locations WHERE location_id IN (56, 60, 50)"
-                    else: sql = "SELECT * FROM locations WHERE location_type = 'Exercise'"
-                    cursor.execute(sql)
-                    results = cursor.fetchall()
-                    if results: send_building_response(results) 
-                    else: line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[TextMessage(text="ยังไม่มีข้อมูลในระบบ")]))
-            finally:
-                if 'conn' in locals(): conn.close()
+            if not location_cache:
+                load_locations_to_cache()
+            
+            results = []
+            if "สถานที่สำคัญ" in user_msg:
+                target_ids = [13, 14, 26, 36, 5]
+                results = [row for row in location_cache if row.get('location_id') in target_ids]
+            elif "จุดพักผ่อน" in user_msg:
+                target_ids = [56, 60, 50]
+                results = [row for row in location_cache if row.get('location_id') in target_ids]
+            else:
+                results = [row for row in location_cache if row.get('location_type') == 'Exercise']
+                
+            if results:
+                send_building_response(results)
+            else:
+                line_bot_api.reply_message(ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text="ยังไม่มีข้อมูลในระบบ")]
+                ))
             return       
              
         elif user_msg == "Menu > ค่าเทอม/สอบ/ทุน":
@@ -562,31 +583,41 @@ def handle_message(event):
             }
             search_keyword = keyword_map.get(user_msg)
             if search_keyword:
-                try:
-                    conn = pymysql.connect(**DB_CONFIG)
-                    with conn.cursor() as cursor:
-                        sql = """
-                            SELECT s.service_name, s.service_details, s.external_link, 
-                                   l.official_name, l.latitude, l.longitude, l.image_name 
-                            FROM services s 
-                            LEFT JOIN locations l ON s.location_id = l.location_id 
-                            WHERE s.keywords LIKE %s OR s.service_name LIKE %s
-                        """
-                        cursor.execute(sql, (f"%{search_keyword}%", f"%{search_keyword}%"))
-                        results = cursor.fetchall()
-                        if results:
-                            bubbles = [create_service_flex(row, row) for row in results[:10]]
-                            line_bot_api.reply_message(ReplyMessageRequest(
-                                reply_token=event.reply_token, 
-                                messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict({"type": "carousel", "contents": bubbles}))]
-                            ))
-                        else:
-                            line_bot_api.reply_message(ReplyMessageRequest(
-                                reply_token=event.reply_token, 
-                                messages=[TextMessage(text="ยังไม่มีข้อมูลบริการนี้ในระบบค่ะ")]
-                            ))
-                finally:
-                    if 'conn' in locals(): conn.close()
+                if not service_cache:
+                    load_services_to_cache()
+                if not location_cache:
+                    load_locations_to_cache()
+                
+                kw_lower = search_keyword.lower()
+                results = []
+                for s in service_cache:
+                    keywords_str = str(s.get('keywords') or '').lower()
+                    service_name = str(s.get('service_name') or '').lower()
+                    if kw_lower in keywords_str or kw_lower in service_name:
+                        loc_id = s.get('location_id')
+                        loc = next((row for row in location_cache if row.get('location_id') == loc_id), None)
+                        joined_row = {
+                            'service_name': s.get('service_name'),
+                            'service_details': s.get('service_details'),
+                            'external_link': s.get('external_link'),
+                            'official_name': loc.get('official_name') if loc else 'ไม่ระบุ',
+                            'latitude': loc.get('latitude') if loc else '',
+                            'longitude': loc.get('longitude') if loc else '',
+                            'image_name': loc.get('image_name') if loc else ''
+                        }
+                        results.append(joined_row)
+                
+                if results:
+                    bubbles = [create_service_flex(row, row) for row in results[:10]]
+                    line_bot_api.reply_message(ReplyMessageRequest(
+                        reply_token=event.reply_token, 
+                        messages=[FlexMessage(alt_text="ข้อมูลบริการ", contents=FlexContainer.from_dict({"type": "carousel", "contents": bubbles}))]
+                    ))
+                else:
+                    line_bot_api.reply_message(ReplyMessageRequest(
+                        reply_token=event.reply_token, 
+                        messages=[TextMessage(text="ยังไม่มีข้อมูลบริการนี้ในระบบค่ะ")]
+                    ))
             return
 
         elif user_msg == "Menu > ร้านค้า/จุดบริการ":
@@ -615,20 +646,17 @@ def handle_message(event):
             return
 
         elif user_msg in ["ดูร้านกาแฟ", "ดูร้านบริการ"]:
-             try:
-                conn = pymysql.connect(**DB_CONFIG)
-                with conn.cursor() as cursor:
-                    if "ร้านกาแฟ" in user_msg: 
-                        sql = "SELECT * FROM locations WHERE location_type = 'Cafe'"
-                    elif "ดูร้านบริการ" in user_msg: 
-                        sql = "SELECT * FROM locations WHERE location_type = 'services'"
-                    
-                    cursor.execute(sql)
-                    results = cursor.fetchall()
-                    if results: send_building_response(results)
-             finally:
-                if 'conn' in locals(): conn.close()
-             return
+            if not location_cache:
+                load_locations_to_cache()
+                
+            if "ร้านกาแฟ" in user_msg:
+                results = [row for row in location_cache if row.get('location_type') == 'Cafe']
+            else:
+                results = [row for row in location_cache if row.get('location_type') == 'services']
+                
+            if results:
+                send_building_response(results)
+            return
 
         elif user_msg == "Menu > หอพัก":
             flex_menu = {
@@ -657,17 +685,19 @@ def handle_message(event):
             return
             
         elif user_msg in ["ดูหอพักหญิง", "ดูหอพักชาย", "ดูหอพักบุคลากร"]:
-            try:
-                conn = pymysql.connect(**DB_CONFIG)
-                with conn.cursor() as cursor:
-                    if "หอพักหญิง" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%หญิง%'"
-                    elif "หอพักชาย" in user_msg: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND common_name LIKE '%ชาย%'"
-                    else: sql = "SELECT * FROM locations WHERE location_type = 'Dormitory' AND (common_name LIKE '%บุคลากร%' OR common_name LIKE '%อาจารย์%')"
-                    cursor.execute(sql)
-                    results = cursor.fetchall()
-                    if results: send_building_response(results)
-            finally:
-                if 'conn' in locals(): conn.close()
+            if not location_cache:
+                load_locations_to_cache()
+                
+            results = []
+            if "หอพักหญิง" in user_msg:
+                results = [row for row in location_cache if row.get('location_type') == 'Dormitory' and 'หญิง' in str(row.get('common_name') or '')]
+            elif "หอพักชาย" in user_msg:
+                results = [row for row in location_cache if row.get('location_type') == 'Dormitory' and 'ชาย' in str(row.get('common_name') or '')]
+            else:
+                results = [row for row in location_cache if row.get('location_type') == 'Dormitory' and ('บุคลากร' in str(row.get('common_name') or '') or 'อาจารย์' in str(row.get('common_name') or ''))]
+                
+            if results:
+                send_building_response(results)
             return
         
         elif user_msg == "Menu > ติดต่อ/ฉุกเฉิน":
@@ -972,8 +1002,10 @@ def handle_location_message(event):
             messages=[TextMessage(text=reply_text)]
         ))
 
+# โหลดข้อมูลเข้า Cache ทันทีเมื่อ Import (เพื่อให้พร้อมใน WSGI server เช่น gunicorn)
+load_locations_to_cache()
+load_services_to_cache()
+
 # ================= คำสั่งรันแอป =================
 if __name__ == "__main__":
-    # สั่งให้โหลดข้อมูลทั้งหมดเข้า RAM ก่อนที่เซิร์ฟเวอร์จะเปิดรับคน
-    load_locations_to_cache()
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
