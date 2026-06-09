@@ -2,6 +2,7 @@ import os
 import pymysql
 import threading
 import re
+from datetime import datetime, timedelta
 from flask import Flask, request, abort
 from linebot.v3.webhook import WebhookHandler
 from linebot.v3.exceptions import InvalidSignatureError
@@ -190,11 +191,12 @@ def save_search_log(keyword, is_found, location_id=None, service_id=None):
         try:
             conn = pymysql.connect(**DB_CONFIG)
             with conn.cursor() as cursor:
+                thai_time = datetime.utcnow() + timedelta(hours=7)
                 sql = """
-                    INSERT INTO search_logs (keyword, is_found, location_id, service_id)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO search_logs (keyword, is_found, location_id, service_id, search_time)
+                    VALUES (%s, %s, %s, %s, %s)
                 """
-                cursor.execute(sql, (keyword, is_found, location_id, service_id))
+                cursor.execute(sql, (keyword, is_found, location_id, service_id, thai_time))
                 conn.commit()
         except Exception as e:
             print("Error saving log in background:", e)
