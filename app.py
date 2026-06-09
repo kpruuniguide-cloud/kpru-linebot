@@ -239,6 +239,16 @@ def create_building_flex(data):
         "margin": "sm"
     })
 
+    # ================== ตรวจสอบและสร้างลิงก์แผนที่ ==================
+    b_no_str = str(data.get('building_no') or '').strip()
+    if b_no_str in ['38', '47']:
+        # สำหรับตึกใหม่ที่มีปัญหา ให้แสดงผลแบบปักหมุด
+        map_uri = f"https://www.google.com/maps/search/?api=1&query={data.get('latitude', '')},{data.get('longitude', '')}"
+    else:
+        # สำหรับตึกทั่วไป ให้แสดงผลแบบลากเส้นทางเดินเท้า
+        map_uri = f"https://www.google.com/maps/dir/?api=1&destination={data.get('latitude', '')},{data.get('longitude', '')}&travelmode=walking"
+    # ============================================================
+
     return {
         "type": "bubble",
         "styles": {
@@ -261,7 +271,7 @@ def create_building_flex(data):
                     "action": {
                         "type": "uri", 
                         "label": "นำทางไปที่นี่", 
-                        "uri": f"https://www.google.com/maps/dir/?api=1&destination={data.get('latitude', '')},{data.get('longitude', '')}&travelmode=walking"
+                        "uri": map_uri
                     },
                     "contents": [{
                         "type": "text", "text": "🗺️ นำทางไปที่นี่", 
@@ -279,6 +289,17 @@ def create_service_flex(service, building):
     link_url = service.get('external_link')
     if not link_url or str(link_url).strip() == "":
         link_url = "https://www.kpru.ac.th"
+
+    # ================== ตรวจสอบและสร้างลิงก์แผนที่ (Service) ==================
+    if building:
+        b_no_str = str(building.get('building_no') or '').strip()
+        if b_no_str in ['38', '47']:
+            map_uri = f"https://www.google.com/maps/search/?api=1&query={building.get('latitude', '')},{building.get('longitude', '')}"
+        else:
+            map_uri = f"https://www.google.com/maps/dir/?api=1&destination={building.get('latitude', '')},{building.get('longitude', '')}&travelmode=walking"
+    else:
+        map_uri = "#"
+    # ====================================================================
 
     return {
         "type": "bubble",
@@ -339,7 +360,7 @@ def create_service_flex(service, building):
                     "type": "box", "layout": "vertical", 
                     "backgroundColor": "#162660", 
                     "cornerRadius": "md", "paddingAll": "10px",
-                    "action": {"type": "uri", "label": "นำทางไปที่นี่", "uri": f"https://www.google.com/maps/dir/?api=1&destination={building.get('latitude', '')},{building.get('longitude', '')}&travelmode=walking" if building else "#"},
+                    "action": {"type": "uri", "label": "นำทางไปที่นี่", "uri": map_uri},
                     "contents": [{"type": "text", "text": "🗺️ นำทางไปที่นี่", "color": "#FFFFFF", "weight": "bold", "size": "sm", "align": "center"}] 
                 }
             ]
