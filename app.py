@@ -768,11 +768,11 @@ def handle_message(event):
             line_bot_api.reply_message(ReplyMessageRequest(reply_token=event.reply_token, messages=[FlexMessage(alt_text="เมนูร้านค้าและบริการ", contents=FlexContainer.from_dict(flex_menu))]))
             return
 
-        elif user_msg in ["ดูร้านกาแฟ", "ดูร้านบริการ"]:
+        elif user_msg in ["ดูร้านค้า", "ดูร้านบริการ"]:
             if not location_cache:
                 load_locations_to_cache()
                 
-            if "ร้านกาแฟ" in user_msg:
+            if "ร้านค้า" in user_msg:
                 results = [row for row in location_cache if row.get('location_type') == 'Cafe']
             else:
                 results = [row for row in location_cache if row.get('location_type') == 'services']
