@@ -773,9 +773,9 @@ def handle_message(event):
                 load_locations_to_cache()
                 
             if "ร้านค้า" in user_msg:
-                results = [row for row in location_cache if row.get('location_type') == 'Cafe']
+                results = [row for row in location_cache if str(row.get('location_type', '')).strip().lower() == 'cafe']
             else:
-                results = [row for row in location_cache if row.get('location_type') == 'services']
+                results = [row for row in location_cache if str(row.get('location_type', '')).strip().lower() == 'services']
                 
             if results:
                 send_building_response(results)
