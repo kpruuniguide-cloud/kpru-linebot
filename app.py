@@ -758,7 +758,7 @@ def handle_message(event):
                                 {"type": "text", "text": "KPRU NAVIGATOR", "size": "xxs", "color": "#162660", "weight": "bold", "letterSpacing": "0.3em", "align": "center"}, 
                                 {"type": "text", "text": "ร้านค้าและบริการ", "weight": "bold", "size": "xl", "color": "#162660", "align": "center", "wrap": True, "margin": "xs"}, 
                                 {"type": "separator", "margin": "xl", "color": "#162660"}, 
-                                create_custom_btn("ร้านกาแฟ", "ดูร้านกาแฟ", "#162660", "#FFFFFF", "lg"), 
+                                create_custom_btn("ร้านค้า", "ดูร้านค้า", "#162660", "#FFFFFF", "lg"), 
                                 create_custom_btn("ร้านถ่ายเอกสาร/บริการ", "ดูร้านบริการ", "#162660", "#FFFFFF") 
                             ]
                         }
