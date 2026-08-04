@@ -375,7 +375,7 @@ def create_map_menu_flex():
         27, 28, 29, 30, 31, 32, 33, 34, 35,                 
         36, 37, 38, 39, 40, 41, 42                      
     ]
-    extra_ids = [74, 75, 76, 77, 78, 79]                   
+    extra_ids = [74, 75, 77, 78, 79]                   
     network_ids = [80, 81]                                 
     
     db_data = get_data_by_ids(main_flow_ids + extra_ids + network_ids)
