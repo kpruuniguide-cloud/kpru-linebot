@@ -995,7 +995,7 @@ def handle_message(event):
                         FROM search_logs 
                         GROUP BY hour_of_day 
                         ORDER BY total_searches DESC 
-                        LIMIT 10
+                        LIMIT 15
                     """
                     cursor.execute(sql)
                     peak_times = cursor.fetchall()
